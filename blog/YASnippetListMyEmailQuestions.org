@@ -1,0 +1,185 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       YASnippet list my email questions please!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-07-31 Fri
+#+URI:         /blog/%y/%m/%d/yasnippet-list-my-email-questions-please
+#+KEYWORDS:    yasnippet,emacs,mu4e
+#+TAGS:        yasnippet,emacs,mu4e
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to make a dynamic YASnippet list questions in an email
+
+* Too long; didn't read
+
+In this post I show how to make a template to answer questions in
+email one step at the time and I present a workaround to modifying
+YASnippet templates according to the context you are working in.
+
+* The problem
+
+I like to not forget to answer questions in my emails. Sometimes
+though they are scattered around and I just miss them. So I thought: a
+computer is a better finder than me, and this seems a good use case
+for a YASnippet!
+
+Well, after a first draft this was not as easy as I thought: the issue
+is that emails may have as many questions as the sender likes.
+YASnippets are instead static pieces of string that get expanded when
+you need. You cannot force all emails to have a single question (you
+can ignore the others, but that's not what I want).
+
+What I need is for the template show me all the questions and go
+through them one at the time in order of appearance.
+
+So this is the snippet I started with to handle only the first
+question:
+
+#+begin_src text :noeval
+# -*- mode: snippet -*-
+# name: mail-with-question-snippet
+# key: q
+# --
+
+Hi ${1:Somebody},
+
+${2: some intro text}
+${3:`(first (my/pick-questions-in-mail))`}
+
+$0
+
+Bye!
+#+end_src
+
+* It is a problem indeed
+
+And apparently I was not the first to wish for this dynamic definition
+of YASnippets, these are the relatable issues I could find:
+
+- https://github.com/joaotavora/yasnippet/issues/558
+- https://github.com/joaotavora/yasnippet/issues/681
+- https://github.com/joaotavora/yasnippet/issues/661
+- https://github.com/joaotavora/yasnippet/issues/295
+
+And apparently the creator of the project is looking into a [[https://github.com/joaotavora/yasnippet/tree/snippet-engine][major
+refactor]] to make this easy to do from quite some time.
+
+With this I thought time to try something different!
+
+* And there is a solution
+
+So the interesting bit is that snippets can be overridden dynamically.
+Your snippet files get loaded by YASnippet and then live in memory.
+The function =yas-define-snippets= lets you (re)define snippets for a
+major-mode. That's amazing news: with a bit of plumbing we can
+redefine our snippet dynamically.
+
+So first step, save a partial snippet, in our case in the
+=mu4e-compose-mode= folder of YASnippet:
+
+#+begin_src text :noeval
+# -*- mode: snippet -*- name: mail-with-question-snippet key: q --
+
+Hi ${1:Somebody},
+
+${2: some intro text}
+${3:`(first (my/pick-questions-in-mail))`}
+
+$0
+
+Bye!
+#+end_src
+
+Then, define a transformation, in our case how to retrieve questions
+from an email:
+
+#+begin_src elisp :noeval
+(defun my/split-string-in-sentences (string)
+  (--> string
+       (s-replace "\n" "" it)
+       (with-temp-buffer
+         (insert it)
+         (goto-char (point-min))
+         (while (not (eq (point) (point-max)))
+           (forward-sentence)
+           (insert "\n"))
+         (buffer-substring-no-properties (point-min) (point-max)))
+       (s-split "\n" it)
+       (mapcar 's-trim it)))
+
+(defun my/only-questions (sentences)
+  (--filter (s-suffix-p "?" it)  sentences))
+
+(defun my/pick-questions-in-text (string)
+  (--> string
+       my/split-string-in-sentences
+       my/only-questions))
+
+(defun my/pick-questions-in-mail ()
+  (interactive)
+  (--> (mu4e-message-field mu4e-compose-parent-message :body-txt)
+       (s-split "\n" it)
+       (--remove (s-prefix-p "> " it) it)
+       (s-join " \n " it)
+       my/pick-questions-in-text))
+
+(defun my/pick-questions-in-buffer ()
+  (interactive)
+  (my/pick-questions-in-text (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun my/yas-mail-with-questions-snippet ()
+  (let ((unique-name-snippet (s-concat "mail-snippet-question-" (format-time-string "%Y%m%d%H%M%S")))
+        (questions (my/pick-questions-in-mail)))
+    (-->
+     (s-concat
+      "Hi ${1: somebody`},\n\n${2: some intro text}\n"
+      (apply
+       's-concat
+       (--map
+        (let ((index (+ 3 (car it)))
+              (question (cdr it)))
+          (format "${%s:%s}\n\n" index question))
+        (-zip (number-sequence 0 (length questions)) questions)))
+      "$0\n\n"
+      "Bye!")
+     (yas/expand-snippet it))))
+
+(defun my/update-q-snippet ()
+  (when mu4e-compose-parent-message
+    (message "updating!")
+    (let* ((questions (my/pick-questions-in-mail))
+           (snippet
+            (s-concat
+             "Hi ${1:`(bjm/mu4e-get-names-for-yasnippet)`},\n\n${2: Nice to hear that!}\n"
+             (apply
+              's-concat
+              (--map
+               (let ((index (+ 3 (car it)))
+                     (question (cdr it)))
+                 (format "${%s:%s}\n\n" index question))
+               (-zip (number-sequence 0 (length questions)) questions)))
+             "$0\n\n"
+             "Have fun,\n\nAndrea\n")))
+      (yas-define-snippets 'mu4e-compose-mode (list (list "q" snippet "mail-with-question-snippet" nil nil nil nil nil nil))))))
+#+end_src
+
+Finally hook up the redefinition of the snippet to the mode hook, in
+this case anytime I am replying an email:
+
+#+begin_src elisp :noeval
+(add-hook 'mu4e-compose-mode-hook 'my/update-q-snippet)
+#+end_src
+
+And that is it! Now if you reply an email and invoke the snippet
+expansion you get the right number of questions to fill in.
+
+* Conclusion
+
+Well time to try yourself. If you are a =mu4e= user this will likely
+help you too with handling your questions. Just load the elisp code
+and try to expand the snippet in your next email reply! 
+
+Happy emailing!
+
+
+P.S: you need =dash.el=, =s.el= and =mu4e= to run the snippets of elisp above.

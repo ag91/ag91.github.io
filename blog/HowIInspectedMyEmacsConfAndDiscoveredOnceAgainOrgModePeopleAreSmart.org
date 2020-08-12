@@ -1,0 +1,156 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       How I inspected my Emacs configuration and discovered once again Org-Mode people are smart
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-08-07 Fri
+#+URI:         /blog/%y/%m/%d/how-i-inspected-my-emacs-configuration-and-discovered-once-again-org-mode-people-are-smart
+#+KEYWORDS:    emacs,org-mode,elisp
+#+TAGS:        emacs,org-mode,elisp
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A little summary of my adventures in making my Emacs init fast again
+
+* Too long; didn't read
+
+Use =org-babel-load-file= on your org-mode based configuration
+directly to exploit its caching mechanism: tangling code blocks is
+slow!
+
+* The problem
+
+In my Emacs workflow I liked to have everything in a single org-mode
+file. Even my configuration! Now, although it is nice to have
+everything at a search away, this became significantly slow with time.
+
+One thing that really bored me was the =emacs-init-time=: it was
+longer than 20 seconds.
+
+* It is a problem indeed
+
+Add to this that I like to start Emacs anew often, this was
+quite troublesome. [[https://brandur.org/interfaces][You do not want to wait on your editor]]. And more
+importantly you do not want to waste your life.
+
+* And there is a solution
+
+Well, I started from debugging the initiation time of my packages.
+Some time ago, I found myself spending quite some time fixing
+misconfigurations in my packages, so I decided to label the start and
+the end of a package run time. It would look like this:
+
+#+begin_src emacs-lisp :noeval
+(message "--- expand-region begin")
+#+end_src
+
+#+begin_src emacs-lisp :noeval
+(use-package expand-region
+  :bind (("C-=" . er/expand-region)))
+#+end_src
+
+#+begin_src emacs-lisp :noeval
+(message "--- expand-region end")
+#+end_src
+
+So at any problem I would find in my logging something like:
+
+#+begin_src text :noeval
+...
+expand-region begin
+#+end_src
+
+And I would not find an end. That would give away the culprit of my
+problem.
+
+Since all my packages are setup in this way, the problem of knowing how long
+they take is simple: just swap =message= for a function that takes
+time.
+
+Since I did not have patience to search for something already made by
+someone else, I just hacked my way through:
+
+#+begin_src emacs-lisp :noeval
+(defun my/init-audit-message (string)
+  "Print out STRING and calculate length of init."
+  (message string)
+  (if (not (string= "end" (substring string -3))) 
+      (setq my/init-audit-message-begin (current-time))
+    (message
+     "It took %s seconds in total."
+     (time-to-seconds
+      (time-subtract
+       (current-time)
+       my/init-audit-message-begin))))
+  nil)
+#+end_src
+
+This prints a message after the end saying how long it took to load
+the package.
+
+Now I would have:
+
+#+begin_src emacs-lisp :noeval
+(my/init-audit-message "--- expand-region begin")
+#+end_src
+
+#+begin_src emacs-lisp :noeval
+(use-package expand-region
+  :bind (("C-=" . er/expand-region)))
+#+end_src
+
+#+begin_src emacs-lisp :noeval
+(my/init-audit-message "--- expand-region end")
+#+end_src
+
+And the logging would look like:
+
+#+begin_src text :noeval
+...
+expand-region begin
+expand-region end
+It took 0.0001 seconds in total.
+...
+#+end_src
+
+I found out that some packages needed to be load more lazily
+(=use-package= offers keywords like =:defer=, =:commands=, =:mode=
+just for that), and my initialization time went from 20 seconds to
+approximately 12 seconds.
+
+This was an improvement, but still disappointing! Where did those
+seconds come from?
+
+After some head scratching moments I realized my problem was in my
+=init.el=. My configuration is a literate program written in org-mode.
+So at startup Emacs tangles the Elisp snippets in a =configuration.el=
+and then loads it. The tangling takes quite some time because it is IO
+bound (writing files to the file system is not that fast and tangling
+is even slower).
+
+The smart org-mode maintainers are clearly aware of the issue because
+if you peek into =org-babel-load-file= you will see:
+
+#+begin_src elisp :noeval
+...
+    (unless (org-file-newer-than-p
+	     tangled-file
+	     (file-attribute-modification-time
+	      (file-attributes (file-truename file))))
+...
+#+end_src
+
+That code avoids tangling unless the configuration file is newer than
+the tangled file. The issue is that I was too many layers of
+indirection away: I was tangling my configuration on Emacs exit which
+resulted always in a new file, so always slow tangling.
+
+Now I keep the agenda in its own org-mode file and my starting time is
+of at most a couple of seconds (unless I update my configuration).
+Finally happy!!
+
+* Conclusion
+
+So please inspect your configuration performance if you start your
+Emacs multiple times a day and please save yourself some time
+everyday: your time is the most important thing you have!
+
+Happy hacking!

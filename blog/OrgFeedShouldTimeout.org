@@ -1,0 +1,50 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       Make Org-feed wget timeout
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2019-02-12 Tue
+#+URI:         /blog/%y/%m/%d/make-org-feed-wget-timeout
+#+KEYWORDS:    org-feed,wget,emacs
+#+TAGS:        org-feed,wget,emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Org-feed takes long? You use wget as retrieve method? Solve your waiting issue!
+* Making wget timeout in org-feed
+:PROPERTIES:
+:CREATED:  [2019-02-12 Tue 22:14]
+:END:
+Org feed is great for my feeds reading. Sometimes though feeds are
+unresponsive. If you use the default retrieve method of org-feed you
+have just to wait ten seconds for feed.
+
+The default method is rather slow though, so I preferred the good old
+~wget~ utility.
+
+Setting 
+
+#+begin_src elisp
+(setq org-feed-retrieve-method 'wget)
+#+end_src
+
+will use the default retry policy of ~wget~ for each feed (which means
+hanging for a long time).
+
+Org-feed is very malleable though, so this will solve the issue:
+
+#+begin_src elisp
+(setq org-feed-retrieve-method
+      (lambda (url)
+        (message "%S" url)
+        (ignore-errors (kill-buffer org-feed-buffer))
+        (call-process "wget" nil org-feed-buffer nil "-q" "--tries=2" "--timeout=3" "-O" "-" url)
+        org-feed-buffer))
+#+end_src
+
+In practice we are just adding two flags to ~wget~:
+
+- ~--timeout=3~: after 3 seconds of hanging close the connection
+- ~--tries=2~: retry at most 2 times
+
+This speed up my feeds gathering quite a lot.
+
+Hopefully it helps somebody else.

@@ -1,0 +1,160 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       How to fit RSS feeds into an org file
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2017-01-29 Sun
+#+URI:         /blog/%y/%m/%d/how-to-fit-rss-feeds-into-an-org-file
+#+KEYWORDS:    emacs, org-mode, elisp
+#+TAGS:        org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A simple setup to add RSS feeds as children of a dedicated org headline
+
+* Introduction
+
+Hello everyone!
+
+It is a while I am thinking how to easy my job hunting approach, and
+by easy I mean to integrate it with the typical workflow I follow.
+
+
+Currently I look for job through website like https://www.indeed.com/,
+and I typically input in the search box things like: "functional
+programming", "graduate software engineer", etc...
+
+
+This is bothersome, and results in uris like:
+https://www.indeed.com/jobs?q=functional+programming&l=,
+https://www.indeed.com/jobs?q=graduate+software+engineer&l=, etc...
+
+
+My workflow is completely based on Emacs and Org mode, and using
+Firefox or even Emacs' browser eww requires a lot of clicks and
+screens that I would like to avoid.
+
+* The discoveries
+
+With a bit of browsing here and there, I discovered that these job
+website support RSS feeds: we add an =rss?= in the uri and voila
+http://rss.indeed.com/rss?q-functional-programming-jobs.html.
+
+
+This could have meant adding these uris to [[https://github.com/skeeto/elfeed][my current feed reader]], but
+I would still miss my Org mode integration!
+
+
+This is where I remembered that Org mode can do feeds:
+http://orgmode.org/manual/RSS-Feeds.html.
+
+* The hack
+
+At this point I needed to make the two discoveries work together with
+my workflow: I would like adding these feeds in my main Org file and
+reject the post I have already read.
+
+Naturally all this is supported by Carsten's fantastic [[http://orgmode.org/w/?p=org-mode.git;a=blob_plain;f=lisp/org-feed.el;hb=HEAD][org-feed.el]],
+but required a bit of diving into the code from which this post
+intends to save you.
+
+So:
+
+1 ) try the manual example:
+
+   #+BEGIN_SRC elisp
+(setq org-feed-alist
+      '(("Slashdot"
+         "http://rss.slashdot.org/Slashdot/slashdot"
+         "/tmp/feeds.org" "Slashdot Entries")))
+   #+END_SRC
+
+2 ) then edit the example to support your preferred websites:
+
+   #+BEGIN_SRC elisp
+(setq org-feed-alist
+    '(("functional-jobs"
+       "http://rss.indeed.com/rss?q-functional-programming-jobs.html"
+       "/tmp/feeds.org" "Functional Job Feeds"
+       )
+      ("graduate-jobs"
+       "http://rss.indeed.com/rss?q-graduate-software-engineer-jobs.html"
+       "/tmp/feeds.org" "Graduate Job Feeds"
+       )))
+ #+END_SRC
+
+
+Cool, but wait! This creates an Org file =/tmp/feeds.org= with two new
+headings. Instead, I wanted to add this jobs *into an existing file
+under a single heading* "Jobs Feeds"
+
+3 ) let's add the single heading:
+
+   #+BEGIN_SRC elisp
+(setq org-feed-alist
+      '(("functional-jobs"
+         "http://rss.indeed.com/rss?q-functional-programming-jobs.html"
+         "/tmp/feeds.org" "Job Feeds"
+         )
+        ("graduate-jobs"
+         "http://rss.indeed.com/rss?q-graduate-software-engineer-jobs.html"
+         "/tmp/feeds.org" "Job Feeds"
+         )))
+   #+END_SRC
+
+
+Tragedy! Now when cannot recognize where the feeds come from and every
+time we reload the feeds they duplicate!!!
+
+4 ) let's add a template to give an appropriate tag to the heading:
+
+   #+BEGIN_SRC elisp
+(defun my-for-org-feed/tag-template
+    "creates a org-feed template string with [tag] as Org header tag"
+    (tag)
+  (concat "\n* %h " tag " \nCreated: %U\nOriginal: %a \n\n%description \n\n"))
+
+(setq org-feed-alist
+      `(("functional-jobs";; NOTE the backquote!
+         "http://rss.indeed.com/rss?q-functional-programming-jobs.html"
+         "/tmp/feeds.org" "Functional Job Feeds"
+         :template ,(my-for-org-feed/tag-template ":clojure:uk:"))); and the comma!
+        ("graduate-jobs"
+         "http://rss.indeed.com/rss?q-graduate-software-engineer-jobs.html"
+         "/tmp/feeds.org" "Graduate Job Feeds"
+         )))
+   #+END_SRC
+
+   As you can see there is a backquote and a comma in the elisp
+   source: in simple words the backquote allows you to choose which
+   sexp must be evaluated (by placing before a comma).
+
+5 ) finally, let's solve the duplication issue:
+
+   #+BEGIN_SRC elisp
+(defun my-for-org-feed/tag-template
+    "creates a org-feed template string with [tag] as Org header tag"
+    (tag)
+  (concat "\n* %h " tag " \nCreated: %U\nOriginal: %a \n\n%description \n\n"))
+
+(setq org-feed-alist
+      `(("functional-jobs"
+         "http://rss.indeed.com/rss?q-functional-programming-jobs.html"
+         "/tmp/feeds.org" "Functional Job Feeds"
+         :template ,(my-for-org-feed/tag-template ":clojure:uk:")
+         :drawer "functional-jobs"))
+        ("graduate-jobs"
+         "http://rss.indeed.com/rss?q-graduate-software-engineer-jobs.html"
+         "/tmp/feeds.org" "Graduate Job Feeds"
+         :drawer "graduate-jobs")))
+   #+END_SRC
+
+   Adding the =:drawer= bit allows org-feed to make sense of the
+   history of the category of feed, and to recognize when we are
+   trying to add the same feeds.
+
+* Conclusion
+
+With this little hacking of =org-feed-alist= I can now have all my job
+ads in a single Org header, and transform the most interesting ones in
+tasks.
+
+Now job hunting is easy to me!

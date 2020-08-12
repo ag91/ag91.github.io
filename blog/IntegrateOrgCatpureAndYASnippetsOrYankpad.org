@@ -1,0 +1,101 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       How to integrate YASnippet and Yankpad with Org-Capture
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-07-28 Tue
+#+URI:         /blog/%y/%m/%d/how-to-integrate-yasnippet-and-yankpad-with-org-capture
+#+KEYWORDS:    yasnippet,yankpad,org-mode,emacs
+#+TAGS:         yasnippet,yankpad,org-mode,emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Make the best out of two worlds: org-capture + yasnippet + yankpad
+
+
+* Too long; didn't read
+
+In this post I show how to combine the [[https://orgmode.org/manual/Capture.html][org-capture]] templating system
+and [[http://joaotavora.github.io/yasnippet/][YASnippet]] and [[https://github.com/Kungsgeten/yankpad][Yankpad]] in order to make you even more productive.
+See the [[https://github.com/ag91/ya-org-capture/blob/master/ya-org-capture-screehcast.gif][screen-cast]].
+
+* The problem
+
+I recently decided to invest some of my vacations in improving my
+tools for the job. Something high in my priority is templating: what
+if I could provide myself with a structure for my writings? Well in
+the Emacs world the answer is YASnippet or for the org-mode
+enthusiasts Yankpad. So I came up with a template and I soon
+discovered that I could NOT run it from my org-capture snippets!
+
+So if you try to expand a YASnippet from an elisp snippet (i.e, the
+=%(yas/insert-snippet)= syntax in the capture template below) in your
+org-capture template, you just fail because the org-capture template
+expects any elisp to create a string. So do not do the following:
+
+#+begin_src elisp :noeval
+(setq org-capture-templates
+          `(("i" "some yasnippet capture template" entry (file "/tmp/test.org") "* TODO %^{Some title} \n%(yas/insert-snippet)" :empty-lines 2)))
+#+end_src
+
+* It is a problem indeed
+
+This is bad because it makes it impossible to have the beautiful
+step-by-step completion that YASnippet and Yankpad provide (look how
+cool are [[https://youtu.be/ZCGmZK4V7Sg][this]] and [[https://youtu.be/xkkyE7d0Bpc?t=123][this]] example). You can achieve things using the
+feature-full org-capture templating system as well, but why not mixing
+both worlds for amazing results?
+
+* And there is a solution
+
+Since I had some time, I went for the challenge. 
+
+My first idea was to ask the user to complete the snippet first and
+then embed that into the org-capture template. However that first
+attempt failed, because the completion of YASnippet and Yankpad is
+asynchronous, I mean does not block the program flow. In short that
+was not viable (just get in touch with me if you want details about
+this).
+
+My second successful attempt is here:
+https://github.com/ag91/ya-org-capture. 
+
+It is a two step approach:
+
+1. you create the template with a "tagged" snippet keyword
+2. as soon as you fill in your org-capture template, we strip the tag
+   and expand the snippet keyword
+
+So you will need to load the library like this:
+
+#+begin_src elisp :noeval
+(use-package ya-org-capture
+  :after yankpad
+  :load-path "~/.emacs.d/lisp"
+  :config
+    (ya-org-capture/setup))
+#+end_src
+
+And define your org-capture template with the special function I made
+up:
+
+#+begin_src elisp :noeval
+(setq org-capture-templates
+          `(("i" "some yasnippet capture template" entry (file "/tmp/test.org") "* TODO %^{Some title} \n%(ya-org-capture/make-snippet \"img_\")" :empty-lines 2)
+            ("s" "some yankpad capture template" entry (file "/tmp/test.org") "* TODO %^{Some title} \n%(ya-org-capture/make-snippet \"st\")" :empty-lines 2)))
+#+end_src
+
+
+It is a minimal first attempt, and I was so excited I may have not
+tested all the way this can go wrong (I suspect it may not work if you
+do not put the elisp snippet last in your template).
+
+* Conclusion
+
+So if you have wonderful Yankpad/YASnippet templates you want to use
+when capturing a org-mode task/note, just grab my file, load it and
+edit your templates as described above and [[https://github.com/ag91/ya-org-capture][here]]. 
+
+Also feel free to get report issues and get in touch with me if you
+have a better way to solve this: for example do you think would be
+worth investing some more time into transforming snippets to string?
+
+Enjoy your Emacs time!

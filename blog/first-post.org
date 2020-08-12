@@ -1,0 +1,20 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       First post: welcome!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2017-01-28 Sat
+#+URI:         /blog/%y/%m/%d/first-post-welcome!
+#+KEYWORDS:    welcome
+#+TAGS:        welcome
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: First post!
+
+Hello everyone!
+
+This shall be a memorandum of some of the fantastic discoveries I do everyday :)
+Expect interesting information about technology, energy, ethics,
+literature and... who knows what?
+Have a good staying here,
+
+Andrea

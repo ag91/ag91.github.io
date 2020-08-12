@@ -1,0 +1,71 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       A docstring for Scala functions through YaSnippet 
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2018-11-07 Wed
+#+URI:         /blog/%y/%m/%d/a-docstring-for-scala-functions-through-yasnippet-
+#+KEYWORDS:    yasnippet,emacs,scala
+#+TAGS:        yasnippet,emacs,scala
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Sharing a useful Scala snippet
+This shall be a very short post.
+
+The other day I was picking at a colleague monitor, and I saw how easy
+was to add function documentation on his editor. So I thought: why not
+make my documentation flow a bit better for Scala code?
+
+Sure that Emacs had it already, I surfed a little the web looking for
+somebody's [[https://github.com/joaotavora/yasnippet][YaSnippet]] configuration: so far I have been unsuccessful.
+
+I found though some Python developer that accomplished what I had in
+mind: http://tiborsimko.org/emacs-epydoc-snippets.html
+
+As theirs was a very fine solution, I took their code (thanks a lot
+Tibor, Orestis and Yasser) and edited a little bit to fit the Scala
+world.
+
+This is the resulting snippet:
+
+  #+BEGIN_SRC text :tangle /home/andrea/.emacs.d/snippets/scala-mode/docfun
+  # -*- coding: utf-8 -*-
+  # name: docstring function
+  # contributor: Andrea Giugliano
+  # --
+  /**
+   ,* $1
+   ,* ${3:$
+      (let* ((indent
+              (concat "\n * "))
+             (args
+              (mapconcat
+               '(lambda (x)
+                  (if (not (string= (nth 0 x) ""))
+                      ;; in Scala I get a separator : for the type
+                      (let ((par-type (mapcar 'string-trim (split-string (nth 0 x) ":")))) (concat "@param " (first par-type) indent "@tparam " (second par-type) indent))
+                      ))
+               (mapcar
+                '(lambda (x)
+                   (mapcar
+                    '(lambda (x)
+                       (replace-regexp-in-string "[[:blank:]]*$" ""
+                        (replace-regexp-in-string "^[[:blank:]]*" "" x)))
+                    x))
+                (mapcar '(lambda (x) (split-string x "="))
+                        (split-string yas-text ",")))
+               indent)))
+        (if (string= args "")
+            (concat indent "@return: " indent "@rtype: " indent (make-string 3 34))
+          (mapconcat
+           'identity
+           (list "" args )
+           indent)))
+      }
+   ,* @return ${4:$(yas-text)}
+   ,*
+   ,**/  
+  def ${2:name}($3): $4 = $0
+  #+END_SRC
+
+I will probably try to have it merged with the main body of Scala
+snippets so everybody can enjoy this.

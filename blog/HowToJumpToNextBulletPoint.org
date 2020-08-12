@@ -1,0 +1,62 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       How to jump to next bullet point in org mode
+#+AUTHOR:      Andrea Giugliano
+#+EMAIL:       andrea-dev@hotmail.com.ac.uk
+#+DATE:        2019-07-01 Mon
+#+URI:         /blog/%y/%m/%d/how-to-jump-to-next-bullet-point-in-org-mode
+#+KEYWORDS:    org-mode,emacs,elisp
+#+TAGS:        org-mode,emacs,elisp
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A short post to show how you can override keybindings
+
+Say that you are an avid Emacs user and are fun of org-mode.
+What if you find yourself in the middle of a very long bullet list
+like:
+
+- a
+- b
+- c
+- d
+- e
+- ...  *you are here* ...
+- m
+- n
+- o
+- p
+
+Assume that the "..." stand for a lot of text. If you want to jump to
+the next bullet in the list, there is no default keybinding to
+simplify the matter. 
+
+After a little of "C-h f", I found out that org-mode has a function
+called =org-next-item=! That lets you jump to the next available
+bullet point, and throws an error if you are not in a bullet list.
+
+But we want a reasonable keybinding for it. Org-mode comes with "C-c
+C-n" which lets you jump to the next visible heading.
+
+How about we override? The trick is to handle the error for when we
+are not in a list: if in a list go to next bullet point else to next
+visible heading.
+
+This is the code for your enjoyment:
+
+#+begin_src elisp
+(defun ag/next-entry-or-next-visible-header ()
+  (interactive)
+  (condition-case err
+      (org-next-item)
+    (error (org-next-visible-heading 1))))
+(define-key org-mode-map (kbd "C-c C-n") #'ag/next-entry-or-next-visible-header)
+
+(defun ag/previous-entry-or-previous-visible-header ()
+  (interactive)
+  (condition-case err
+      (org-previous-item)
+    (error (org-previous-visible-heading 1))))
+(define-key org-mode-map (kbd "C-c C-p") #'ag/previous-entry-or-previous-visible-header)
+#+end_src
+
+An improvement could be to allow an (universal) argument to indicate we do
+not want to use =org-next-item=, but I did not need that yet :)

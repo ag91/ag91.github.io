@@ -1,0 +1,8 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE: About
+
+Yesterday (or today?) a student, today a software engineer, the day
+after just a fragment of life.
+
+I am pulled by curiosity and since I have learned a few useful things,
+why not to share them?

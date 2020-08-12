@@ -1,0 +1,222 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       Functional Abstraction in JS: Functors
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2018-10-27 Sat
+#+URI:         /blog/%y/%m/%d/functional-abstraction-in-js-functors
+#+KEYWORDS:    js,jsverify,functional-programming,functor
+#+TAGS:        js,jsverify,functional-programming,functors
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Explaining functors through JavaScript and its test generation tooling
+
+(This blog post was firstly published at https://lunatech.com/blog/W7IorBUAAMac74Ew/functional-abstractions-in-javascript-check-functors-laws)
+
+JavaScript is a curious mix of programming paradigms. In this post we
+will focus on the functional traits of JavaScript (JS). In particular we
+will see how to check that a function satisfies the Functor's laws.
+
+A Functor is a fundamental abstraction for functional programmers. It
+behaves like a (very limited) container: you can interact with it only
+by altering its content.
+
+In the functional community this interface is called =map=. In the
+context of Functors, this interface takes the name of =fmap=.
+
+Basic JS arrays offer a map function:
+
+#+BEGIN_SRC js
+var x = [1, 2, 3]
+console.log("Mapping +1: ", x.map((x) => x+1))
+console.log("The original array: ", x)
+#+END_SRC
+
+#+RESULTS:
+: Mapping +1:  [ 2, 3, 4 ]
+: The original array:  [ 1, 2, 3 ]
+
+In the following we are going to check if =map= respects the Functor
+laws; in other words: is the object array a Functor?
+
+First let's define a [[https://stackoverflow.com/questions/36314/what-is-currying][curried]] =fmap= to make laws definitions look
+nice:
+
+#+name:fmap
+#+BEGIN_SRC js
+const fmap = (fn) => (
+    (array) => array.map(fn))
+#+END_SRC
+
+This works as follows:
+
+#+BEGIN_SRC js
+<<fmap>>
+console.log(fmap((x)=> x+1)([1,2,3]))
+#+END_SRC
+
+Then let's define the two laws that must hold to call something a
+Functor.
+
+The first law says that mapping the identity function on a Functor
+should produce the same Functor.
+
+The identity function is easy to define:
+
+#+name:ids
+#+BEGIN_SRC js :exports code
+const id = (x) => x
+#+END_SRC
+
+#+RESULTS: ids
+
+The first law then becomes:
+
+#+BEGIN_SRC js :noeval :exports code
+fmap(id) = id
+#+END_SRC
+
+The second law says that mapping the composition of two functions on a
+functor should produce the same Functor that is obtained by composing
+the =fmap=.
+
+The compose function can be defined as:
+
+#+name:compose
+#+BEGIN_SRC js
+const compose = (fn1,fn2) => (
+    (arg) => fn2(fn1(arg)))
+#+END_SRC
+
+#+RESULTS: compose
+
+The second law then becomes:
+
+#+BEGIN_SRC js :noeval :exports code
+fmap(compose(f,g)) = compose(fmap(f),fmap(g))
+#+END_SRC
+
+So far we have defined the Functor laws. Now we want to check the JS
+arrays satisfy them.
+
+The Haskell community donated a great tool to test properties of
+functional software: [[https://en.wikipedia.org/wiki/QuickCheck][QuickCheck]]. We will use the JS implementation of
+it: [[https://github.com/jsverify/jsverify][jsverify]].
+
+In =jsverify= we can define software properties like the following (from
+=jsverify='s README):
+
+#+BEGIN_SRC js
+var jsc = require("jsverify");
+
+// forall (f : bool -> bool) (b : bool), f (f (f b)) = f(b).
+var boolFnAppliedThrice =
+  jsc.forall("bool -> bool", "bool", function (f, b) {
+    return f(f(f(b))) === f(b);
+  });
+
+console.log(jsc.check(boolFnAppliedThrice));
+#+END_SRC
+
+#+RESULTS:
+: OK, passed 100 tests
+: true
+
+As you can see, =jsverify= generates tests that validate if the
+property holds. By default it generates 100 tests per property.
+
+Let's then define our laws as =jsverify= properties. 
+
+For this we will need a custom =equals= function as JS behaves in a
+peculiar way when comparing empty arrays:
+
+#+BEGIN_SRC js
+console.log([] === [])
+#+END_SRC
+
+#+RESULTS:
+: false
+
+So our equals will be:
+
+#+name:equals
+#+BEGIN_SRC js
+const equals = (x,y) => (JSON.stringify(x) === JSON.stringify(y))
+#+END_SRC
+
+#+RESULTS: equals
+
+Which behaves as we wish for empty arrays:
+
+#+BEGIN_SRC js
+<<equals>>
+console.log(equals([],[]))
+#+END_SRC
+
+#+RESULTS:
+: true
+
+Now we refine the laws in =jsverify= format:
+
+#+name:laws
+#+BEGIN_SRC js
+<<ids>>
+<<compose>>
+<<fmap>>
+
+var jsc = require("jsverify");
+
+var arrayInt = jsc.array(jsc.integer());
+
+const fmap_law1 = jsc.forall(
+    arrayInt, 
+    (x) =>
+        //fmap(id) == id
+        equals(
+            fmap(id)(x),
+            id(x))
+);
+
+const fmap_law2 = jsc.forall(
+    "integer -> integer", 
+    "integer -> integer", 
+    arrayInt, 
+    (f,g,x) =>
+        //fmap(compose(f,g)) = compose(fmap(f),fmap(g))
+        equals(
+            fmap(compose(f,g))(x),
+            compose(fmap(f),fmap(g))(x)
+        ));
+#+END_SRC
+
+#+RESULTS: laws
+
+Note that here we are applying the curried functions with the input
+generated by =jsverify= (i.e., =x=).
+
+And at last we can run check our laws hold for an array of integers:
+
+#+BEGIN_SRC js :noweb yes
+<<equals>>
+
+<<laws>>
+
+console.log("First functor law satisfied?", jsc.check(fmap_law1));
+
+console.log("Second functor law satisfied?", jsc.check(fmap_law2));
+#+END_SRC
+
+#+RESULTS:
+: OK, passed 100 tests
+: First functor law satisfied? true
+: OK, passed 100 tests
+: Second functor law satisfied? true
+
+So JS arrays we can be rather confident that JS arrays are Functors!
+
+This same approach can be applied to other functional abstractions,
+but this will be matter of later posts.
+
+Hopefully this example will encourage you to learn more abou Functors
+and to start using =jsverify=.
+
+Good hacking!

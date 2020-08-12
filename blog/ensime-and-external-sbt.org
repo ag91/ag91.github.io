@@ -1,0 +1,112 @@
+# -*- coding: utf-8; mode:org; -*-
+#+TITLE:       Programming in scala with a custom sbt with ensime
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2018-02-24 Sat
+#+URI:         /blog/%y/%m/%d/programming-in-scala-with-a-custom-sbt-with-ensime
+#+KEYWORDS:    emacs, ensime, scala, sbt
+#+TAGS:        emacs, ensime, scala, sbt
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to use a custom sbt with ensime
+* TL;DR
+:PROPERTIES:
+:CREATED:  [2018-02-24 Sat 22:12]
+:END:
+
+Having a project that needs a custom sbt executable requires a bit of
+setup to make Scala development more pleasing in these occasions.
+
+
+
+* Introduction
+:PROPERTIES:
+:CREATED:  [2018-02-24 Sat 22:16]
+:END:
+
+Imagine you work in [[https://www.scala-lang.org/][Scala]] and you build your project with [[https://www.scala-sbt.org/][sbt]]. It may
+occur that your client has some special environment, and the simple
+way to hide the configuration complexity is to use a slightly
+configured sbt. Say that you come up with an executable called
+=sbt.sh= like the following:
+
+#+BEGIN_SRC sh :noeval
+#!/bin/bash
+
+SBT_OPTS="someCoolOptions" 
+java $SBT_OPTS -jar `dirname $0`/sbt-launch.jar "$@"
+#+END_SRC
+
+Note that *the shebang is necessary*, otherwise sbt-mode will not
+run your custom sbt.
+
+Now: how do we make ensime consider this executable the one to use for
+this project?
+
+
+
+* The discoveries
+:PROPERTIES:
+:CREATED:  [2018-02-24 Sat 22:32]
+:END:
+
+We are lucky (and grateful) that the maintainers of ensime and
+sbt-mode provided two variables that allow to define the executable to
+use: respectively =ensime-sbt-command= and =sbt:program-name=.
+
+* The hack
+:PROPERTIES:
+:CREATED:  [2018-02-24 Sat 22:32]
+:END:
+
+The idea is to reassign those variables if a custom sbt executable
+exists in the project. For simplicity I assumed that the executable is
+not present in any parent directory of the project root directory.
+Given that the =dir= directory in the following function is the
+directory from where we start ensime, we can find the file through:
+
+#+BEGIN_SRC elisp
+(defun get-to-parent-until (fn dir)
+  "Returns the first directory from DIR that satisfies FN or NIL."
+  (let ((current dir))
+    (while (not (or (equalp current "/") 
+                    (funcall fn current)))
+      (setq current (expand-file-name (concat current "/.."))))
+    (if (funcall fn current)
+        current
+      nil)))
+#+END_SRC
+
+This function returns the first directory that satisfies the =fn=
+predicate.
+
+With this we can obtain the executable path and assign the variables:
+
+#+BEGIN_SRC elisp
+(defun set-sbt-program ()
+  "Sets ensime ans sbt program name to local if it exists"
+  (interactive)
+  (let* ((sbt-dir (get-to-parent-until
+                   #'(lambda (d)
+                       (file-exists-p  (concat d "/sbt")))
+                   default-directory))
+         (exec (if sbt-dir (concat sbt-dir "/sbt") "sbt")))
+    (setq ensime-sbt-command exec
+          sbt:program-name exec)))
+#+END_SRC
+
+Finally we can set a hook to run this function every time we use
+ensime:
+
+#+BEGIN_SRC elisp
+(add-hook 'ensime-mode-hook #'set-sbt-program)
+#+END_SRC
+
+* Conclusion
+:PROPERTIES:
+:CREATED:  [2018-02-24 Sat 22:16]
+:END:
+
+I have shown how to automate some boring configuration for ensime. I
+added this to the sbt-mode repository for users reference:
+https://github.com/ensime/emacs-sbt-mode/issues/129.
