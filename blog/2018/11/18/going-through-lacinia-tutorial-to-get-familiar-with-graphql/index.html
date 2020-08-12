@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Going through Lacinia tutorial to get familiar with GraphQL - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea Giugliano" />
+    <meta name="description" content="A rather long log of running through the Lacinia tutorial" />
+    <meta name="keywords" content="graphql,clojure" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Going through Lacinia tutorial to get familiar with GraphQL</h1>
+<p>
+This is my work through the very cool tutorial by <a href="https://github.com/walmartlabs/lacinia/tree/master/docs/tutorial">Howard Lewis Ship</a>.
+</p>
+
+<p>
+Let's start!
+</p>
+
+<p>
+The repo with the complete source is here:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">git clone https://github.com/walmartlabs/clojure-game-geek
+</pre>
+</div>
+
+<p>
+This is a project about board games and feedback.
+First the template project
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">lein new lacinia-tutorial
+</pre>
+</div>
+
+<p>
+The project has to change slightly:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defproject lacinia-tutorial "0.1.0-SNAPSHOT"
+  :description "FIXME: write description"
+  :url "http://example.com/FIXME"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [com.walmartlabs/lacinia "0.21.0"]])
+
+</pre>
+</div>
+
+<p>
+Lacinia uses third party libraries to parse the GraphQL schemas and
+store in ordered maps.
+</p>
+
+<p>
+Schemas have the edn format:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:objects
+ {:BoardGame
+  {:description "A physical or virtual board game."
+   :fields
+   {:id {:type (non-null ID)} ;; ID is a GraphQL symbol and a Lacinia
+                              ;; base type, the non-null bit is a
+                              ;; Lacinia constraint: this is likely
+                              ;; treated as clojure.spec
+    :name {:type (non-null String)}
+    :summary {:type String
+              :description "A one-line summary of the game."}
+    :description {:type String
+                  :description "A long-form description of the game."}
+    :min_players {:type Int ;; lacinia works only with underscores due to problems with clojure.spec
+                  :description "The minimum number of players the game supports."}
+    :max_players {:type Int
+                  :description "The maximum number of players the game supports."}
+    :play_time {:type Int
+                :description "Play time, in minutes, for a typical game."}}}}
+
+ :queries
+ {:game_by_id
+  {:type :BoardGame
+   :description "Access a BoardGame by its unique id, if it exists."
+   :args
+   {:id {:type ID}}
+   :resolve :query/game-by-id}}} ; this is the GraphQL query resolver
+</pre>
+</div>
+
+<p>
+Now we need an interpreter:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.schema
+  "Contains custom resolvers and a function to provide the full schema."
+  (:require
+    [clojure.java.io :as io]
+    [com.walmartlabs.lacinia.util :as util]
+    [com.walmartlabs.lacinia.schema :as schema]
+    [clojure.edn :as edn]))
+
+(defn resolver-map
+  []
+  {:query/game-by-id (fn [context args value] ;; this is our resolver implementation
+                       nil)})
+
+(defn load-schema
+  []
+  (-&gt; (io/resource "cgg-schema.edn") ;; load text from resource directory
+      slurp
+      edn/read-string ;; get the data as a clojure object
+      (util/attach-resolvers (resolver-map)) ;; apply the resolver
+      schema/compile)) ;; this should produce the GraphQL api?
+
+</pre>
+</div>
+
+<p>
+For REPL development it can be useful to setup the <code>user</code> namespace:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns user
+  (:require
+    [lacinia-tutorial.schema :as s]
+    [com.walmartlabs.lacinia :as lacinia]))
+
+(def schema (s/load-schema))
+
+(defn q
+  [query-string]
+  (lacinia/execute schema query-string nil nil)) ;; this is a quick
+                                                 ;; way to query our
+                                                 ;; GraphQL API
+                                                 ;; without starting
+                                                 ;; a server
+
+</pre>
+</div>
+
+<p>
+This should now let us use the REPL:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(q "{ game_by_id(id: \"foo\") { id name summary }}")
+</pre>
+</div>
+
+<p>
+Naturally this resolves to empty because the resolver is programmed
+so.
+</p>
+
+<p>
+Let's now create some data that respect the schema:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:games
+ [{:id "1234"
+   :name "Zertz"
+   :summary "Two player abstract with forced moves and shrinking board"
+   :min_players 2
+   :max_players 2
+   }
+  {:id "1235"
+   :name "Dominion"
+   :summary "Created the deck-building genre; zillions of expansions"
+   :min_players 2}
+  {:id "1236"
+   :name "Tiny Epic Galaxies"
+   :summary "Fast dice-based sci-fi space game with a bit of chaos"
+   :min_players 1
+   :max_players 4}
+  {:id "1237"
+   :name "7 Wonders: Duel"
+   :summary "Tense, quick card game of developing civilizations"
+   :min_players 2
+   :max_players 2}]}
+</pre>
+</div>
+
+<p>
+And let's now use the data in the code:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.schema
+  "Contains custom resolvers and a function to provide the full schema."
+  (:require
+    [clojure.java.io :as io]
+    [com.walmartlabs.lacinia.util :as util]
+    [com.walmartlabs.lacinia.schema :as schema]
+    [clojure.edn :as edn]))
+
+(defn resolve-game-by-id
+  [games-map context args value] ; the last 3 attributes are provided by the resolver
+  (let [{:keys [id]} args]
+    (get games-map id)))
+
+(defn resolver-map
+  []
+  (let [cgg-data (-&gt; (io/resource "cgg-data.edn")
+                     slurp
+                     edn/read-string)
+        games-map (-&gt;&gt; cgg-data
+                       :games ; taking the games from the data
+                       (reduce #(assoc %1 (:id %2) %2) {}))]
+    {:query/game-by-id (partial resolve-game-by-id games-map)}))
+
+(defn load-schema
+  []
+  (-&gt; (io/resource "cgg-schema.edn") ;; load text from resource directory
+      slurp
+      edn/read-string ;; get the data as a clojure object
+      (util/attach-resolvers (resolver-map)) ;; apply the resolver by substituting the :query keywords with the functions
+      schema/compile)) ;; this should produce the GraphQL api?
+
+</pre>
+</div>
+
+<p>
+Let's fix up our development file to use Clojure maps:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns user
+  (:require
+    [lacinia-tutorial.schema :as s]
+    [com.walmartlabs.lacinia :as lacinia]
+    [clojure.walk :as walk])
+    (:import (clojure.lang IPersistentMap)))
+
+(def schema (s/load-schema))
+
+(defn simplify
+  "Converts all ordered maps nested within the map into standard hash maps, and
+   sequences into vectors, which makes for easier constants in the tests, and eliminates ordering problems."
+  [m]
+  (walk/postwalk
+    (fn [node]
+      (cond
+        (instance? IPersistentMap node) (into {} node)
+        (seq? node) (vec node)
+        :else
+        node))
+    m))
+
+(defn q
+  [query-string]
+  (-&gt; (lacinia/execute schema query-string nil nil)
+      simplify))
+</pre>
+</div>
+
+<p>
+Now the query shows a normal map:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(use 'user :reload) ; to reload the user ns
+(q "{ game_by_id(id: \"anything\") { id name summary }}")
+</pre>
+</div>
+
+<p>
+And we can also do a query according to the data we have:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(use 'user :reload-all) ; to reload all the ns
+(q "{ game_by_id(id: \"1237\") {name summary min_players max_players}}")
+</pre>
+</div>
+
+<p>
+Let's now add a field in the data we got:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:games
+ [{:id "1234"
+   :name "Zertz"
+   :summary "Two player abstract with forced moves and shrinking board"
+   :min_players 2
+   :max_players 2
+   :designers #{"200"}} ;; reference to the designer id. I think this is interpreted as a set of designer ids by the resolver
+  {:id "1235"
+   :name "Dominion"
+   :summary "Created the deck-building genre; zillions of expansions"
+   :designers #{"204"}
+   :min_players 2}
+  {:id "1236"
+   :name "Tiny Epic Galaxies"
+   :summary "Fast dice-based sci-fi space game with a bit of chaos"
+   :designers #{"203"}
+   :min_players 1
+   :max_players 4}
+  {:id "1237"
+   :name "7 Wonders: Duel"
+   :summary "Tense, quick card game of developing civilizations"
+   :designers #{"201" "202"}
+   :min_players 2
+   :max_players 2}]
+
+ :designers
+ [{:id "200"
+   :name "Kris Burm"
+   :url "http://www.gipf.com/project_gipf/burm/burm.html"}
+  {:id "201"
+   :name "Antoine Bauza"
+   :url "http://www.antoinebauza.fr/"}
+  {:id "202"
+   :name "Bruno Cathala"
+   :url "http://www.brunocathala.com/"}
+  {:id "203"
+   :name "Scott Almes"}
+  {:id "204"
+   :name "Donald X. Vaccarino"}]}
+</pre>
+</div>
+
+<p>
+By not doing anything the query on designers fails:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(use 'user :reload-all) ; to reload all the ns
+(q "{ game_by_id(id: \"1237\") {designers}}")
+</pre>
+</div>
+
+<p>
+The reason is that our schema does not contain such data. No schema no
+party:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:objects
+ {:BoardGame
+  {:description "A physical or virtual board game."
+   :fields
+   {:id {:type (non-null ID)} ;; ID is a GraphQL symbol and a Lacinia
+                              ;; base type, the non-null bit is a
+                              ;; Lacinia constraint: this is likely
+                              ;; treated as clojure.spec
+    :name {:type (non-null String)}
+    :summary {:type String
+              :description "A one-line summary of the game."}
+    :description {:type String
+                  :description "A long-form description of the game."}
+    :designers {:type (non-null (list ID))
+                  :description "A long-form description of the game."}
+    :min_players {:type Int ;; lacinia works only with underscores due to problems with clojure.spec
+                  :description "The minimum number of players the game supports."}
+    :max_players {:type Int
+                  :description "The maximum number of players the game supports."}
+    :play_time {:type Int
+                :description "Play time, in minutes, for a typical game."}}}}
+
+ :queries
+ {:game_by_id
+  {:type :BoardGame
+   :description "Access a BoardGame by its unique id, if it exists."
+   :args
+   {:id {:type ID}}
+   :resolve :query/game-by-id}}} ; this is the GraphQL query resolver
+
+</pre>
+</div>
+
+<p>
+Now the query works:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(use 'user :reload-all) ; to reload all the ns
+(q "{ game_by_id(id: \"1237\") {designers}}")
+</pre>
+</div>
+
+<p>
+However we want to interpret the ids to a designer object. Let's
+change the schema again:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:objects
+ {:BoardGame
+  {:description "A physical or virtual board game."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :summary {:type String
+              :description "A one-line summary of the game."}
+    :description {:type String
+                  :description "A long-form description of the game."}
+    :designers {:type (non-null (list :Designer))
+                :description "Designers who contributed to the game."
+                :resolve :BoardGame/designers}
+    :min_players {:type Int
+                  :description "The minimum number of players the game supports."}
+    :max_players {:type Int
+                  :description "The maximum number of players the game supports."}
+    :play_time {:type Int
+                :description "Play time, in minutes, for a typical game."}}}
+
+  :Designer
+  {:description "A person who may have contributed to a board game design."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :url {:type String
+          :description "Home page URL, if known."}
+    :games {:type (non-null (list :BoardGame))
+            :description "Games designed by this designer."
+            :resolve :Designer/games}}}}
+
+ :queries
+ {:game_by_id
+  {:type :BoardGame
+   :description "Access a BoardGame by its unique id, if it exists."
+   :args
+   {:id {:type ID}}
+   :resolve :query/game-by-id}}}
+</pre>
+</div>
+
+<p>
+Now we are missing a resolver!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(use 'user :reload-all) ; to reload all the ns
+(q "{ game_by_id(id: \"1237\") {designers}}")
+</pre>
+</div>
+
+<p>
+Let's define the designer resolver:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.schema
+  "Contains custom resolvers and a function to provide the full schema."
+  (:require
+    [clojure.java.io :as io]
+    [com.walmartlabs.lacinia.util :as util]
+    [com.walmartlabs.lacinia.schema :as schema]
+    [clojure.edn :as edn]))
+
+(defn resolve-game-by-id
+  [games-map context args value] ; the last 3 attributes are provided by the resolver
+  (let [{:keys [id]} args]
+    (get games-map id)))
+
+(defn resolve-board-game-designers
+  [designers-map context args board-game]
+  (-&gt;&gt; board-game
+       :designers
+       (map designers-map)))
+
+(defn resolve-designer-games
+  [games-map context args designer]
+  (let [{:keys [id]} designer]
+    (-&gt;&gt; games-map
+         vals
+         (filter #(-&gt; % :designers (contains? id))))))
+
+(defn entity-map
+  [data k]
+  (reduce #(assoc %1 (:id %2) %2)
+          {}
+          (get data k)))
+
+(defn resolver-map
+  []
+  (let [cgg-data (-&gt; (io/resource "cgg-data.edn")
+                     slurp
+                     edn/read-string)
+        games-map (entity-map cgg-data :games)
+        designers-map (entity-map cgg-data :designers)]
+    {:query/game-by-id (partial resolve-game-by-id games-map)
+     :BoardGame/designers (partial resolve-board-game-designers designers-map)
+     :Designer/games (partial resolve-designer-games games-map)}))
+
+(defn load-schema
+  []
+  (-&gt; (io/resource "cgg-schema.edn") ;; load text from resource directory
+      slurp
+      edn/read-string ;; get the data as a clojure object
+      (util/attach-resolvers (resolver-map)) ;; apply the resolver
+      schema/compile)) ;; this should produce the GraphQL api?
+
+</pre>
+</div>
+
+<p>
+And now a nested query:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(use 'user :reload-all) ; to reload all the ns
+(q "{ game_by_id(id: \"1237\") { name designers { name }}}")
+</pre>
+</div>
+
+<p>
+Now queries need to be nested otherwise we get an error:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(use 'user :reload-all) ; to reload all the ns
+(q "{ game_by_id(id: \"1237\") { name designers }}")
+</pre>
+</div>
+
+<p>
+And since we have defined an isomorphism between the data (from
+designer to board and viz), we can show the graph side of this query
+language:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(use 'user :reload-all) ; to reload all the ns
+(q "{ game_by_id(id: \"1234\") { name designers { name games { name }}}}") ;; this query uses the isomorphism
+</pre>
+</div>
+
+<p>
+Now that we have a working REPL, let's move on to the web interface:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defproject clojure-game-geek "0.1.0-SNAPSHOT"
+  :description "A tiny BoardGameGeek clone written in Clojure with Lacinia"
+  :url "https://github.com/walmartlabs/clojure-game-geek"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [com.walmartlabs/lacinia-pedestal "0.5.0"]
+                 [io.aviso/logging "0.2.0"]])
+</pre>
+</div>
+
+<p>
+<code>lacinia-pedestal</code> is the web layer based on jetty.
+We can now setup logging with a Logback library configuration file:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml">&lt;configuration scan="true" scanPeriod="1 seconds"&gt;
+
+  &lt;appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender"&gt;
+    &lt;encoder&gt;
+      &lt;pattern&gt;%-5level %logger - %msg%n&lt;/pattern&gt;
+    &lt;/encoder&gt;
+  &lt;/appender&gt;
+
+  &lt;root level="warn"&gt;
+    &lt;appender-ref ref="STDOUT"/&gt;
+  &lt;/root&gt;
+
+&lt;/configuration&gt;
+</pre>
+</div>
+
+<p>
+And now let's improve our REPL development tools:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns user
+  (:require
+    [lacinia-tutorial.schema :as s]
+    [com.walmartlabs.lacinia :as lacinia]
+    [com.walmartlabs.lacinia.pedestal :as lp]
+    [io.pedestal.http :as http]
+    [clojure.java.browse :refer [browse-url]]
+    [clojure.walk :as walk])
+  (:import (clojure.lang IPersistentMap)))
+
+(def schema (s/load-schema))
+
+(defn simplify
+  "Converts all ordered maps nested within the map into standard hash maps, and
+   sequences into vectors, which makes for easier constants in the tests, and eliminates ordering problems."
+  [m]
+  (walk/postwalk
+    (fn [node]
+      (cond
+        (instance? IPersistentMap node)
+        (into {} node)
+
+        (seq? node)
+        (vec node)
+
+        :else
+        node))
+    m))
+
+(defn q
+  [query-string]
+  (-&gt; (lacinia/execute schema query-string nil nil)
+      simplify))
+
+(defonce server nil)
+
+(defn start-server
+  [_]
+  (let [server (-&gt; schema
+                   (lp/service-map {:graphiql true})
+                   http/create-server
+                   http/start)]
+    (browse-url "http://localhost:8888/")
+    server))
+
+(defn stop-server
+  [server]
+  (http/stop server)
+  nil)
+
+(defn start
+  []
+  (alter-var-root #'server start-server)
+  :started)
+
+(defn stop
+  []
+  (alter-var-root #'server stop-server)
+  :stopped)
+</pre>
+</div>
+
+<p>
+We have enabled graphiql to have at disposal the interactive REPL of
+GraphQL. This should not be enabled in PRD.
+</p>
+
+<p>
+Now we can start the server:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(start)
+</pre>
+</div>
+
+<p>
+The GraphIQL interface is cool: the Docs button is very useful to
+explore the schema available.
+</p>
+
+<p>
+Let's handle state with the component library:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defproject clojure-game-geek "0.1.0-SNAPSHOT"
+  :description "A tiny BoardGameGeek clone written in Clojure with Lacinia"
+  :url "https://github.com/walmartlabs/clojure-game-geek"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [com.walmartlabs/lacinia-pedestal "0.5.0"]
+                 [com.stuartsierra/component "0.3.2"]
+                 [io.aviso/logging "0.2.0"]])
+</pre>
+</div>
+
+<p>
+We will have two component: the server and the schema provider. We
+know that the server depends on the schema provider (no schema no
+party XD).
+</p>
+
+<p>
+The schema provider:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.schema
+  "Contains custom resolvers and a function to provide the full schema."
+  (:require
+    [clojure.java.io :as io]
+    [com.walmartlabs.lacinia.util :as util]
+    [com.walmartlabs.lacinia.schema :as schema]
+    [com.stuartsierra.component :as component]
+    [clojure.edn :as edn]))
+
+(defn resolve-game-by-id
+  [games-map context args value]
+  (let [{:keys [id]} args]
+    (get games-map id)))
+
+(defn resolve-board-game-designers
+  [designers-map context args board-game]
+  (-&gt;&gt; board-game
+       :designers
+       (map designers-map)))
+
+(defn resolve-designer-games
+  [games-map context args designer]
+  (let [{:keys [id]} designer]
+    (-&gt;&gt; games-map
+         vals
+         (filter #(-&gt; % :designers (contains? id))))))
+
+(defn entity-map
+  [data k]
+  (reduce #(assoc %1 (:id %2) %2)
+          {}
+          (get data k)))
+
+(defn resolver-map
+  [component] ; now this function depends on a component
+  (let [cgg-data (-&gt; (io/resource "cgg-data.edn")
+                     slurp
+                     edn/read-string)
+        games-map (entity-map cgg-data :games)
+        designers-map (entity-map cgg-data :designers)]
+    {:query/game-by-id (partial resolve-game-by-id games-map)
+     :BoardGame/designers (partial resolve-board-game-designers designers-map)
+     :Designer/games (partial resolve-designer-games games-map)}))
+
+(defn load-schema
+  [component]
+  (-&gt; (io/resource "cgg-schema.edn")
+      slurp
+      edn/read-string
+      (util/attach-resolvers (resolver-map component))
+      schema/compile))
+
+(defrecord SchemaProvider [schema]
+
+  component/Lifecycle
+
+  (start [this]
+    (assoc this :schema (load-schema this))) ; a record can override methods
+
+  (stop [this]
+    (assoc this :schema nil)))
+
+(defn new-schema-provider ;; a constructor for the SchemaProvider
+  []
+  {:schema-provider (map-&gt;SchemaProvider {})})
+</pre>
+</div>
+
+<p>
+And the server component:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.server
+  (:require [com.stuartsierra.component :as component]
+            [com.walmartlabs.lacinia.pedestal :as lp]
+            [io.pedestal.http :as http]))
+
+(defrecord Server [schema-provider server] ; this is what we had in the user.clj before
+
+  component/Lifecycle
+  (start [this]
+    (assoc this :server (-&gt; schema-provider
+                            :schema
+                            (lp/service-map {:graphiql true})
+                            http/create-server
+                            http/start)))
+
+  (stop [this]
+    (http/stop server)
+    (assoc this :server nil)))
+
+(defn new-server
+  []
+  {:server (component/using (map-&gt;Server {})   ;; here the dependency on the :schema-provider component
+                            [:schema-provider])})
+
+</pre>
+</div>
+
+<p>
+And to have a high level view of the components:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.system
+  (:require
+    [com.stuartsierra.component :as component]
+    [lacinia-tutorial.schema :as schema]
+    [lacinia-tutorial.server :as server]))
+
+(defn new-system
+  []
+  (merge (component/system-map)
+         (server/new-server)
+         (schema/new-schema-provider)))
+</pre>
+</div>
+
+<p>
+Finally the user.clj has to change:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns user
+  (:require
+    [com.walmartlabs.lacinia :as lacinia]
+    [clojure.java.browse :refer [browse-url]]
+    [lacinia-tutorial.system :as system]
+    [clojure.walk :as walk]
+    [com.stuartsierra.component :as component])
+  (:import (clojure.lang IPersistentMap)))
+
+(defn simplify
+  "Converts all ordered maps nested within the map into standard hash maps, and
+   sequences into vectors, which makes for easier constants in the tests, and eliminates ordering problems."
+  [m]
+  (walk/postwalk
+    (fn [node]
+      (cond
+        (instance? IPersistentMap node)
+        (into {} node)
+
+        (seq? node)
+        (vec node)
+
+        :else
+        node))
+    m))
+
+(defonce system (system/new-system))
+
+(defn q
+  [query-string]
+  (-&gt; system ; here we are deconstructing our system
+      :schema-provider
+      :schema
+      (lacinia/execute query-string nil nil)
+      simplify))
+
+(defn start
+  []
+  (alter-var-root #'system component/start-system) ; here we change our system atom
+  (browse-url "http://localhost:8888/")
+  :started)
+
+(defn stop
+  []
+  (alter-var-root #'system component/stop-system)
+  :stopped)
+</pre>
+</div>
+
+<p>
+And it works:
+</p>
+<div class="org-src-container">
+<pre class="src src-clojure">(start)
+</pre>
+</div>
+
+<p>
+We are missing some information from our data schema that could be
+useful:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:objects
+ {:BoardGame
+  {:description "A physical or virtual board game."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :rating_summary {:type (non-null :GameRatingSummary) ; allow people to add rating of a game
+                     :resolve :BoardGame/rating-summary} ; this will use the :GameRating
+    :summary {:type String
+              :description "A one-line summary of the game."}
+    :description {:type String
+                  :description "A long-form description of the game."}
+    :designers {:type (non-null (list :Designer))
+                :description "Designers who contributed to the game."
+                :resolve :BoardGame/designers}
+    :min_players {:type Int
+                  :description "The minimum number of players the game supports."}
+    :max_players {:type Int
+                  :description "The maximum number of players the game supports."}
+    :play_time {:type Int
+                :description "Play time, in minutes, for a typical game."}}}
+
+  :GameRatingSummary
+  {:description "Summary of ratings for a single game."
+   :fields
+   {:count {:type (non-null Int) ; so we cannot add constraints on the range of symbols? Weird
+            :description "Number of ratings provided for the game.  Ratings are 1 to 5 stars."}
+    :average {:type (non-null Float)
+              :description "The average value of all ratings, or 0 if never rated."}}}
+
+  :Member
+  {:description "A member of Clojure Game Geek.  Members can rate games."
+   :fields
+   {:id {:type (non-null ID)}
+    :member_name {:type (non-null String)
+                  :description "Unique name of member."}
+    :ratings {:type (list :GameRating)
+              :description "List of games and ratings provided by this member."
+              :resolve :Member/ratings}}} ; this will link members and ratings
+
+  :GameRating
+  {:description "A member's rating of a particular game."
+   :fields
+   {:game {:type (non-null :BoardGame)
+           :description "The Game rated by the member."
+           :resolve :GameRating/game} ; this will create an isomorphism
+    :rating {:type (non-null Int)
+             :description "The rating as 1 to 5 stars."}}}
+
+  :Designer
+  {:description "A person who may have contributed to a board game design."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :url {:type String
+          :description "Home page URL, if known."}
+    :games {:type (non-null (list :BoardGame))
+            :description "Games designed by this designer."
+            :resolve :Designer/games}}}}
+
+ :queries
+ {:game_by_id
+  {:type :BoardGame
+   :description "Select a BoardGame by its unique id, if it exists."
+   :args
+   {:id {:type (non-null ID)}}
+   :resolve :query/game-by-id}
+
+  :member_by_id
+  {:type :Member
+   :description "Select a ClojureGameGeek Member by their unique id, if it exists."
+   :args
+   {:id {:type (non-null ID)}}
+   :resolve :query/member-by-id}}}
+
+</pre>
+</div>
+
+<p>
+As we are adding a required value our data has to change:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:games
+ [{:id "1234"
+   :name "Zertz"
+   :summary "Two player abstract with forced moves and shrinking board"
+   :min_players 2
+   :max_players 2
+   :designers #{"200"}}
+  {:id "1235"
+   :name "Dominion"
+   :summary "Created the deck-building genre; zillions of expansions"
+   :designers #{"204"}
+   :min_players 2}
+  {:id "1236"
+   :name "Tiny Epic Galaxies"
+   :summary "Fast dice-based sci-fi space game with a bit of chaos"
+   :designers #{"203"}
+   :min_players 1
+   :max_players 4}
+  {:id "1237"
+   :name "7 Wonders: Duel"
+   :summary "Tense, quick card game of developing civilizations"
+   :designers #{"201" "202"}
+   :min_players 2
+   :max_players 2}]
+
+ :members
+ [{:id "37"
+   :member_name "curiousattemptbunny"}
+  {:id "1410"
+   :member_name "bleedingedge"}
+  {:id "2812"
+   :member_name "missyo"}]
+
+ :ratings
+ [{:member_id "37" :game_id "1234" :rating 3}
+  {:member_id "1410" :game_id "1234" :rating 5}
+  {:member_id "1410" :game_id "1236" :rating 4}
+  {:member_id "1410" :game_id "1237" :rating 4}
+  {:member_id "2812" :game_id "1237" :rating 4}
+  {:member_id "37" :game_id "1237" :rating 5}]
+
+ :designers
+ [{:id "200"
+   :name "Kris Burm"
+   :url "http://www.gipf.com/project_gipf/burm/burm.html"}
+  {:id "201"
+   :name "Antoine Bauza"
+   :url "http://www.antoinebauza.fr/"}
+  {:id "202"
+   :name "Bruno Cathala"
+   :url "http://www.brunocathala.com/"}
+  {:id "203"
+   :name "Scott Almes"}
+  {:id "204"
+   :name "Donald X. Vaccarino"}]}
+
+
+</pre>
+</div>
+
+<p>
+And so we change our schema.clj
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.schema
+  "Contains custom resolvers and a function to provide the full schema."
+  (:require
+    [clojure.java.io :as io]
+    [com.walmartlabs.lacinia.util :as util]
+    [com.walmartlabs.lacinia.schema :as schema]
+    [com.stuartsierra.component :as component]
+    [clojure.edn :as edn]))
+
+(defn resolve-element-by-id
+  [element-map context args value]
+  (let [{:keys [id]} args]
+    (get element-map id)))
+
+(defn resolve-board-game-designers
+  [designers-map context args board-game]
+  (-&gt;&gt; board-game
+       :designers
+       (map designers-map)))
+
+(defn resolve-designer-games
+  [games-map context args designer]
+  (let [{:keys [id]} designer]
+    (-&gt;&gt; games-map
+         vals
+         (filter #(-&gt; % :designers (contains? id))))))
+
+(defn entity-map
+  [data k]
+  (reduce #(assoc %1 (:id %2) %2)
+          {}
+          (get data k)))
+
+(defn rating-summary
+  [cgg-data]
+  (fn [_ _ board-game]
+    (let [id (:id board-game)
+          ratings (-&gt;&gt; cgg-data
+                       :ratings
+                       (filter #(= id (:game_id %)))
+                       (map :rating))
+          n (count ratings)]
+      {:count n
+       :average (if (zero? n)
+                  0
+                  (/ (apply + ratings)
+                     (float n)))})))
+
+(defn member-ratings
+  [ratings-map]
+  (fn [_ _ member]
+    (let [id (:id member)]
+      (filter #(= id (:member_id %)) ratings-map))))
+
+(defn game-rating-&gt;game
+  [games-map]
+  (fn [_ _ game-rating]
+    (get games-map (:game_id game-rating))))
+
+(defn resolver-map
+  [component]
+  (let [cgg-data (-&gt; (io/resource "cgg-data.edn")
+                     slurp
+                     edn/read-string)
+        games-map (entity-map cgg-data :games)
+        members-map (entity-map cgg-data :members)
+        designers-map (entity-map cgg-data :designers)]
+    {:query/game-by-id (partial resolve-element-by-id games-map) ;; isn't this becoming a litle to long?
+     :query/member-by-id (partial resolve-element-by-id members-map)
+     :BoardGame/designers (partial resolve-board-game-designers designers-map)
+     :BoardGame/rating-summary (rating-summary cgg-data)
+     :GameRating/game (game-rating-&gt;game games-map)
+     :Designer/games (partial resolve-designer-games games-map)
+     :Member/ratings (member-ratings (:ratings cgg-data))}))
+
+(defn load-schema
+  [component]
+  (-&gt; (io/resource "cgg-schema.edn")
+      slurp
+      edn/read-string
+      (util/attach-resolvers (resolver-map component))
+      schema/compile))
+
+(defrecord SchemaProvider [schema]
+
+  component/Lifecycle
+
+  (start [this]
+    (assoc this :schema (load-schema this)))
+
+  (stop [this]
+    (assoc this :schema nil)))
+
+(defn new-schema-provider
+  []
+  {:schema-provider (map-&gt;SchemaProvider {})})
+</pre>
+</div>
+
+<p>
+Let's try:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(start)
+(q "{ game_by_id(id: \"1237\") { name rating_summary { count average }}}")
+(q "{ member_by_id(id: \"1410\") { member_name ratings { game { name } rating }}}")
+</pre>
+</div>
+
+<p>
+The cool thing about GraphQL is that it allows to modify data as well!
+So far our resolvers were just reading data. In GraphQL a mutation
+allows to alter existing data. We will need to set up a mutable data
+structure: a database!
+</p>
+
+<p>
+A database is another component: our schema provider will depend on
+it.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.db
+  (:require
+    [clojure.edn :as edn]
+    [clojure.java.io :as io]
+    [com.stuartsierra.component :as component]))
+
+(defrecord ClojureGameGeekDb [data]
+
+  component/Lifecycle
+
+  (start [this]
+    (assoc this :data (-&gt; (io/resource "cgg-data.edn")
+                          slurp
+                          edn/read-string
+                          atom)))
+
+  (stop [this]
+    (assoc this :data nil)))
+
+(defn new-db
+  []
+  {:db (map-&gt;ClojureGameGeekDb {})})
+
+(defn find-game-by-id
+  [db game-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :games
+       (filter #(= game-id (:id %)))
+       first))
+
+(defn find-member-by-id
+  [db member-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :members
+       (filter #(= member-id (:id %)))
+       first))
+
+(defn list-designers-for-game
+  [db game-id]
+  (let [designers (:designers (find-game-by-id db game-id))]
+    (-&gt;&gt; db
+         :data
+         deref
+         :designers
+         (filter #(contains? designers (:id %))))))
+
+(defn list-games-for-designer
+  [db designer-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :games
+       (filter #(-&gt; % :designers (contains? designer-id)))))
+
+(defn list-ratings-for-game
+  [db game-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :ratings
+       (filter #(= game-id (:game_id %)))))
+
+(defn list-ratings-for-member
+  [db member-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :ratings
+       (filter #(= member-id (:member_id %)))))
+</pre>
+</div>
+
+<p>
+We essentially just embed the db in a component. Notice the :data
+atom: this is our mutable data strucutre.
+</p>
+
+<p>
+Again the system will change:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.system
+  (:require
+    [com.stuartsierra.component :as component]
+    [lacinia-tutorial.schema :as schema]
+    [lacinia-tutorial.server :as server]
+    [lacinia-tutorial.db :as db]))
+
+(defn new-system
+  []
+  (merge (component/system-map)
+         (server/new-server)
+         (schema/new-schema-provider)
+         (db/new-db)))
+</pre>
+</div>
+
+<p>
+Now we have to enforce the dependency on the schema provider:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.schema
+  "Contains custom resolvers and a function to provide the full schema."
+  (:require
+    [clojure.java.io :as io]
+    [com.walmartlabs.lacinia.util :as util]
+    [com.walmartlabs.lacinia.schema :as schema]
+    [com.stuartsierra.component :as component]
+    [lacinia-tutorial.db :as db]
+    [clojure.edn :as edn]))
+
+(defn game-by-id
+  [db]
+  (fn [_ args _]
+    (db/find-game-by-id db (:id args))))
+
+(defn member-by-id
+  [db]
+  (fn [_ args _]
+    (db/find-member-by-id db (:id args))))
+
+(defn board-game-designers
+  [db]
+  (fn [_ _ board-game]
+    (db/list-designers-for-game db (:id board-game))))
+
+(defn designer-games
+  [db]
+  (fn [_ _ designer]
+    (db/list-games-for-designer db (:id designer))))
+
+(defn rating-summary
+  [db]
+  (fn [_ _ board-game]
+    (let [ratings (map :rating (db/list-ratings-for-game db (:id board-game)))
+          n (count ratings)]
+      {:count n
+       :average (if (zero? n)
+                  0
+                  (/ (apply + ratings)
+                     (float n)))})))
+
+(defn member-ratings
+  [db]
+  (fn [_ _ member]
+    (db/list-ratings-for-member db (:id member))))
+
+(defn game-rating-&gt;game
+  [db]
+  (fn [_ _ game-rating]
+    (db/find-game-by-id db (:game_id game-rating))))
+
+(defn resolver-map
+  [component]
+  (let [db (:db component)]
+    {:query/game-by-id (game-by-id db)
+     :query/member-by-id (member-by-id db)
+     :BoardGame/designers (board-game-designers db)
+     :BoardGame/rating-summary (rating-summary db)
+     :GameRating/game (game-rating-&gt;game db)
+     :Designer/games (designer-games db)
+     :Member/ratings (member-ratings db)}))
+
+(defn load-schema
+  [component]
+  (-&gt; (io/resource "cgg-schema.edn")
+      slurp
+      edn/read-string
+      (util/attach-resolvers (resolver-map component))
+      schema/compile))
+
+(defrecord SchemaProvider [schema]
+
+  component/Lifecycle
+
+  (start [this]
+    (assoc this :schema (load-schema this)))
+
+  (stop [this]
+    (assoc this :schema nil)))
+
+(defn new-schema-provider
+  []
+  {:schema-provider (-&gt; {}
+                        map-&gt;SchemaProvider
+                        (component/using [:db]))})
+</pre>
+</div>
+
+<p>
+Now we can test our GraphQL again:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(start)
+(q "{ member_by_id(id: \"1410\") { member_name ratings { game { name rating_summary { count average } designers { name  games { name }}} rating }}}")
+</pre>
+</div>
+
+<p>
+All this setup for enabling mutations finally made us ready to change
+some rating data:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.db
+  (:require
+    [clojure.edn :as edn]
+    [clojure.java.io :as io]
+    [com.stuartsierra.component :as component]))
+
+(defrecord ClojureGameGeekDb [data]
+
+  component/Lifecycle
+
+  (start [this]
+    (assoc this :data (-&gt; (io/resource "cgg-data.edn")
+                          slurp
+                          edn/read-string
+                          atom)))
+
+  (stop [this]
+    (assoc this :data nil)))
+
+(defn new-db
+  []
+  {:db (map-&gt;ClojureGameGeekDb {})})
+
+(defn find-game-by-id
+  [db game-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :games
+       (filter #(= game-id (:id %)))
+       first))
+
+(defn find-member-by-id
+  [db member-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :members
+       (filter #(= member-id (:id %)))
+       first))
+
+(defn list-designers-for-game
+  [db game-id]
+  (let [designers (:designers (find-game-by-id db game-id))]
+    (-&gt;&gt; db
+         :data
+         deref
+         :designers
+         (filter #(contains? designers (:id %))))))
+
+(defn list-games-for-designer
+  [db designer-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :games
+       (filter #(-&gt; % :designers (contains? designer-id)))))
+
+(defn list-ratings-for-game
+  [db game-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :ratings
+       (filter #(= game-id (:game_id %)))))
+
+(defn list-ratings-for-member
+  [db member-id]
+  (-&gt;&gt; db
+       :data
+       deref
+       :ratings
+       (filter #(= member-id (:member_id %)))))
+
+(defn ^:private apply-game-rating
+  [game-ratings game-id member-id rating]
+  (-&gt;&gt; game-ratings
+       (remove #(and (= game-id (:game_id %))
+                     (= member-id (:member_id %))))
+       (cons {:game_id game-id
+              :member_id member-id
+              :rating rating})))
+
+(defn upsert-game-rating
+  "Adds a new game rating, or changes the value of an existing game rating."
+  [db game-id member-id rating]
+  (-&gt; db
+      :data
+      (swap! update :ratings apply-game-rating game-id member-id rating)))
+
+</pre>
+</div>
+
+<p>
+Then let's make space in the schema for a mutation:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:objects
+ {:BoardGame
+  {:description "A physical or virtual board game."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :rating_summary {:type (non-null :GameRatingSummary) ; allow people to add rating of a game
+                     :resolve :BoardGame/rating-summary} ; this will use the :GameRating
+    :summary {:type String
+              :description "A one-line summary of the game."}
+    :description {:type String
+                  :description "A long-form description of the game."}
+    :designers {:type (non-null (list :Designer))
+                :description "Designers who contributed to the game."
+                :resolve :BoardGame/designers}
+    :min_players {:type Int
+                  :description "The minimum number of players the game supports."}
+    :max_players {:type Int
+                  :description "The maximum number of players the game supports."}
+    :play_time {:type Int
+                :description "Play time, in minutes, for a typical game."}}}
+
+  :GameRatingSummary
+  {:description "Summary of ratings for a single game."
+   :fields
+   {:count {:type (non-null Int) ; so we cannot add constraints on the range of symbols? Weird
+            :description "Number of ratings provided for the game.  Ratings are 1 to 5 stars."}
+    :average {:type (non-null Float)
+              :description "The average value of all ratings, or 0 if never rated."}}}
+
+  :Member
+  {:description "A member of Clojure Game Geek.  Members can rate games."
+   :fields
+   {:id {:type (non-null ID)}
+    :member_name {:type (non-null String)
+                  :description "Unique name of member."}
+    :ratings {:type (list :GameRating)
+              :description "List of games and ratings provided by this member."
+              :resolve :Member/ratings}}} ; this will link members and ratings
+
+  :GameRating
+  {:description "A member's rating of a particular game."
+   :fields
+   {:game {:type (non-null :BoardGame)
+           :description "The Game rated by the member."
+           :resolve :GameRating/game} ; this will create an isomorphism
+    :rating {:type (non-null Int)
+             :description "The rating as 1 to 5 stars."}}}
+
+  :Designer
+  {:description "A person who may have contributed to a board game design."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :url {:type String
+          :description "Home page URL, if known."}
+    :games {:type (non-null (list :BoardGame))
+            :description "Games designed by this designer."
+            :resolve :Designer/games}}}}
+
+ :queries
+ {:game_by_id
+  {:type :BoardGame
+   :description "Select a BoardGame by its unique id, if it exists."
+   :args
+   {:id {:type (non-null ID)}}
+   :resolve :query/game-by-id}
+
+  :member_by_id
+  {:type :Member
+   :description "Select a ClojureGameGeek Member by their unique id, if it exists."
+   :args
+   {:id {:type (non-null ID)}}
+   :resolve :query/member-by-id}}
+
+ :mutations ; the mutations!
+ {:rate_game
+  {:type :BoardGame
+   :description "Establishes a rating of a board game, by a Member.
+
+   On success (the game and member both exist), selects the BoardGame.
+   Otherwise, selects nil and an error." ; errors do not have a type in GraphQL!! The rationale is that any resolver can return errors.
+   :args
+   {:game_id {:type (non-null ID)}
+    :member_id {:type (non-null ID)}
+    :rating {:type (non-null Int)
+             :description "Game rating as a number between 1 and 5."}}
+   :resolve :mutation/rate-game}}}}
+
+</pre>
+</div>
+
+<p>
+Errors do not have a typep in GraphQL!! The rationale is that any
+resolver can return errors.
+</p>
+
+<p>
+It remains to implement the mutation:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.schema
+  "Contains custom resolvers and a function to provide the full schema."
+  (:require
+    [clojure.java.io :as io]
+    [com.walmartlabs.lacinia.util :as util]
+    [com.walmartlabs.lacinia.schema :as schema]
+    [com.walmartlabs.lacinia.resolve :refer [resolve-as]]
+    [com.stuartsierra.component :as component]
+    [lacinia-tutorial.db :as db]
+    [clojure.edn :as edn]))
+
+(defn game-by-id
+  [db]
+  (fn [_ args _]
+    (db/find-game-by-id db (:id args))))
+
+(defn member-by-id
+  [db]
+  (fn [_ args _]
+    (db/find-member-by-id db (:id args))))
+
+(defn rate-game
+  [db]
+  (fn [_ args _]
+    (let [{game-id :game_id
+           member-id :member_id
+           rating :rating} args
+          game (db/find-game-by-id db game-id)
+          member (db/find-member-by-id db member-id)]
+      (cond
+        (nil? game)
+        (resolve-as nil {:message "Game not found." ; this are the errors
+                         :status 404})
+
+        (nil? member)
+        (resolve-as nil {:message "Member not found."
+                         :status 404})
+
+        (not (&lt;= 1 rating 5))
+        (resolve-as nil {:message "Rating must be between 1 and 5."
+                         :status 400})
+
+        :else  ; the success
+        (do
+          (db/upsert-game-rating db game-id member-id rating)
+          game)))))
+
+(defn board-game-designers
+  [db]
+  (fn [_ _ board-game]
+    (db/list-designers-for-game db (:id board-game))))
+
+(defn designer-games
+  [db]
+  (fn [_ _ designer]
+    (db/list-games-for-designer db (:id designer))))
+
+(defn rating-summary
+  [db]
+  (fn [_ _ board-game]
+    (let [ratings (map :rating (db/list-ratings-for-game db (:id board-game)))
+          n (count ratings)]
+      {:count n
+       :average (if (zero? n)
+                  0
+                  (/ (apply + ratings)
+                     (float n)))})))
+
+(defn member-ratings
+  [db]
+  (fn [_ _ member]
+    (db/list-ratings-for-member db (:id member))))
+
+(defn game-rating-&gt;game
+  [db]
+  (fn [_ _ game-rating]
+    (db/find-game-by-id db (:game_id game-rating))))
+
+(defn resolver-map
+  [component]
+  (let [db (:db component)]
+    {:query/game-by-id (game-by-id db)
+     :query/member-by-id (member-by-id db)
+     :mutation/rate-game (rate-game db)
+     :BoardGame/designers (board-game-designers db)
+     :BoardGame/rating-summary (rating-summary db)
+     :GameRating/game (game-rating-&gt;game db)
+     :Designer/games (designer-games db)
+     :Member/ratings (member-ratings db)}))
+
+(defn load-schema
+  [component]
+  (-&gt; (io/resource "cgg-schema.edn")
+      slurp
+      edn/read-string
+      (util/attach-resolvers (resolver-map component))
+      schema/compile))
+
+(defrecord SchemaProvider [schema]
+
+  component/Lifecycle
+
+  (start [this]
+    (assoc this :schema (load-schema this)))
+
+  (stop [this]
+    (assoc this :schema nil)))
+
+(defn new-schema-provider
+  []
+  {:schema-provider (-&gt; {}
+                        map-&gt;SchemaProvider
+                        (component/using [:db]))})
+
+</pre>
+</div>
+
+<p>
+<code>resolve-as</code> should return <code>nil</code> with errors.
+</p>
+
+<p>
+Let's try out our first mutation. We first read the data:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(start)
+(q "{ member_by_id(id: \"1410\") { member_name ratings { game { id name } rating }}}")
+</pre>
+</div>
+
+<p>
+Then we modify the data:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(q "mutation { rate_game(member_id: \"1410\", game_id: \"1236\", rating: 3) { rating_summary { count average }}}")
+</pre>
+</div>
+
+<p>
+And we check that the result was persisted:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(q "{ member_by_id(id: \"1410\") { member_name ratings { game { id name } rating }}}")
+</pre>
+</div>
+
+<p>
+Also let's note the difference between an expected error
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(q "mutation { rate_game(member_id: \"1410\", game_id: \"9999\", rating: 4) { name rating_summary { count average }}}")
+</pre>
+</div>
+
+<p>
+and an unexpected one:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(q "mutation { rate_game(member_id: \"1410\", game_id: \"9999\") { name rating_summary { count average }}}")
+</pre>
+</div>
+
+<p>
+After all of this mutating, we really should think about a serious
+database. Let's use PostgreSQL!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defproject clojure-game-geek "0.1.0-SNAPSHOT"
+  :description "A tiny BoardGameGeek clone written in Clojure with Lacinia"
+  :url "https://github.com/walmartlabs/clojure-game-geek"
+  :license {:name "Eclipse Public License"
+            :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [com.stuartsierra/component "0.3.2"]
+                 [com.walmartlabs/lacinia "0.30.0"]
+                 [com.walmartlabs/lacinia-pedestal "0.10.0"]
+                 [org.clojure/java.jdbc "0.7.8"]
+                 [org.postgresql/postgresql "42.2.5.jre7"]
+                 [com.mchange/c3p0 "0.9.5.2"]
+                 [io.aviso/logging "0.3.1"]])
+</pre>
+</div>
+
+<p>
+<code>jdbc</code> is our wrapper to connect with database. <code>c3p0</code> will care about
+grouping our connections efficiently. <code>postgresql</code> will provide a
+wrapper to communicate with the db.
+</p>
+
+<p>
+Let's setup the docker environment that will guest our DB:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-yaml">version: '3'
+services:
+  db:
+    ports:
+    - 25432:5432
+    image: postgres:10.2-alpine
+</pre>
+</div>
+
+<p>
+A script to start docker will simplify matters:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">#!/usr/bin/env bash
+
+docker-compose -p cgg up -d
+</pre>
+</div>
+
+<p>
+And one to stop docker:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">#!/usr/bin/env bash
+
+docker-compose -p cgg down
+</pre>
+</div>
+
+<p>
+And another to start a sql shell from the container:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">#!/usr/bin/env bash
+
+docker exec -ti --user postgres cgg_db_1 psql -Ucgg_role cggdb
+</pre>
+</div>
+
+<p>
+And a final one to fill the DB within the container:
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-sh">#!/usr/bin/env bash
+
+docker exec -i --user postgres cgg_db_1 createdb cggdb
+
+docker exec -i --user postgres cgg_db_1 psql cggdb -a  &lt;&lt;__END
+create user cgg_role password 'lacinia';
+__END
+
+docker exec -i cgg_db_1 psql -Ucgg_role cggdb -a &lt;&lt;__END
+drop table if exists designer_to_game;
+drop table if exists game_rating;
+drop table if exists member;
+drop table if exists board_game;
+drop table if exists designer;
+
+CREATE OR REPLACE FUNCTION mantain_updated_at()
+RETURNS TRIGGER AS \$\$
+BEGIN
+   NEW.updated_at = now();
+   RETURN NEW;
+END;
+\$\$ language 'plpgsql';
+
+create table member (
+  member_id int generated by default as identity primary key,
+  name text not null,
+  created_at timestamp not null default current_timestamp,
+  updated_at timestamp not null default current_timestamp);
+
+create trigger member_updated_at before update
+on member for each row execute procedure
+mantain_updated_at();
+
+create table board_game (
+  game_id int generated by default as identity primary key,
+  name text not null,
+  summary text,
+  min_players integer,
+  max_players integer,
+  created_at timestamp not null default current_timestamp,
+  updated_at timestamp not null default current_timestamp);
+
+create trigger board_game_updated_at before update
+on board_game for each row execute procedure
+mantain_updated_at();
+
+create table designer (
+  designer_id int generated by default as identity primary key,
+  name text not null,
+  uri text,
+  created_at timestamp not null default current_timestamp,
+  updated_at timestamp not null default current_timestamp);
+
+create trigger designer_updated_at before update
+on designer for each row execute procedure
+mantain_updated_at();
+
+create table game_rating (
+  game_id int references board_game(game_id),
+  member_id int references member(member_id),
+  rating integer not null,
+  created_at timestamp not null default current_timestamp,
+  updated_at timestamp not null default current_timestamp);
+
+create trigger game_rating_updated_at before update
+on game_rating for each row execute procedure
+mantain_updated_at();
+
+create table designer_to_game (
+  designer_id int  references designer(designer_id),
+  game_id int  references board_game(game_id),
+  primary key (designer_id, game_id));
+
+insert into board_game (game_id, name, summary, min_players, max_players) values
+  (1234, 'Zertz', 'Two player abstract with forced moves and shrinking board', 2, 2),
+  (1235, 'Dominion', 'Created the deck-building genre; zillions of expansions', 2, null),
+  (1236, 'Tiny Epic Galaxies', 'Fast dice-based sci-fi space game with a bit of chaos', 1, 4),
+  (1237, '7 Wonders: Duel', 'Tense, quick card game of developing civilizations', 2, 2);
+
+alter table board_game alter column game_id restart with 1300;
+
+insert into member (member_id, name) values
+  (37, 'curiousattemptbunny'),
+  (1410, 'bleedingedge'),
+  (2812, 'missyo');
+
+alter table member alter column member_id restart with 2900;
+
+insert into designer (designer_id, name, uri) values
+  (200, 'Kris Burm', 'http://www.gipf.com/project_gipf/burm/burm.html'),
+  (201, 'Antoine Bauza', 'http://www.antoinebauza.fr/'),
+  (202, 'Bruno Cathala', 'http://www.brunocathala.com/'),
+  (203, 'Scott Almes', null),
+  (204, 'Donald X. Vaccarino', null);
+
+alter table designer alter column designer_id restart with 300;
+
+insert into designer_to_game (designer_id, game_id) values
+  (200, 1234),
+  (201, 1237),
+  (204, 1235),
+  (203, 1236),
+  (202, 1237);
+
+insert into game_rating (game_id, member_id, rating) values
+  (1234, 37, 3),
+  (1234, 1410, 5),
+  (1236, 1410, 4),
+  (1237, 1410, 4),
+  (1237, 2812, 4),
+  (1237, 37, 5);
+__END
+</pre>
+</div>
+
+<p>
+With this final script we are moving towards a world of generated
+numeric identifiers. This means that from now on our schema is
+different:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">{:objects
+ {:BoardGame
+  {:description "A physical or virtual board game."
+   :fields
+   {:game_id {:type (non-null Int)}
+    :name {:type (non-null String)}
+    :rating_summary {:type (non-null :GameRatingSummary) ; allow people to add rating of a game
+                     :resolve :BoardGame/rating-summary} ; this will use the :GameRating
+    :summary {:type String
+              :description "A one-line summary of the game."}
+    :description {:type String
+                  :description "A long-form description of the game."}
+    :designers {:type (non-null (list :Designer))
+                :description "Designers who contributed to the game."
+                :resolve :BoardGame/designers}
+    :min_players {:type Int
+                  :description "The minimum number of players the game supports."}
+    :max_players {:type Int
+                  :description "The maximum number of players the game supports."}
+    :play_time {:type Int
+                :description "Play time, in minutes, for a typical game."}}}
+
+  :GameRatingSummary
+  {:description "Summary of ratings for a single game."
+   :fields
+   {:count {:type (non-null Int) ; so we cannot add constraints on the range of symbols? Weird
+            :description "Number of ratings provided for the game.  Ratings are 1 to 5 stars."}
+    :average {:type (non-null Float)
+              :description "The average value of all ratings, or 0 if never rated."}}}
+
+  :Member
+  {:description "A member of Clojure Game Geek.  Members can rate games."
+   :fields
+   {:member_id {:type (non-null Int)}
+    :member_name {:type (non-null String)
+                  :description "Unique name of member."}
+    :ratings {:type (list :GameRating)
+              :description "List of games and ratings provided by this member."
+              :resolve :Member/ratings}}} ; this will link members and ratings
+
+  :GameRating
+  {:description "A member's rating of a particular game."
+   :fields
+   {:game {:type (non-null :BoardGame)
+           :description "The Game rated by the member."
+           :resolve :GameRating/game} ; this will create an isomorphism
+    :rating {:type (non-null Int)
+             :description "The rating as 1 to 5 stars."}}}
+
+  :Designer
+  {:description "A person who may have contributed to a board game design."
+   :fields
+   {:designer_id {:type (non-null Int)}
+    :name {:type (non-null String)}
+    :url {:type String
+          :description "Home page URL, if known."}
+    :games {:type (non-null (list :BoardGame))
+            :description "Games designed by this designer."
+            :resolve :Designer/games}}}}
+
+ :queries
+ {:game_by_id
+  {:type :BoardGame
+   :description "Select a BoardGame by its unique id, if it exists."
+   :args
+   {:id {:type (non-null Int)}}
+   :resolve :query/game-by-id}
+
+  :member_by_id
+  {:type :Member
+   :description "Select a ClojureGameGeek Member by their unique id, if it exists."
+   :args
+   {:id {:type (non-null Int)}}
+   :resolve :query/member-by-id}}
+
+ :mutations ; the mutations!
+ {:rate_game
+  {:type :BoardGame
+   :description "Establishes a rating of a board game, by a Member.
+
+   On success (the game and member both exist), selects the BoardGame.
+   Otherwise, selects nil and an error." ; errors do not have a type in GraphQL!! The rationale is that any resolver can return errors.
+   :args
+   {:game_id {:type (non-null Int)}
+    :member_id {:type (non-null Int)}
+    :rating {:type (non-null Int)
+             :description "Game rating as a number between 1 and 5."}}
+   :resolve :mutation/rate-game}}}}
+
+</pre>
+</div>
+
+<p>
+Note kebab case is invalid in GraphQL schema. Note: JDBC defaults to a
+connection for operation. This is why we use an external library to
+handle pooling.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.db
+  (:require
+    [com.stuartsierra.component :as component]
+    [clojure.java.jdbc :as jdbc])
+  (:import (com.mchange.v2.c3p0 ComboPooledDataSource)))
+
+(defn ^:private pooled-data-source
+  [host dbname user password port]
+  {:datasource
+   (doto (ComboPooledDataSource.)
+     (.setDriverClass "org.postgresql.Driver" )
+     (.setJdbcUrl (str "jdbc:postgresql://" host ":" port "/" dbname))
+     (.setUser user)
+     (.setPassword password))})
+
+(defrecord ClojureGameGeekDb [ds]
+
+  component/Lifecycle
+
+  (start [this]
+    (assoc this
+           :ds (pooled-data-source "localhost" "cggdb" "cgg_role" "lacinia" 25432)))
+
+  (stop [this]
+    (-&gt; ds :datasource .close)
+    (assoc this :ds nil)))
+
+(defn new-db
+  []
+  {:db (map-&gt;ClojureGameGeekDb {})})
+
+
+(defn find-game-by-id
+  [component game-id]
+  (first
+    (jdbc/query (:ds component)
+                ["select game_id, name, summary, min_players, max_players, created_at, updated_at
+               from board_game where game_id = ?" game-id])))
+
+(defn find-member-by-id
+  [component member-id]
+  (-&gt;&gt; component
+       :db
+       deref
+       :members
+       (filter #(= member-id (:id %)))
+       first))
+
+(defn list-designers-for-game
+  [component game-id]
+  (let [designers (:designers (find-game-by-id component game-id))]
+    (-&gt;&gt; component
+         :db
+         deref
+         :designers
+         (filter #(contains? designers (:id %))))))
+
+(defn list-games-for-designer
+  [component designer-id]
+  (-&gt;&gt; component
+       :db
+       deref
+       :games
+       (filter #(-&gt; % :designers (contains? designer-id)))))
+
+(defn list-ratings-for-game
+  [component game-id]
+  (-&gt;&gt; component
+       :db
+       deref
+       :ratings
+       (filter #(= game-id (:game_id %)))))
+
+(defn list-ratings-for-member
+  [component member-id]
+  (-&gt;&gt; component
+       :db
+       deref
+       :ratings
+       (filter #(= member-id (:member_id %)))))
+
+(defn ^:private apply-game-rating
+  [game-ratings game-id member-id rating]
+  (-&gt;&gt; game-ratings
+       (remove #(and (= game-id (:game_id %))
+                     (= member-id (:member_id %))))
+       (cons {:game_id game-id
+              :member_id member-id
+              :rating rating})))
+
+(defn upsert-game-rating
+  "Adds a new game rating, or changes the value of an existing game rating."
+  [db game-id member-id rating]
+  (-&gt; db
+      :db
+      (swap! update :ratings apply-game-rating game-id member-id rating)))
+</pre>
+</div>
+
+<p>
+We basically setup pooling in the start of the component, and we
+modify our code that retrieved data to query these through SQL.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">./docker-up.sh; ./setup-db.sh./docker-up.sh
+</pre>
+</div>
+
+<p>
+Now let's try again our query:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(start)
+(q "{ game_by_id(id: 1234) { game_id name summary min_players max_players }}")
+</pre>
+</div>
+
+<p>
+Let's improve the user.clj:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns user
+  (:require
+    [com.walmartlabs.lacinia :as lacinia]
+    [clojure.java.browse :refer [browse-url]]
+    [lacinia-tutorial.system :as system]
+    [clojure.walk :as walk]
+    [com.stuartsierra.component :as component])
+  (:import (clojure.lang IPersistentMap)))
+
+(defn simplify
+  "Converts all ordered maps nested within the map into standard hash maps, and
+   sequences into vectors, which makes for easier constants in the tests, and eliminates ordering problems."
+  [m]
+  (walk/postwalk
+    (fn [node]
+      (cond
+        (instance? IPersistentMap node)
+        (into {} node)
+
+        (seq? node)
+        (vec node)
+
+        :else
+        node))
+    m))
+
+(defonce system nil)
+
+(defn q
+  [query-string]
+  (-&gt; system ; here we are deconstructing our system
+      :schema-provider
+      :schema
+      (lacinia/execute query-string nil nil)
+      simplify))
+
+(defn start
+  []
+  (alter-var-root #'system (fn [_]
+                             (-&gt; (system/new-system)
+                                 component/start-system)))
+  (browse-url "http://localhost:8888/")
+  :started)
+
+(defn stop
+  []
+  (when (some? system)
+    (component/stop-system system)
+    (alter-var-root #'system (constantly nil)))
+  :stopped)
+
+(comment
+  (start)
+  (stop)
+  )
+</pre>
+</div>
+
+<p>
+Let's harder what we got with some tests.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.server
+  (:require [com.stuartsierra.component :as component]
+            [com.walmartlabs.lacinia.pedestal :as lp]
+            [io.pedestal.http :as http]))
+
+(defrecord Server [schema-provider server port] ; this is what we had in the user.clj before
+
+  component/Lifecycle
+  (start [this]
+    (assoc this :server (-&gt; schema-provider
+                            :schema
+                            (lp/service-map {:graphiql true
+                                             :port port})
+                            http/create-server
+                            http/start)))
+
+  (stop [this]
+    (http/stop server)
+    (assoc this :server nil)))
+
+(defn new-server
+  []
+  {:server (component/using (map-&gt;Server {:port 8888})
+                            [:schema-provider])})
+
+</pre>
+</div>
+
+<p>
+This is enough configuration to configure a different server port for
+tests.
+</p>
+
+<p>
+Then we extract utility functions:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns user
+  (:require
+    [com.walmartlabs.lacinia :as lacinia]
+    [clojure.java.browse :refer [browse-url]]
+    [lacinia-tutorial.system :as system]
+    [lacinia-tutorial.test-utils :as tu]
+    [com.stuartsierra.component :as component])
+  (:import (clojure.lang IPersistentMap)))
+
+(defonce system nil)
+
+(defn q
+  [query-string]
+  (-&gt; system ; here we are deconstructing our system
+      :schema-provider
+      :schema
+      (lacinia/execute query-string nil nil)
+      tu/simplify))
+
+(defn start
+  []
+  (alter-var-root #'system (fn [_]
+                             (-&gt; (system/new-system)
+                                 component/start-system)))
+  (browse-url "http://localhost:8888/")
+  :started)
+
+(defn stop
+  []
+  (when (some? system)
+    (component/stop-system system)
+    (alter-var-root #'system (constantly nil)))
+  :stopped)
+
+(comment
+  (start)
+  (stop)
+  )
+
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.test-utils
+  (:require
+    [clojure.walk :as walk])
+  (:import
+    (clojure.lang IPersistentMap)))
+
+(defn simplify
+  "Converts all ordered maps nested within the map into standard hash maps, and
+   sequences into vectors, which makes for easier constants in the tests, and eliminates ordering problems."
+  [m]
+  (walk/postwalk
+    (fn [node]
+      (cond
+        (instance? IPersistentMap node)
+        (into {} node)
+
+        (seq? node)
+        (vec node)
+
+        :else
+        node))
+    m))
+</pre>
+</div>
+
+<p>
+And let's add an integration test:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns lacinia-tutorial.system-tests
+  (:require
+    [clojure.test :refer [deftest is]]
+    [lacinia-tutorial.system :as system]
+    [lacinia-tutorial.test-utils :refer [simplify]]
+    [com.stuartsierra.component :as component]
+    [com.walmartlabs.lacinia :as lacinia]))
+
+(defn ^:private test-system
+  "Creates a new system suitable for testing, and ensures that
+  the HTTP port won't conflict with a default running system."
+  []
+  (-&gt; (system/new-system)
+      (assoc-in [:server :port] 8989)))
+
+(defn ^:private q
+  "Extracts the compiled schema and executes a query."
+  [system query variables]
+  (-&gt; system
+      (get-in [:schema-provider :schema])
+      (lacinia/execute query variables nil)
+      simplify))
+
+(deftest can-read-board-game
+  (let [system (component/start-system (test-system))
+        results (q system
+                   "{ game_by_id(id: 1234) { name summary min_players max_players play_time }}"
+                   nil)]
+    (is (= {:data {:game_by_id {:max_players 2
+                                :min_players 2
+                                :name "Zertz"
+                                :play_time nil
+                                :summary "Two player abstract with forced moves and shrinking board"}}}
+           results))
+    (component/stop-system system)))
+</pre>
+</div>
+
+<p>
+And let's run the test:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">rm /tmp/lacinia-tutorial/test/lacinia_tutorial/core_test.clj
+lein test
+</pre>
+</div>
+
+<p>
+And with this we have seen a lot of what we can do with Lacinia!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2018-11-18</span>
+        <span title="last modification date" class="post-info">2020-07-25</span>
+        <span title="tags" class="post-info"><a href="/tags/graphql/">graphql</a>, <a href="/tags/lacinia/">lacinia</a>, <a href="/tags/clojure/">clojure</a></span>
+        <span title="author" class="post-info">Andrea Giugliano</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2018/11/18/going-through-lacinia-tutorial-to-get-familiar-with-graphql";
+          var disqus_url = "http://ag91.github.io/blog/2018/11/18/going-through-lacinia-tutorial-to-get-familiar-with-graphql";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea Giugliano</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

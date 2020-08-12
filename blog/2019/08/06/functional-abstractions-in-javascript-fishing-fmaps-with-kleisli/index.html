@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Functional abstractions in JavaScript: fishing fmaps with Kleisli - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea Giugliano" />
+    <meta name="description" content="How to do error handling with Kleisli!" />
+    <meta name="keywords" content="javascript,jsverify,functional" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Functional abstractions in JavaScript: fishing fmaps with Kleisli</h1>
+<div id="outline-container-org7a493c7" class="outline-2">
+<h2 id="org7a493c7">Introduction</h2>
+<div class="outline-text-2" id="text-org7a493c7">
+<p>
+In <a href="https://lunatech.com/blog/W7IorBUAAMac74Ew/functional-abstractions-in-javascript-check-functors-laws">a previous post</a> we used <code>jsverify</code> to check that a JavaScript array
+satisfies Functor's law (about identity and composition).
+</p>
+
+<p>
+This time we are going to specialize our notion of Functor. Again we
+will look at their laws and validate them through property testing.
+</p>
+
+<p>
+Specialized Functors provide a way to write sequential programs in a
+pure style (i.e., side effects not allowed).
+</p>
+
+<p>
+Let's use an input validator as running example. In our programs we
+tend to do things like the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">// Input
+const myStrings = ["Some", "cat", "superVeryLong"];
+
+// Utils
+
+var handleInvalidStrings =
+    (strings,
+     predicate,
+     fixInvalidString,
+     addErrorMessageOnInvalidString) =&gt;
+    strings.reduce(
+      (accumulator, string) =&gt; {
+        if (predicate(string)) {
+          return {
+            strings: accumulator.strings.concat(string),
+            errors: accumulator.errors
+          };
+        }
+        else {
+          const fixedString = fixInvalidString(string);
+          const error =
+                addErrorMessageOnInvalidString(string, fixedString);
+          return {
+            strings: accumulator.strings.concat(fixedString),
+            errors: accumulator.errors.concat(error)
+          }
+        }
+      },
+      {strings: [], errors: []}
+    )
+
+
+var capitalized = (s) =&gt; s.charAt(0) === s.charAt(0).toUpperCase();
+var capitalize = (s) =&gt; s.charAt(0).toUpperCase() + s.slice(1); // https://stackoverflow.com/questions/1026069/how-do-i-make-the-first-letter-of-a-string-uppercase-in-javascript
+const makeErrorsIfNotCapitalized = (l) =&gt;
+      handleInvalidStrings(
+        l,
+        capitalized,
+        capitalize,
+        (s, fixedS) =&gt; s + " is not capitalized, adjusting to " + fixedS);
+
+const makeErrorsIfTooLong = (l) =&gt;
+      handleInvalidStrings(
+        l,
+        (s) =&gt; s.length &lt;= 10,
+        (s) =&gt; s.substring(0,10),
+        (s,fixedS) =&gt; s + " is too long, cutting to " + fixedS);
+
+// Validation code
+
+const fixupAndAddErrors = (l) =&gt; {
+    const r = makeErrorsIfNotCapitalized(l);
+    const r1 = makeErrorsIfTooLong(r.strings);
+    return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+    };
+
+const logErrors = (l) =&gt; l.errors.forEach(e =&gt; console.log(e));
+const getCapitalizedStrings = (l) =&gt; l.strings;
+
+// Examples
+
+logErrors(fixupAndAddErrors(myStrings));
+console.log("-----");
+console.log(getCapitalizedStrings(fixupAndAddErrors(myStrings)));
+</pre>
+</div>
+
+<p>
+This just represents an input refinement that we may need for our
+programs: in the example code we want to signal invalid input strings
+and fix them to adhere to our requirements (i.e., strings that are
+capitalized and shorter than ten characters).
+</p>
+
+<p>
+Now that the stage is set, let's discover the abstractions that we are
+using (without knowing).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfca0cd8" class="outline-2">
+<h2 id="orgfca0cd8">There is a Functor in every Kleisli</h2>
+<div class="outline-text-2" id="text-orgfca0cd8">
+<p>
+In the code example we took in consideration, the main functionality
+is given by <code>fixupAndAddErrors</code>. This function is interesting as it
+composes two effects: collecting capitalization and size errors.
+</p>
+
+<p>
+One thing we may find interesting about the composition is that it
+partially depends on the previous effect: look at how <code>r1</code> depends on
+the fixed strings returned in <code>r</code>, and at how the final errors are the
+composition of all the errors found so far.
+</p>
+
+<pre class="example">
+...
+    const r = makeErrorsIfNotCapitalized(l);
+    const r1 = makeErrorsIfTooLong(r.strings); // composition of fixed strings
+    return {strings: r1.strings,
+            errors: r.errors.concat(r1.errors)}; // composition of errors
+...
+</pre>
+
+<p>
+It turns out that customized composition of effects is a recurring
+theme in functional programming. For this reason somebody put a lot of
+effort in generalizing this behavior. The interface that implements
+this behavior is called "fish". The name comes from the symbol chosen
+for it in the Haskell language: <code>&gt;=&gt;</code> , indeed, looks a bit like a
+fish.
+</p>
+
+<p>
+In Haskell the type signature of this operator is:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-haskell">(&gt;=&gt;) :: (a -&gt; m b) -&gt; (b -&gt; m c) -&gt; a -&gt; m c
+</pre>
+</div>
+
+<p>
+Where in our example we could redefine the variables as:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-haskell">(&gt;=&gt;) :: (list string -&gt; m string) -&gt; (list string -&gt; m string) -&gt; list string -&gt; m string
+</pre>
+</div>
+
+<p>
+The <code>m</code> really represents our JavaScript object that contains both
+strings and errors.
+</p>
+
+<p>
+So, can we claim that <code>fixupAndAddErrors</code> is a "fish" operator in
+disguise?
+</p>
+
+<p>
+Well, "fish" represents composition for the Kleisli functional
+abstraction. This is the less known sibling of the Monad abstraction,
+which is rather famous. The nice feature of Kleisli is that "fish"
+expresses composition in a clearer way than Monad's "bind" <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>. The other interface for Kleisli represents identity
+and is called "return". This packages a basic value in a Kleisli
+object. Kleisli comes with some laws. If <code>fixupAndAddErrors</code> satisfies
+these laws, we are really "fishing"!
+</p>
+
+<p>
+First let's define "return":
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const ret = (l) =&gt; ({strings: l, errors: []});
+</pre>
+</div>
+
+<p>
+This function generates an object without errors out of a list of
+string.
+</p>
+
+<p>
+Then let's redefine <code>fixupAndAddErrors</code> and call it <code>fish</code> before we present
+the laws:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const fish = (f,g) =&gt;
+      (l) =&gt; {
+        const r = f(l);
+        const r1 = g(r.strings);
+        return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+      };
+</pre>
+</div>
+
+<p>
+So what happened here? We want to compose multiple validators in a
+general way. So first we have remove the validators details we had in
+<code>fixupAndAddErrors</code>, and second we have to inject these validators as
+functions <code>f</code> and <code>g</code>. This way we can compose any validator function
+as we please. <b>Note</b>: we are showing one of many implementations of
+the <code>fish</code> interface because our <code>fish</code> will only work for validators
+that can work on the <code>{strings: [], errors: []}</code> objects.
+</p>
+
+<p>
+Now let's define and check the laws for our brand new <code>fish</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const ret = (l) =&gt; ({strings: l, errors: []});
+
+const fish = (f,g) =&gt;
+      (l) =&gt; {
+        const r = f(l);
+        const r1 = g(r.strings);
+        return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+      };
+
+const equals = (x,y) =&gt; (JSON.stringify(x) === JSON.stringify(y));
+
+var jsc = require("jsverify");
+
+const fish_law1 = jsc.forall(
+  "string -&gt; { strings: array string; errors: array string }",
+  "string -&gt; { strings: array string; errors: array string }",
+  "string -&gt; { strings: array string; errors: array string }",
+  "array string",
+  (f,g,h,x) =&gt;
+    equals(
+      fish(fish(f,g), h)(x),
+      fish(f, fish(g,h))(x)
+    ))
+
+const fish_law2 = jsc.forall(
+  "string -&gt; { strings: array string; errors: array string }",
+  "array string",
+  (f,x) =&gt;
+    equals(
+      fish(ret,f)(x),
+      f(x)
+    ))
+
+const fish_law3 = jsc.forall(
+  "string -&gt; { strings: array string; errors: array string }",
+  "array string",
+  (f,x) =&gt;
+    equals(
+      fish(f,ret)(x),
+      f(x)
+    ))
+
+
+console.log("First fish law satisfied?", jsc.check(fish_law1));
+console.log("Second fish law satisfied?", jsc.check(fish_law2));
+console.log("Third fish law satisfied?", jsc.check(fish_law3));
+</pre>
+</div>
+
+<p>
+Cool! According to <code>jsverify</code> we are "fishing"!
+</p>
+
+<p>
+But where is the Functor? Kleisli itself is a Functor specialized to
+deal with effects. So let's define <code>fmap</code> in terms of our <code>fish</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const ret = (l) =&gt; ({strings: l, errors: []});
+
+const fish = (f,g) =&gt;
+      (l) =&gt; {
+        const r = f(l);
+        const r1 = g(r.strings);
+        return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+      };
+const id  = (x) =&gt; x
+
+const fmap = (f) =&gt; fish(id, (x) =&gt; ret(f(x)))
+
+console.log(fmap(ss =&gt; ["Before the fmap we had " + ss.length + " strings here"])({strings: ["a", "b"], errors: []}))
+</pre>
+</div>
+
+<p>
+We can define <code>fmap</code> by composing the identity function with the
+composition of return and the <code>fmap</code> transformation.
+</p>
+
+<p>
+Naturally we have one last thing to do before feeling satisfied: let's
+check that the Functor laws hold on this Kleisli flavoured <code>fmap</code>!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">var jsc = require("jsverify");
+
+const equals = (x,y) =&gt; (JSON.stringify(x) === JSON.stringify(y));
+
+const ret = (l) =&gt; ({strings: l, errors: []});
+
+const compose = (fn1,fn2) =&gt; (
+    (arg) =&gt; fn2(fn1(arg)))
+
+const fish = (f,g) =&gt;
+      (l) =&gt; {
+        const r = f(l);
+        const r1 = g(r.strings);
+        return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+      };
+const id  = (x) =&gt; x
+
+const fmap = (f) =&gt; fish(id, (x) =&gt; ret(f(x)))
+
+
+const fmap_law1 = jsc.forall(
+    "{strings: array string; errors: array string}",
+    (x) =&gt;
+        equals(
+            fmap(id)(x),
+            id(x))
+);
+
+const fmap_law2 = jsc.forall(
+    "array string -&gt; integer",
+    "integer -&gt; string",
+    "{strings: array string; errors: array string}",
+    (f,g,x) =&gt;
+        equals(
+            fmap(compose(f,g))(x),
+            compose(fmap(f),fmap(g))(x)
+        ));
+
+console.log("First functor law satisfied?", jsc.check(fmap_law1));
+
+console.log("Second functor law satisfied?", jsc.check(fmap_law2));
+</pre>
+</div>
+
+<p>
+And Functor is!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb53292b" class="outline-2">
+<h2 id="orgb53292b">How easy it is to add a new validator with Kleisli</h2>
+<div class="outline-text-2" id="text-orgb53292b">
+<p>
+Let's look at our example before:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">// Input
+const myStrings = ["Some", "cat", "superVeryLong"];
+
+// Utils
+
+var capitalized = (s) =&gt; s.charAt(0) === s.charAt(0).toUpperCase();
+var capitalize = (s) =&gt; s.charAt(0).toUpperCase() + s.slice(1); // https://stackoverflow.com/questions/1026069/how-do-i-make-the-first-letter-of-a-string-uppercase-in-javascript
+const makeErrorsIfNotCapitalized = (l) =&gt;
+  l.reduce((a, s) =&gt; {
+    if (capitalized(s)) return {strings: a.strings.concat(s), errors: a.errors};
+    return {strings: a.strings.concat(capitalize(s)), errors: a.errors.concat(s + " is not capitalized, adjusting to " + capitalize(s))};},
+           {strings: [], errors: []})
+
+const makeErrorsIfTooLong = (l) =&gt;
+    l.reduce((a, s) =&gt; {
+    if (s.length &lt;= 10) return {strings: a.strings.concat(s), errors: a.errors};
+    return {strings: a.strings.concat(s.substring(0,10)), errors: a.errors.concat(s + " is too long, cutting to " + s.substring(0,10))};},
+           {strings: [], errors: []})
+
+
+// const flatten = ss =&gt; ss.flatMap(x =&gt; x);
+
+// Validation code
+
+const fixupAndAddErrors = (l) =&gt; {
+    const r = makeErrorsIfNotCapitalized(l);
+    const r1 = makeErrorsIfTooLong(r.strings);
+    return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+    };
+
+const logErrors = (l) =&gt; l.errors.forEach(e =&gt; console.log(e));
+const getCapitalizedStrings = (l) =&gt; l.strings;
+
+// Examples
+
+logErrors(fixupAndAddErrors(myStrings));
+console.log("-----");
+console.log(getCapitalizedStrings(fixupAndAddErrors(myStrings)));
+</pre>
+</div>
+
+<p>
+Now let's use Kleisli composition!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const ret = (l) =&gt; ({strings: l, errors: []});
+
+const fish = (f,g) =&gt;
+      (l) =&gt; {
+        const r = f(l);
+        const r1 = g(r.strings);
+        return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+      };
+
+// Input
+const myStrings = ["Some", "cat", "superVeryLong"];
+
+// Utils
+
+var capitalized = (s) =&gt; s.charAt(0) === s.charAt(0).toUpperCase();
+var capitalize = (s) =&gt; s.charAt(0).toUpperCase() + s.slice(1); // https://stackoverflow.com/questions/1026069/how-do-i-make-the-first-letter-of-a-string-uppercase-in-javascript
+const makeErrorsIfNotCapitalized = (l) =&gt;
+  l.reduce((a, s) =&gt; {
+    if (capitalized(s)) return {strings: a.strings.concat(s), errors: a.errors};
+    return {strings: a.strings.concat(capitalize(s)), errors: a.errors.concat(s + " is not capitalized, adjusting to " + capitalize(s))};},
+           {strings: [], errors: []})
+
+const makeErrorsIfTooLong = (l) =&gt;
+    l.reduce((a, s) =&gt; {
+    if (s.length &lt;= 10) return {strings: a.strings.concat(s), errors: a.errors};
+    return {strings: a.strings.concat(s.substring(0,10)), errors: a.errors.concat(s + " is too long, cutting to " + s.substring(0,10))};},
+           {strings: [], errors: []})
+
+
+// const flatten = ss =&gt; ss.flatMap(x =&gt; x);
+
+// Validation code
+const fixupAndAddErrors = fish(makeErrorsIfNotCapitalized, makeErrorsIfTooLong);
+
+const logErrors = (l) =&gt; l.errors.forEach(e =&gt; console.log(e));
+const getCapitalizedStrings = (l) =&gt; l.strings;
+
+// Examples
+
+logErrors(fixupAndAddErrors(myStrings));
+console.log("-----");
+console.log(getCapitalizedStrings(fixupAndAddErrors(myStrings)));
+</pre>
+</div>
+
+<p>
+The change is minimal: we introduce the Kleisli operators and we use
+fish composition as follows
+</p>
+
+<pre class="example">
+* /tmp/withKleisli.js	2019-05-11 17:46:00.995917150 +0200
+--- /tmp/withoutKleisli.js	2019-05-11 17:45:59.386930470 +0200
+*****
+* 30,36 **
+  // const flatten = ss =&gt; ss.flatMap(x =&gt; x);
+
+  // Validation code
+! const fixupAndAddErrors = fish(makeErrorsIfNotCapitalized, makeErrorsIfTooLong);
+
+  const logErrors = (l) =&gt; l.errors.forEach(e =&gt; console.log(e));
+  const getCapitalizedStrings = (l) =&gt; l.strings;
+--- 21,32 ----
+  // const flatten = ss =&gt; ss.flatMap(x =&gt; x);
+
+  // Validation code
+!
+! const fixupAndAddErrors = (l) =&gt; {
+!     const r = makeErrorsIfNotCapitalized(l);
+!     const r1 = makeErrorsIfTooLong(r.strings);
+!     return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+!     };
+
+  const logErrors = (l) =&gt; l.errors.forEach(e =&gt; console.log(e));
+  const getCapitalizedStrings = (l) =&gt; l.strings;
+</pre>
+
+<p>
+This change makes it easier to extend the code with another validator:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const ret = (l) =&gt; ({strings: l, errors: []});
+
+const fish = (f,g) =&gt;
+      (l) =&gt; {
+        const r = f(l);
+        const r1 = g(r.strings);
+        return {strings: r1.strings, errors: r.errors.concat(r1.errors)};
+      };
+
+// Input
+const myStrings = ["Some", "cat", "superVeryLong", "me"];
+
+// Utils
+
+var capitalized = (s) =&gt; s.charAt(0) === s.charAt(0).toUpperCase();
+var capitalize = (s) =&gt; s.charAt(0).toUpperCase() + s.slice(1); // https://stackoverflow.com/questions/1026069/how-do-i-make-the-first-letter-of-a-string-uppercase-in-javascript
+const makeErrorsIfNotCapitalized = (l) =&gt;
+      l.reduce((a, s) =&gt; {
+        if (capitalized(s)) return {strings: a.strings.concat(s), errors: a.errors};
+        return {strings: a.strings.concat(capitalize(s)), errors: a.errors.concat(s + " is not capitalized, adjusting to " + capitalize(s))};},
+               {strings: [], errors: []})
+
+const makeErrorsIfTooLong = (l) =&gt;
+      l.reduce((a, s) =&gt; {
+        if (s.length &lt;= 10) return {strings: a.strings.concat(s), errors: a.errors};
+        return {strings: a.strings.concat(s.substring(0,10)), errors: a.errors.concat(s + " is too long, cutting to " + s.substring(0,10))};},
+               {strings: [], errors: []})
+
+const makeErrorsIfTooShort = (l) =&gt; {
+  const prefix = "short-";
+  return l.reduce((a, s) =&gt; {
+    if (s.length &gt;= 3) return {strings: a.strings.concat(s), errors: a.errors};
+    return {strings: a.strings.concat(prefix + s), errors: a.errors.concat(s + " is too short, adding prefix resulting in " + prefix + s)};},
+           {strings: [], errors: []})
+}
+
+
+// const flatten = ss =&gt; ss.flatMap(x =&gt; x);
+
+// Validation code
+const fixupAndAddErrors = fish(fish(makeErrorsIfNotCapitalized, makeErrorsIfTooLong), makeErrorsIfTooShort);
+
+const logErrors = (l) =&gt; l.errors.forEach(e =&gt; console.log(e));
+const getCapitalizedStrings = (l) =&gt; l.strings;
+
+// Examples
+
+logErrors(fixupAndAddErrors(myStrings));
+console.log("-----");
+console.log(getCapitalizedStrings(fixupAndAddErrors(myStrings)));
+</pre>
+</div>
+
+<p>
+Essentially we just need to compose a new validator with "fish": easy!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2001474" class="outline-2">
+<h2 id="org2001474">What Kleisli laws represent</h2>
+<div class="outline-text-2" id="text-org2001474">
+<p>
+Let us take a brief moment to get the intuition of what the Kleisli
+laws really mean.
+</p>
+
+<p>
+You may have noticed that we have only two laws for Functors:
+</p>
+
+<ol class="org-ol">
+<li>a law that checks that <code>fmap</code> in combination with the identity
+function does not change the values</li>
+<li>a law that checks that <code>fmap</code> does not break the contract of
+composition (i.e., composing two functions <code>a -&gt; b</code> and <code>b -&gt; c</code> is
+equivalent to a new function <code>a -&gt; c</code>)</li>
+</ol>
+
+<p>
+Well the Kleisli (and Monad) laws aim to enforce the exact same
+properties. They are just a bit weird because the operators we are
+dealing with are not as simple as <code>fmap</code>.
+</p>
+
+<p>
+Indeed, two laws out of the three we have seen deal with identity:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const fish_law2 = jsc.forall(
+  "string -&gt; { strings: array string; errors: array string }",
+  "array string",
+  (f,x) =&gt;
+    equals(
+      fish(ret,f)(x),
+      f(x)
+    ))
+
+const fish_law3 = jsc.forall(
+  "string -&gt; { strings: array string; errors: array string }",
+  "array string",
+  (f,x) =&gt;
+    equals(
+      fish(f,ret)(x),
+      f(x)
+    ))
+</pre>
+</div>
+
+<p>
+Here we are really saying that combining the <code>ret</code> and <code>fish</code> operator
+produces a composition of the <code>f</code> and the identity function.
+</p>
+
+<p>
+And the other law focuses indeed on composition:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const fish_law1 = jsc.forall(
+  "string -&gt; { strings: array string; errors: array string }",
+  "string -&gt; { strings: array string; errors: array string }",
+  "string -&gt; { strings: array string; errors: array string }",
+  "array string",
+  (f,g,h,x) =&gt;
+    equals(
+      fish(fish(f,g), h)(x),
+      fish(f, fish(g,h))(x)
+    ))
+</pre>
+</div>
+
+<p>
+You can see that the property is focusing on how functions compose
+through the <code>fish</code> operator. We really just want to compose <code>f</code>, <code>g</code>,
+and <code>h</code>, the complexity of the law comes from the fact that they carry
+an effect with them, so we have to wrap them in the <code>fish</code> call.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7f09e0e" class="outline-2">
+<h2 id="org7f09e0e">Conclusion</h2>
+<div class="outline-text-2" id="text-org7f09e0e">
+<p>
+In summary we saw a functional abstraction useful to handle sequential
+effects (like logging and error handling). We saw how Kleisli is a
+specialization of a Functor: we defined <code>fmap</code> through Kleisli's
+<code>fish</code> operator and checked it respects Functor laws. We have also
+seen how to recognize a Kleisli by defining and checking some new
+laws. After looking at specialization we shall see generalization! In
+next post we will speak of Profunctors.
+</p>
+
+<p>
+Happy coding!
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">also
+known as flatMap</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2019-08-06</span>
+        <span title="last modification date" class="post-info">2020-07-25</span>
+        <span title="tags" class="post-info"><a href="/tags/javascript/">javascript</a>, <a href="/tags/jsverify/">jsverify</a>, <a href="/tags/functional/">functional</a></span>
+        <span title="author" class="post-info">Andrea Giugliano</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli";
+          var disqus_url = "http://ag91.github.io/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea Giugliano</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

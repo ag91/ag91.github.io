@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>JVisualVM, or how to observe the state of your Java Virtual Machine - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea Giugliano" />
+    <meta name="description" content="How to observe the state of your virtual machine" />
+    <meta name="keywords" content="jvm, scala" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>JVisualVM, or how to observe the state of your Java Virtual Machine</h1>
+<p>
+Software engineers are very smart and do a lot of incredible work.
+Sometimes they also do errors of omission. Since I am an engineer too,
+I am prone to forget that the programs I write can cleanup for me
+until a certain point.
+</p>
+
+<p>
+When we run a computation we typically create data that we store in
+some volatile memory. We got a stack, very small and fast, and a heap,
+very large and slightly slower.
+</p>
+
+<p>
+If we overfill the stack with data, our software will complain by
+crashing the application with the infamous <code>StackOverflowError</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">def letsStackOverflow (list: List[Int]): Int =
+  list match {
+    case Nil =&gt; 0
+    case x::xs =&gt; x + letsOverflow(xs)
+  }
+
+letsStackOverflow(1 to 10000 toList)
+</pre>
+</div>
+
+<pre class="example">
+java.lang.StackOverflowError
+...
+</pre>
+
+<p>
+Now the heap is another kind of beast. It is supposed to hold quite
+some data, so filling it will take time: your application will crash
+for lack of resources over time. Let's get a <code>OutOfMemoryError</code> for
+completeness:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">import scala.util.Random
+
+var listOnHeap: List[String] = List()
+
+def letsHeapOverflow (list: List[Int]): Unit =
+  list.foreach(_ =&gt; listOnHeap = s"someStringThatTakesHeapSpace_${Random.alphanumeric take 10 mkString}"::listOnHeap)
+
+letsHeapOverflow(1 to 10000000 toList)
+</pre>
+</div>
+
+<pre class="example">
+java.lang.OutOfMemoryError: Java heap space
+</pre>
+
+
+<p>
+In this example we willingly tried to fill up the heap as fast as
+possible. In real world scenarios this happen quite more slowly,
+creating subtle bugs that require very expensive hunting sessions.
+</p>
+
+<p>
+Our hound when we are blindly looking for the bug in a Java Virtual
+Machine application is JVisualVM. It comes with your installation, so
+you can just fire it up by running <code>jvisualvm</code> in the terminal.
+</p>
+
+<p>
+JVisualVM will pick up any processes that are using the virtual
+machine. So if you try to run the Scala code snippets above in a shell
+like <a href="https://ammonite.io/">Ammonite</a>, you will see the ammonite process appearing in there.
+</p>
+
+<p>
+If you click on this process, you will land on the overview for the process:
+</p>
+
+
+<div class="figure">
+<p><img src="/assets/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine/JVisualVMOverview.png" alt="JVisualVMOverview.png" />
+</p>
+</div>
+
+<p>
+The information we are looking for is in the next view "Monitor":
+</p>
+
+
+<div class="figure">
+<p><img src="/assets/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine/JVisualVMMonitor.png" alt="JVisualVMMonitor.png" />
+</p>
+</div>
+
+<p>
+In this view you can see how the heap grows on the top-left diagram.
+</p>
+
+<p>
+The other tool you want to look at is "Heap Dump" button. By pressing
+you obtain a detailed snapshot report for what the heap contains:
+</p>
+
+
+<div class="figure">
+<p><img src="/assets/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine/JVisualVMHeapDump.png" alt="JVisualVMHeapDump.png" />
+</p>
+</div>
+
+<p>
+You will see that for our run of <code>heapOverflow</code> we have quite few
+strings, integer and colons. With this clue is at least easier to find
+which part of the code is causing the failure.
+</p>
+
+<p>
+The usual next step is to <code>println</code> around until you find the problem.
+</p>
+
+<p>
+Hope this will help your bug hunts.
+</p>
+
+<p>
+Happy coding!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2019-08-28</span>
+        <span title="last modification date" class="post-info">2019-09-01</span>
+        <span title="tags" class="post-info"><a href="/tags/jvm/">jvm</a>, <a href="/tags/scala/">scala</a></span>
+        <span title="author" class="post-info">Andrea Giugliano</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine";
+          var disqus_url = "http://ag91.github.io/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea Giugliano</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

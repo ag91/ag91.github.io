@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Programming in scala with a custom sbt with ensime - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to use a custom sbt with ensime" />
+    <meta name="keywords" content="emacs, ensime, scala, sbt" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Programming in scala with a custom sbt with ensime</h1>
+<div id="outline-container-org589cf93" class="outline-2">
+<h2 id="org589cf93">TL;DR</h2>
+<div class="outline-text-2" id="text-org589cf93">
+<p>
+Having a project that needs a custom sbt executable requires a bit of
+setup to make Scala development more pleasing in these occasions.
+</p>
+</div>
+</div>
+
+
+
+<div id="outline-container-org1adda57" class="outline-2">
+<h2 id="org1adda57">Introduction</h2>
+<div class="outline-text-2" id="text-org1adda57">
+<p>
+Imagine you work in <a href="https://www.scala-lang.org/">Scala</a> and you build your project with <a href="https://www.scala-sbt.org/">sbt</a>. It may
+occur that your client has some special environment, and the simple
+way to hide the configuration complexity is to use a slightly
+configured sbt. Say that you come up with an executable called
+<code>sbt.sh</code> like the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">#!/bin/bash
+
+SBT_OPTS="someCoolOptions"
+java $SBT_OPTS -jar `dirname $0`/sbt-launch.jar "$@"
+</pre>
+</div>
+
+<p>
+Note that <b>the shebang is necessary</b>, otherwise sbt-mode will not
+run your custom sbt.
+</p>
+
+<p>
+Now: how do we make ensime consider this executable the one to use for
+this project?
+</p>
+</div>
+</div>
+
+
+
+<div id="outline-container-org5189024" class="outline-2">
+<h2 id="org5189024">The discoveries</h2>
+<div class="outline-text-2" id="text-org5189024">
+<p>
+We are lucky (and grateful) that the maintainers of ensime and
+sbt-mode provided two variables that allow to define the executable to
+use: respectively <code>ensime-sbt-command</code> and <code>sbt:program-name</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgba17226" class="outline-2">
+<h2 id="orgba17226">The hack</h2>
+<div class="outline-text-2" id="text-orgba17226">
+<p>
+The idea is to reassign those variables if a custom sbt executable
+exists in the project. For simplicity I assumed that the executable is
+not present in any parent directory of the project root directory.
+Given that the <code>dir</code> directory in the following function is the
+directory from where we start ensime, we can find the file through:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun get-to-parent-until (fn dir)
+  "Returns the first directory from DIR that satisfies FN or NIL."
+  (let ((current dir))
+    (while (not (or (equalp current "/")
+                    (funcall fn current)))
+      (setq current (expand-file-name (concat current "/.."))))
+    (if (funcall fn current)
+        current
+      nil)))
+</pre>
+</div>
+
+<p>
+This function returns the first directory that satisfies the <code>fn</code>
+predicate.
+</p>
+
+<p>
+With this we can obtain the executable path and assign the variables:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun set-sbt-program ()
+  "Sets ensime ans sbt program name to local if it exists"
+  (interactive)
+  (let* ((sbt-dir (get-to-parent-until
+                   #'(lambda (d)
+                       (file-exists-p  (concat d "/sbt")))
+                   default-directory))
+         (exec (if sbt-dir (concat sbt-dir "/sbt") "sbt")))
+    (setq ensime-sbt-command exec
+          sbt:program-name exec)))
+</pre>
+</div>
+
+<p>
+Finally we can set a hook to run this function every time we use
+ensime:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(add-hook 'ensime-mode-hook #'set-sbt-program)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf5330a1" class="outline-2">
+<h2 id="orgf5330a1">Conclusion</h2>
+<div class="outline-text-2" id="text-orgf5330a1">
+<p>
+I have shown how to automate some boring configuration for ensime. I
+added this to the sbt-mode repository for users reference:
+<a href="https://github.com/ensime/emacs-sbt-mode/issues/129">https://github.com/ensime/emacs-sbt-mode/issues/129</a>.
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2018-02-24</span>
+        <span title="last modification date" class="post-info">2020-07-25</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/ensime/">ensime</a>, <a href="/tags/scala/">scala</a>, <a href="/tags/sbt/">sbt</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2018/02/24/programming-in-scala-with-a-custom-sbt-with-ensime";
+          var disqus_url = "http://ag91.github.io/blog/2018/02/24/programming-in-scala-with-a-custom-sbt-with-ensime";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>How to integrate YASnippet and Yankpad with Org-Capture - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Make the best out of two worlds: org-capture + yasnippet + yankpad" />
+    <meta name="keywords" content="yasnippet,yankpad,org-mode,emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>How to integrate YASnippet and Yankpad with Org-Capture</h1>
+
+
+<div id="outline-container-org58707d5" class="outline-2">
+<h2 id="org58707d5">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org58707d5">
+<p>
+In this post I show how to combine the <a href="https://orgmode.org/manual/Capture.html">org-capture</a> templating system
+and <a href="http://joaotavora.github.io/yasnippet/">YASnippet</a> and <a href="https://github.com/Kungsgeten/yankpad">Yankpad</a> in order to make you even more productive.
+See the <a href="https://github.com/ag91/ya-org-capture/blob/master/ya-org-capture-screehcast.gif">screen-cast</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd0e897d" class="outline-2">
+<h2 id="orgd0e897d">The problem</h2>
+<div class="outline-text-2" id="text-orgd0e897d">
+<p>
+I recently decided to invest some of my vacations in improving my
+tools for the job. Something high in my priority is templating: what
+if I could provide myself with a structure for my writings? Well in
+the Emacs world the answer is YASnippet or for the org-mode
+enthusiasts Yankpad. So I came up with a template and I soon
+discovered that I could NOT run it from my org-capture snippets!
+</p>
+
+<p>
+So if you try to expand a YASnippet from an elisp snippet (i.e, the
+<code>%(yas/insert-snippet)</code> syntax in the capture template below) in your
+org-capture template, you just fail because the org-capture template
+expects any elisp to create a string. So do not do the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq org-capture-templates
+          `(("i" "some yasnippet capture template" entry (file "/tmp/test.org") "* TODO %^{Some title} \n%(yas/insert-snippet)" :empty-lines 2)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgdd3e984" class="outline-2">
+<h2 id="orgdd3e984">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgdd3e984">
+<p>
+This is bad because it makes it impossible to have the beautiful
+step-by-step completion that YASnippet and Yankpad provide (look how
+cool are <a href="https://youtu.be/ZCGmZK4V7Sg">this</a> and <a href="https://youtu.be/xkkyE7d0Bpc?t=123">this</a> example). You can achieve things using the
+feature-full org-capture templating system as well, but why not mixing
+both worlds for amazing results?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5efef24" class="outline-2">
+<h2 id="org5efef24">And there is a solution</h2>
+<div class="outline-text-2" id="text-org5efef24">
+<p>
+Since I had some time, I went for the challenge.
+</p>
+
+<p>
+My first idea was to ask the user to complete the snippet first and
+then embed that into the org-capture template. However that first
+attempt failed, because the completion of YASnippet and Yankpad is
+asynchronous, I mean does not block the program flow. In short that
+was not viable (just get in touch with me if you want details about
+this).
+</p>
+
+<p>
+My second successful attempt is here:
+<a href="https://github.com/ag91/ya-org-capture">https://github.com/ag91/ya-org-capture</a>.
+</p>
+
+<p>
+It is a two step approach:
+</p>
+
+<ol class="org-ol">
+<li>you create the template with a "tagged" snippet keyword</li>
+<li>as soon as you fill in your org-capture template, we strip the tag
+and expand the snippet keyword</li>
+</ol>
+
+<p>
+So you will need to load the library like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package ya-org-capture
+  :after yankpad
+  :load-path "~/.emacs.d/lisp"
+  :config
+    (ya-org-capture/setup))
+</pre>
+</div>
+
+<p>
+And define your org-capture template with the special function I made
+up:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq org-capture-templates
+          `(("i" "some yasnippet capture template" entry (file "/tmp/test.org") "* TODO %^{Some title} \n%(ya-org-capture/make-snippet \"img_\")" :empty-lines 2)
+            ("s" "some yankpad capture template" entry (file "/tmp/test.org") "* TODO %^{Some title} \n%(ya-org-capture/make-snippet \"st\")" :empty-lines 2)))
+</pre>
+</div>
+
+
+<p>
+It is a minimal first attempt, and I was so excited I may have not
+tested all the way this can go wrong (I suspect it may not work if you
+do not put the elisp snippet last in your template).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga2e2b02" class="outline-2">
+<h2 id="orga2e2b02">Conclusion</h2>
+<div class="outline-text-2" id="text-orga2e2b02">
+<p>
+So if you have wonderful Yankpad/YASnippet templates you want to use
+when capturing a org-mode task/note, just grab my file, load it and
+edit your templates as described above and <a href="https://github.com/ag91/ya-org-capture">here</a>.
+</p>
+
+<p>
+Also feel free to get report issues and get in touch with me if you
+have a better way to solve this: for example do you think would be
+worth investing some more time into transforming snippets to string?
+</p>
+
+<p>
+Enjoy your Emacs time!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-07-28</span>
+        <span title="last modification date" class="post-info">2020-07-28</span>
+        <span title="tags" class="post-info"><a href="/tags/yasnippet/">yasnippet</a>, <a href="/tags/yankpad/">yankpad</a>, <a href="/tags/org-mode/">org-mode</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2020/07/28/how-to-integrate-yasnippet-and-yankpad-with-org-capture";
+          var disqus_url = "http://ag91.github.io/blog/2020/07/28/how-to-integrate-yasnippet-and-yankpad-with-org-capture";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

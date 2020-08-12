@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Automate boring configuration changes - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea Giugliano" />
+    <meta name="description" content="How I automated some boring configuration changes tasks with a Bash script" />
+    <meta name="keywords" content="bash" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Automate boring configuration changes</h1>
+<p>
+Sometimes we do repetitive actions that seem not worth to automate.
+The problem is that sometimes these affect morale and become
+time-consuming: for instance for lack of attention the configuration
+change introduces regressions, which cause an extra deployments to fix
+errors.
+</p>
+
+<p>
+Well I had some time to wonder if I could automate adding entries to
+our one of our configuration file in a consistent way. And as a side
+effect I improved my Bash scripting skills.
+</p>
+
+<p>
+The configuration file I am speaking about whitelists applications.
+Our configuration file contains entries which represent applications.
+Each entry has an unique identifier. Anytime an application requests a
+service, it has to submit this identifier: the request is fulfilled
+only if the identifier is in the configuration file.
+</p>
+
+<p>
+When we insert a new entry manually, we have to satisfy two
+constraints:
+</p>
+
+<ul class="org-ul">
+<li>we have to check that the new identifier is not already present</li>
+<li>we have to add the entry to multiple configuration files (each
+representing a different deployment environment)</li>
+</ul>
+
+<p>
+So our Bash script will do the following sequentially:
+</p>
+
+<ol class="org-ol">
+<li>ask required input</li>
+<li>generate an uuid</li>
+<li>check if the generated uuid already exists and generate a new one
+until it does not</li>
+<li>make the entry</li>
+<li>append entry to the files</li>
+</ol>
+
+<p>
+So here is the script:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">## Usage: the script will request the necessary inputs to create a new application entry and will alter the configuration files in the repository.
+
+files="some-dir/resources-local/configurationFile.json some-dir/resources-DEV/configurationFile.json some-dir/resources-TST/configurationFile.json some-dir/resources-ACC/configurationFile.json some-dir/resources-PRD/configurationFile.json"
+files_array=($files)
+prd_file=${files_array[${#files_array[@]}-1]}
+# ask for user input
+read -p 'Application name: ' appname
+read -p 'Type: ' type
+read -p 'Contact name: ' contact_name
+read -p 'Maintainers email address: ' email
+read -p 'Aim of the application: ' description
+echo Current vars: $appname $type $email $description
+
+# generate a new lowercase uuid (it must not be already in the file)
+uuid=$(uuidgen)
+lowercase_uuid=$(echo $uuid | tr '[:upper:]' '[:lower:]')
+echo New uuid: $lowercase_uuid
+# retry if uuid already exists
+while true; do
+    if grep "$lowercase_uuid" $prd_file &gt; /dev/null
+    then
+        uuid=$(uuidgen)
+        lowercase_uuid=$(echo $uuid | tr '[:upper:]' '[:lower:]')
+        echo 'new uuid found in file, created a new one: ' $lowercase_uuid
+    else
+        echo uuid not found
+        break
+    fi
+done
+# end of retry
+
+# make a new configuration entry
+entry='
+{\n
+  "contactName": "'$contact_name'",\n
+  "contactEmail": "'$email'",\n
+  "description": "'$description'",\n
+  "id": "'$lowercase_uuid'",\n
+  "name": "'$appname'",\n
+  "type": [
+    "'$type"
+  ]
+}'
+
+echo $entry
+
+for file in "${files_array[@]}"
+do
+    # remove blank lines at the end of the file
+    sed -i '' -e :a -e '/^\n*$/{$d;N;};/\n$/ba' $file
+    # remove last line (because it contains "]")
+    sed -i '' -e '$ d' $file
+    # remove blank lines at the end of the file
+    sed -i '' -e :a -e '/^\n*$/{$d;N;};/\n$/ba' $file
+    # remove last line (because it contains "}")
+    sed -i '' -e '$ d' $file
+
+    # append entry
+    echo '},\n' $entry '\n]' &gt;&gt; $file
+done
+</pre>
+</div>
+
+<p>
+This kind of script is not perfect, because it works on assumptions like:
+</p>
+
+<ul class="org-ul">
+<li>the Production configuration file contains all the entries
+identifiers</li>
+
+<li>the user inputs valid information</li>
+
+<li>indentation of the json files is irrelevant</li>
+</ul>
+
+<p>
+However, this script made a configuration change a thoughtless process
+on my side. The only automation left is to ask people needing an
+identifier to open a merge request to the repository by using this
+script.
+</p>
+
+<p>
+Maybe this can inspire you to hack (better than this) some small and
+frequent&amp;boring tasks you have to do.
+</p>
+
+<p>
+Happy hacking!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2019-09-26</span>
+        <span title="last modification date" class="post-info">2020-07-25</span>
+        <span title="tags" class="post-info"><a href="/tags/bash/">bash</a></span>
+        <span title="author" class="post-info">Andrea Giugliano</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2019/09/26/automate-boring-configuration-changes";
+          var disqus_url = "http://ag91.github.io/blog/2019/09/26/automate-boring-configuration-changes";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea Giugliano</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

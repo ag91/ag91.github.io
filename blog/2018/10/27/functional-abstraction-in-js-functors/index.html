@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Functional Abstraction in JS: Functors - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Explaining functors through JavaScript and its test generation tooling" />
+    <meta name="keywords" content="js,jsverify,functional-programming,functor" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Functional Abstraction in JS: Functors</h1>
+<p>
+(This blog post was firstly published at <a href="https://lunatech.com/blog/W7IorBUAAMac74Ew/functional-abstractions-in-javascript-check-functors-laws">https://lunatech.com/blog/W7IorBUAAMac74Ew/functional-abstractions-in-javascript-check-functors-laws</a>)
+</p>
+
+<p>
+JavaScript is a curious mix of programming paradigms. In this post we
+will focus on the functional traits of JavaScript (JS). In particular we
+will see how to check that a function satisfies the Functor's laws.
+</p>
+
+<p>
+A Functor is a fundamental abstraction for functional programmers. It
+behaves like a (very limited) container: you can interact with it only
+by altering its content.
+</p>
+
+<p>
+In the functional community this interface is called <code>map</code>. In the
+context of Functors, this interface takes the name of <code>fmap</code>.
+</p>
+
+<p>
+Basic JS arrays offer a map function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">var x = [1, 2, 3]
+console.log("Mapping +1: ", x.map((x) =&gt; x+1))
+console.log("The original array: ", x)
+</pre>
+</div>
+
+<p>
+In the following we are going to check if <code>map</code> respects the Functor
+laws; in other words: is the object array a Functor?
+</p>
+
+<p>
+First let's define a <a href="https://stackoverflow.com/questions/36314/what-is-currying">curried</a> <code>fmap</code> to make laws definitions look
+nice:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js" id="orgf667714">const fmap = (fn) =&gt; (
+    (array) =&gt; array.map(fn))
+</pre>
+</div>
+
+<p>
+This works as follows:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">&lt;&lt;fmap&gt;&gt;
+console.log(fmap((x)=&gt; x+1)([1,2,3]))
+</pre>
+</div>
+
+<p>
+Then let's define the two laws that must hold to call something a
+Functor.
+</p>
+
+<p>
+The first law says that mapping the identity function on a Functor
+should produce the same Functor.
+</p>
+
+<p>
+The identity function is easy to define:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js" id="orge779a39">const id = (x) =&gt; x
+</pre>
+</div>
+
+<p>
+The first law then becomes:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">fmap(id) = id
+</pre>
+</div>
+
+<p>
+The second law says that mapping the composition of two functions on a
+functor should produce the same Functor that is obtained by composing
+the <code>fmap</code>.
+</p>
+
+<p>
+The compose function can be defined as:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js" id="orgf054fe4">const compose = (fn1,fn2) =&gt; (
+    (arg) =&gt; fn2(fn1(arg)))
+</pre>
+</div>
+
+<p>
+The second law then becomes:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">fmap(compose(f,g)) = compose(fmap(f),fmap(g))
+</pre>
+</div>
+
+<p>
+So far we have defined the Functor laws. Now we want to check the JS
+arrays satisfy them.
+</p>
+
+<p>
+The Haskell community donated a great tool to test properties of
+functional software: <a href="https://en.wikipedia.org/wiki/QuickCheck">QuickCheck</a>. We will use the JS implementation of
+it: <a href="https://github.com/jsverify/jsverify">jsverify</a>.
+</p>
+
+<p>
+In <code>jsverify</code> we can define software properties like the following (from
+<code>jsverify</code>'s README):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">var jsc = require("jsverify");
+
+// forall (f : bool -&gt; bool) (b : bool), f (f (f b)) = f(b).
+var boolFnAppliedThrice =
+  jsc.forall("bool -&gt; bool", "bool", function (f, b) {
+    return f(f(f(b))) === f(b);
+  });
+
+console.log(jsc.check(boolFnAppliedThrice));
+</pre>
+</div>
+
+<p>
+As you can see, <code>jsverify</code> generates tests that validate if the
+property holds. By default it generates 100 tests per property.
+</p>
+
+<p>
+Let's then define our laws as <code>jsverify</code> properties.
+</p>
+
+<p>
+For this we will need a custom <code>equals</code> function as JS behaves in a
+peculiar way when comparing empty arrays:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">console.log([] === [])
+</pre>
+</div>
+
+<p>
+So our equals will be:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js" id="org3e624b2">const equals = (x,y) =&gt; (JSON.stringify(x) === JSON.stringify(y))
+</pre>
+</div>
+
+<p>
+Which behaves as we wish for empty arrays:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">&lt;&lt;equals&gt;&gt;
+console.log(equals([],[]))
+</pre>
+</div>
+
+<p>
+Now we refine the laws in <code>jsverify</code> format:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js" id="orgeeecc98">&lt;&lt;ids&gt;&gt;
+&lt;&lt;compose&gt;&gt;
+&lt;&lt;fmap&gt;&gt;
+
+var jsc = require("jsverify");
+
+var arrayInt = jsc.array(jsc.integer());
+
+const fmap_law1 = jsc.forall(
+    arrayInt,
+    (x) =&gt;
+        //fmap(id) == id
+        equals(
+            fmap(id)(x),
+            id(x))
+);
+
+const fmap_law2 = jsc.forall(
+    "integer -&gt; integer",
+    "integer -&gt; integer",
+    arrayInt,
+    (f,g,x) =&gt;
+        //fmap(compose(f,g)) = compose(fmap(f),fmap(g))
+        equals(
+            fmap(compose(f,g))(x),
+            compose(fmap(f),fmap(g))(x)
+        ));
+</pre>
+</div>
+
+<p>
+Note that here we are applying the curried functions with the input
+generated by <code>jsverify</code> (i.e., <code>x</code>).
+</p>
+
+<p>
+And at last we can run check our laws hold for an array of integers:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">const equals = (x,y) =&gt; (JSON.stringify(x) === JSON.stringify(y))
+
+&lt;&lt;ids&gt;&gt;
+&lt;&lt;compose&gt;&gt;
+&lt;&lt;fmap&gt;&gt;
+
+var jsc = require("jsverify");
+
+var arrayInt = jsc.array(jsc.integer());
+
+const fmap_law1 = jsc.forall(
+    arrayInt,
+    (x) =&gt;
+        //fmap(id) == id
+        equals(
+            fmap(id)(x),
+            id(x))
+);
+
+const fmap_law2 = jsc.forall(
+    "integer -&gt; integer",
+    "integer -&gt; integer",
+    arrayInt,
+    (f,g,x) =&gt;
+        //fmap(compose(f,g)) = compose(fmap(f),fmap(g))
+        equals(
+            fmap(compose(f,g))(x),
+            compose(fmap(f),fmap(g))(x)
+        ));
+
+console.log("First functor law satisfied?", jsc.check(fmap_law1));
+
+console.log("Second functor law satisfied?", jsc.check(fmap_law2));
+</pre>
+</div>
+
+<p>
+So JS arrays we can be rather confident that JS arrays are Functors!
+</p>
+
+<p>
+This same approach can be applied to other functional abstractions,
+but this will be matter of later posts.
+</p>
+
+<p>
+Hopefully this example will encourage you to learn more abou Functors
+and to start using <code>jsverify</code>.
+</p>
+
+<p>
+Good hacking!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2018-10-27</span>
+        <span title="last modification date" class="post-info">2020-07-25</span>
+        <span title="tags" class="post-info"><a href="/tags/js/">js</a>, <a href="/tags/jsverify/">jsverify</a>, <a href="/tags/functional-programming/">functional-programming</a>, <a href="/tags/functors/">functors</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2018/10/27/functional-abstraction-in-js-functors";
+          var disqus_url = "http://ag91.github.io/blog/2018/10/27/functional-abstraction-in-js-functors";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

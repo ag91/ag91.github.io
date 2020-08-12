@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>YASnippet list my email questions please! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to make a dynamic YASnippet list questions in an email" />
+    <meta name="keywords" content="yasnippet,emacs,mu4e" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>YASnippet list my email questions please!</h1>
+
+<div id="outline-container-org54cedaf" class="outline-2">
+<h2 id="org54cedaf">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org54cedaf">
+<p>
+In this post I show how to make a template to answer questions in
+email one step at the time and I present a workaround to modifying
+YASnippet templates according to the context you are working in.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org15063a0" class="outline-2">
+<h2 id="org15063a0">The problem</h2>
+<div class="outline-text-2" id="text-org15063a0">
+<p>
+I like to not forget to answer questions in my emails. Sometimes
+though they are scattered around and I just miss them. So I thought: a
+computer is a better finder than me, and this seems a good use case
+for a YASnippet!
+</p>
+
+<p>
+Well, after a first draft this was not as easy as I thought: the issue
+is that emails may have as many questions as the sender likes.
+YASnippets are instead static pieces of string that get expanded when
+you need. You cannot force all emails to have a single question (you
+can ignore the others, but that's not what I want).
+</p>
+
+<p>
+What I need is for the template show me all the questions and go
+through them one at the time in order of appearance.
+</p>
+
+<p>
+So this is the snippet I started with to handle only the first
+question:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text"># -*- mode: snippet -*-
+# name: mail-with-question-snippet
+# key: q
+# --
+
+Hi ${1:Somebody},
+
+${2: some intro text}
+${3:`(first (my/pick-questions-in-mail))`}
+
+$0
+
+Bye!
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org8eb477b" class="outline-2">
+<h2 id="org8eb477b">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org8eb477b">
+<p>
+And apparently I was not the first to wish for this dynamic definition
+of YASnippets, these are the relatable issues I could find:
+</p>
+
+<ul class="org-ul">
+<li><a href="https://github.com/joaotavora/yasnippet/issues/558">https://github.com/joaotavora/yasnippet/issues/558</a></li>
+<li><a href="https://github.com/joaotavora/yasnippet/issues/681">https://github.com/joaotavora/yasnippet/issues/681</a></li>
+<li><a href="https://github.com/joaotavora/yasnippet/issues/661">https://github.com/joaotavora/yasnippet/issues/661</a></li>
+<li><a href="https://github.com/joaotavora/yasnippet/issues/295">https://github.com/joaotavora/yasnippet/issues/295</a></li>
+</ul>
+
+<p>
+And apparently the creator of the project is looking into a <a href="https://github.com/joaotavora/yasnippet/tree/snippet-engine">major
+refactor</a> to make this easy to do from quite some time.
+</p>
+
+<p>
+With this I thought time to try something different!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org834c9ac" class="outline-2">
+<h2 id="org834c9ac">And there is a solution</h2>
+<div class="outline-text-2" id="text-org834c9ac">
+<p>
+So the interesting bit is that snippets can be overridden dynamically.
+Your snippet files get loaded by YASnippet and then live in memory.
+The function <code>yas-define-snippets</code> lets you (re)define snippets for a
+major-mode. That's amazing news: with a bit of plumbing we can
+redefine our snippet dynamically.
+</p>
+
+<p>
+So first step, save a partial snippet, in our case in the
+<code>mu4e-compose-mode</code> folder of YASnippet:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text"># -*- mode: snippet -*- name: mail-with-question-snippet key: q --
+
+Hi ${1:Somebody},
+
+${2: some intro text}
+${3:`(first (my/pick-questions-in-mail))`}
+
+$0
+
+Bye!
+</pre>
+</div>
+
+<p>
+Then, define a transformation, in our case how to retrieve questions
+from an email:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/split-string-in-sentences (string)
+  (--&gt; string
+       (s-replace "\n" "" it)
+       (with-temp-buffer
+         (insert it)
+         (goto-char (point-min))
+         (while (not (eq (point) (point-max)))
+           (forward-sentence)
+           (insert "\n"))
+         (buffer-substring-no-properties (point-min) (point-max)))
+       (s-split "\n" it)
+       (mapcar 's-trim it)))
+
+(defun my/only-questions (sentences)
+  (--filter (s-suffix-p "?" it)  sentences))
+
+(defun my/pick-questions-in-text (string)
+  (--&gt; string
+       my/split-string-in-sentences
+       my/only-questions))
+
+(defun my/pick-questions-in-mail ()
+  (interactive)
+  (--&gt; (mu4e-message-field mu4e-compose-parent-message :body-txt)
+       (s-split "\n" it)
+       (--remove (s-prefix-p "&gt; " it) it)
+       (s-join " \n " it)
+       my/pick-questions-in-text))
+
+(defun my/pick-questions-in-buffer ()
+  (interactive)
+  (my/pick-questions-in-text (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun my/yas-mail-with-questions-snippet ()
+  (let ((unique-name-snippet (s-concat "mail-snippet-question-" (format-time-string "%Y%m%d%H%M%S")))
+        (questions (my/pick-questions-in-mail)))
+    (--&gt;
+     (s-concat
+      "Hi ${1: somebody`},\n\n${2: some intro text}\n"
+      (apply
+       's-concat
+       (--map
+        (let ((index (+ 3 (car it)))
+              (question (cdr it)))
+          (format "${%s:%s}\n\n" index question))
+        (-zip (number-sequence 0 (length questions)) questions)))
+      "$0\n\n"
+      "Bye!")
+     (yas/expand-snippet it))))
+
+(defun my/update-q-snippet ()
+  (when mu4e-compose-parent-message
+    (message "updating!")
+    (let* ((questions (my/pick-questions-in-mail))
+           (snippet
+            (s-concat
+             "Hi ${1:`(bjm/mu4e-get-names-for-yasnippet)`},\n\n${2: Nice to hear that!}\n"
+             (apply
+              's-concat
+              (--map
+               (let ((index (+ 3 (car it)))
+                     (question (cdr it)))
+                 (format "${%s:%s}\n\n" index question))
+               (-zip (number-sequence 0 (length questions)) questions)))
+             "$0\n\n"
+             "Have fun,\n\nAndrea\n")))
+      (yas-define-snippets 'mu4e-compose-mode (list (list "q" snippet "mail-with-question-snippet" nil nil nil nil nil nil))))))
+</pre>
+</div>
+
+<p>
+Finally hook up the redefinition of the snippet to the mode hook, in
+this case anytime I am replying an email:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(add-hook 'mu4e-compose-mode-hook 'my/update-q-snippet)
+</pre>
+</div>
+
+<p>
+And that is it! Now if you reply an email and invoke the snippet
+expansion you get the right number of questions to fill in.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2f042db" class="outline-2">
+<h2 id="org2f042db">Conclusion</h2>
+<div class="outline-text-2" id="text-org2f042db">
+<p>
+Well time to try yourself. If you are a <code>mu4e</code> user this will likely
+help you too with handling your questions. Just load the elisp code
+and try to expand the snippet in your next email reply!
+</p>
+
+<p>
+Happy emailing!
+</p>
+
+
+<p>
+P.S: you need <code>dash.el</code>, <code>s.el</code> and <code>mu4e</code> to run the snippets of elisp above.
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-07-31</span>
+        <span title="last modification date" class="post-info">2020-07-31</span>
+        <span title="tags" class="post-info"><a href="/tags/yasnippet/">yasnippet</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/mu4e/">mu4e</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2020/07/31/yasnippet-list-my-email-questions-please";
+          var disqus_url = "http://ag91.github.io/blog/2020/07/31/yasnippet-list-my-email-questions-please";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

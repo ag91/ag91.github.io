@@ -1,0 +1,61 @@
+#+TITLE:       Fail fast and then fail better
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-05-02 Sat
+#+URI:         /blog/%y/%m/%d/fail-fast-and-then-fail-better
+#+KEYWORDS:    failure,growth
+#+TAGS:        failure,growth
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Get better by failing better
+
+#+begin_quote
+Failure is only the opportunity to begin again, this time more
+intelligently. - Henry Ford
+#+end_quote
+
+A lot of us are afraid of failure. For example, in business meetings
+colleagues avoid to express important ideas to avoid the embarrassment
+of being wrong.
+
+The ironic thing is that a definition of the word expert I really
+appreciate is: "an expert is a person who has made all the mistakes
+that can be made in a very narrow field".
+
+This basically means that if you do not speak during that meeting you
+are missing out an important step to become an expert in the field
+(not considering the fact that you may be right and so your important
+point of view will make people waste their time).
+
+Do not avoid mistakes, and strive for excellence. The idea is that you
+will always fail, no matter what you are up to. Even if you performed
+the same task for years, you will be surprised by how unexpected can
+the world be. Your aim *must absolutely not be to avoid errors*, you
+have to fail better than others though! Make your errors excellent.
+
+What this means is that you want to grow yourself to the point that
+you are more likely to fail while striving for something that has high
+stakes. It is less impressive if your train does not start its trip for
+some malfunction or if a space shuttle does not do it. You want to
+grow into attempting novel and untried things and be proud even of
+your failure.
+
+At some point you will become so comfortable with failure that you may
+want to fail purposefully to get bigger insights. At some point you
+will be so good in your field that you may not know how to improve
+further. Here the trick: fail. Try new things, see them fail, and try
+to patch the failure somehow. This process will let you come up with
+at something completely novel, improve your expertise and create a new
+field of knowledge if you are lucky enough.
+
+This approach is really the scientific method: for any problem, just
+propose a solution. If that does not work, find why it does not and
+patch it. If you repeat enough time, you will have a very reliable
+working solution. At the end of the day, as George Polya said: "If you
+can't solve a problem, then there is an easier problem you can't
+solve: find it".
+
+So this is the path to your expertise: fail, fix it, and fail better.
+
+And please chill out, everybody else before you has followed the same
+steps.

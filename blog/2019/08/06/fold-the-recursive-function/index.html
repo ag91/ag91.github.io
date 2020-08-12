@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Fold the recursive function - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea Giugliano" />
+    <meta name="description" content="How to move an explicitly recursive function to a fold based function" />
+    <meta name="keywords" content="functional,scala" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Fold the recursive function</h1>
+<div id="outline-container-org992521f" class="outline-2">
+<h2 id="org992521f">Explicit recursion to Fold&#xa0;&#xa0;&#xa0;<span class="tag"><span class="blog">blog</span></span></h2>
+<div class="outline-text-2" id="text-org992521f">
+<p>
+The other day I was reviewing a pull request at work, and while
+scrolling through the changes my eyes fell on this bit of code (this
+is an anonymous version of it):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala" id="org85f4516">object RecursiveFunction2Fold {
+  type ErrorMessage = String
+
+  case class Filter[A](predicate: A =&gt; Boolean, filterError: String)
+
+  def filterMany[A](elements: Seq[A], filters: Seq[Filter[A]]):Either[ErrorMessage, Seq[A]] = {
+    def recursiveFiltering(elements: Seq[A], filters: Seq[Filter[A]]): Either[ErrorMessage, Seq[A]] = filters match {
+      case Nil =&gt; Right(elements)
+      case head :: remainingFilters =&gt; filterOnce(elements, head) match {
+        case Left(err) =&gt; Left(err)
+        case Right(filtered) =&gt; recursiveFiltering(filtered, remainingFilters)
+      }
+    }
+    recursiveFiltering(elements, filters)
+  }
+
+  def filterOnce[A](elements: Seq[A], filter: Filter[A]): Either[ErrorMessage, Seq[A]] = elements.filter(filter.predicate) match {
+    case Nil =&gt; Left(filter.filterError)
+    case remaining =&gt; Right(remaining)
+  }
+}
+</pre>
+</div>
+
+<p>
+You may notice how this function uses explicit recursion (the
+<code>recursiveFiltering</code> bit). There is a cool paper about how <code>fold</code>
+makes explicit recursion unnecessary really:
+<a href="http://www.cs.nott.ac.uk/~pszgmh/fold.pdf">http://www.cs.nott.ac.uk/~pszgmh/fold.pdf</a>
+</p>
+
+<p>
+So, I asked my colleague if there was any chance to make this function
+more concise through <code>fold</code>. Naturally the office mayhem did not let
+us have time for this, and for keeping the business running the
+function was shipped as is.
+</p>
+
+<p>
+Well, that function did not escape my mind and I wanted to share how
+to make a transformation from explicitly recursive function to fold
+based functions happen.
+</p>
+</div>
+
+<div id="outline-container-orgcc4fdf5" class="outline-3">
+<h3 id="orgcc4fdf5">Discovering what the function does</h3>
+<div class="outline-text-3" id="text-orgcc4fdf5">
+<p>
+Let's get what this recursive function tries to do.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def filterMany[A](elements: Seq[A], filters: Seq[Filter[A]]):Either[ErrorMessage, Seq[A]] = {
+</pre>
+</div>
+
+<p>
+The signature of the outer function gives as input a list of elements
+and a list of filters and as output either an error or a sequence of
+elements. At this point a guess may be that we are going to apply each
+filter in the <code>filters</code> sequence to the given <code>elements</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def recursiveFiltering(elements: Seq[A], filters: Seq[Filter[A]]): Either[ErrorMessage, Seq[A]] = filters match {
+</pre>
+</div>
+
+<p>
+The recursive function has the same signature, so nothing interesting.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">case Nil =&gt; Right(elements)
+</pre>
+</div>
+
+<p>
+We are now looking at what our sequence of <code>filters</code> really is: if
+empty, we return the original list of <code>elements</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">case head :: remainingFilters =&gt; filterOnce(elements, head) match {
+</pre>
+</div>
+
+<p>
+Otherwise we apply the given filter (<code>head</code>), and we check its output.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">case Left(err) =&gt; Left(err)
+</pre>
+</div>
+
+<p>
+If the output is an error, we end with the same error.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">  case Right(filtered) =&gt; recursiveFiltering(filtered, remainingFilters)
+}
+</pre>
+</div>
+
+<p>
+Otherwise we continue with the rest of the filters.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">  }
+  recursiveFiltering(elements, filters)
+}
+</pre>
+</div>
+
+<p>
+By the way, <code>filterOnce</code> does the filtering (through
+<code>filter.predicate</code>) on the sequence of <code>elements</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def filterOnce[A](elements: Seq[A], filter: Filter[A]): Either[ErrorMessage, Seq[A]] = elements.filter(filter.predicate) match {
+...
+</pre>
+</div>
+
+<p>
+So, as far as we can tell this function:
+</p>
+<ul class="org-ul">
+<li>tries to run all the filters against the input sequence (to reduce
+the <code>elements</code> size)</li>
+<li>has to fail when the filter produces an empty sequence of elements</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-orgee8c807" class="outline-3">
+<h3 id="orgee8c807">Assert what we found out in the code</h3>
+<div class="outline-text-3" id="text-orgee8c807">
+<p>
+So we understood something about the function. Let's check out that
+our understanding is right with some assertions in the code (i.e.,
+lightweight tests) that we will keep using during our refactoring
+later.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">object RecursiveFunction2Fold {
+  type ErrorMessage = String
+
+  case class Filter[A](predicate: A =&gt; Boolean, filterError: String)
+
+  def filterMany[A](elements: Seq[A], filters: Seq[Filter[A]]):Either[ErrorMessage, Seq[A]] = {
+    def recursiveFiltering(elements: Seq[A], filters: Seq[Filter[A]]): Either[ErrorMessage, Seq[A]] = filters match {
+      case Nil =&gt; Right(elements)
+      case head :: remainingFilters =&gt; filterOnce(elements, head) match {
+        case Left(err) =&gt; Left(err)
+        case Right(filtered) =&gt; recursiveFiltering(filtered, remainingFilters)
+      }
+    }
+    recursiveFiltering(elements, filters)
+  }
+
+  def filterOnce[A](elements: Seq[A], filter: Filter[A]): Either[ErrorMessage, Seq[A]] = elements.filter(filter.predicate) match {
+    case Nil =&gt; Left(filter.filterError)
+    case remaining =&gt; Right(remaining)
+  }
+}
+
+// Let's test!
+
+import RecursiveFunction2Fold._
+
+val neverFailingFilter: Filter[Int] = Filter({i: Int =&gt; true}, "Unreachable")
+val passingFilters: Seq[Filter[Int]] = Seq(neverFailingFilter)
+val reducingFilters: Seq[Filter[Int]] = Seq(neverFailingFilter, Filter({i: Int =&gt; i &lt; 42}, "Oh no, all the given integers are greater than 42!"))
+val breakingFilters: Seq[Filter[Int]] = Seq(neverFailingFilter, Filter({i: Int =&gt; i &lt; -1}, "Oh no, all the given integers are greater than -1!"))
+val elements: Seq[Int] = Seq(1,2,3,42,5)
+
+// tries to run all the filters against the input sequence (to reduce the ~elements~ size)
+assert(filterMany(elements, passingFilters) == Right(List(1, 2, 3, 42, 5)))
+assert(filterMany(elements, reducingFilters) == Right(List(1, 2, 3, 5)))
+// has to fail when the filter produces an empty sequence of elements
+assert(filterMany(elements, breakingFilters) == Left("Oh no, all the given integers are greater than -1!"))
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org7a6c892" class="outline-3">
+<h3 id="org7a6c892">Refactor to fold it!</h3>
+<div class="outline-text-3" id="text-org7a6c892">
+<p>
+Now we are ready for our little refactoring exercise.
+Let's review the signature of <code>foldLeft</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def foldLeft[B](z: B)(op: (B, A) =&gt; B): B
+</pre>
+</div>
+
+<p>
+We have a default value <code>z</code> in case the sequence on which we fold is
+empty. And then we have an operation that takes an accumulator of type
+<code>B</code> (the result type) and an element of the sequence of type <code>A</code>.
+</p>
+
+<p>
+Now let's give another look at the recursive function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def recursiveFiltering(elements: Seq[A], filters: Seq[Filter[A]]): Either[ErrorMessage, Seq[A]] = filters match {
+  case Nil =&gt; Right(elements)
+  case head :: remainingFilters =&gt; filterOnce(elements, head) match {
+    case Left(err) =&gt; Left(err)
+    case Right(filtered) =&gt; recursiveFiltering(filtered, remainingFilters)
+  }
+}
+recursiveFiltering(elements, filters)
+</pre>
+</div>
+
+<p>
+The first question for our refactoring is: what is the default value
+<code>z</code>? We can ask another question to answer this: what is the base case
+for the explicit recursion? Here it is:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">case Nil =&gt; Right(elements)
+</pre>
+</div>
+
+<p>
+So let's start rewriting our function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def filterMany[A](elements: Seq[A], filters: Seq[Filter[A]]):Either[ErrorMessage, Seq[A]] =
+  filters.foldLeft(Right(elements): Either[ErrorMessage, Seq[A]])((acc, e) =&gt; ???)
+</pre>
+</div>
+
+<p>
+Next we need to look at the core of the recursive function: the recursive case.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">case head :: remainingFilters =&gt; filterOnce(elements, head) match {
+  case Left(err) =&gt; Left(err)
+  case Right(filtered) =&gt; recursiveFiltering(filtered, remainingFilters)
+}
+</pre>
+</div>
+
+<p>
+Here we take the first filter, which is <code>e</code> in our fold; we have to
+apply with <code>filterOnce</code> and handle the cases. One thing to remember is
+that our fold's accumulator is storing the elements that we have
+filtered so far. Let's try to translate that in our fold version:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def filterMany[A](elements: Seq[A], filters: Seq[Filter[A]]):Either[ErrorMessage, Seq[A]] =
+  filters.foldLeft(Right(elements): Either[ErrorMessage, Seq[A]])((acc: Either[ErrorMessage, Seq[A]], e: Filter[A]) =&gt; acc match {
+    case Left(err) =&gt; Left(err) // the previous run produced an error, no need to apply any other filter
+    case Right(filtered) =&gt; filterOnce(filtered,e) // filterOnce produces a Either itself
+  })
+</pre>
+</div>
+
+<p>
+The idea here is that we start fold with an accumulator containing a
+Rigth with all the elements in it, picking the first filter we will
+end up in the <code>case Right(filtered)</code>, and we will produce an <code>Either</code>.
+Now we will repeat this for each filter and we will stop if
+<code>filterOnce</code> produces a <code>Left</code>.
+</p>
+
+<p>
+Before testing this version let's apply some functional refinement:
+this pattern matching really can be removed with a <code>flatMap</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def filterMany[A](elements: Seq[A], filters: Seq[Filter[A]]):Either[ErrorMessage, Seq[A]] =
+  filters.foldLeft(Right(elements): Either[ErrorMessage, Seq[A]])((acc: Either[ErrorMessage, Seq[A]], e: Filter[A]) =&gt; acc.flatMap(filterOnce(_,e)))
+</pre>
+</div>
+
+<p>
+So our final functions looks:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala" id="org137dad2">object RecursiveFunction2Fold {
+  type ErrorMessage = String
+
+  case class Filter[A](predicate: A =&gt; Boolean, filterError: String)
+
+  def filterMany[A](elements: Seq[A], filters: Seq[Filter[A]]):Either[ErrorMessage, Seq[A]] =
+  filters.foldLeft(Right(elements): Either[ErrorMessage, Seq[A]])((acc: Either[ErrorMessage, Seq[A]], e: Filter[A]) =&gt; acc.flatMap(filterOnce(_,e)))
+
+  def filterOnce[A](elements: Seq[A], filter: Filter[A]): Either[ErrorMessage, Seq[A]] = elements.filter(filter.predicate) match {
+    case Nil =&gt; Left(filter.filterError)
+    case remaining =&gt; Right(remaining)
+  }
+}
+</pre>
+</div>
+
+<p>
+Now time to test our refactoring!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">object RecursiveFunction2Fold {
+  type ErrorMessage = String
+
+  case class Filter[A](predicate: A =&gt; Boolean, filterError: String)
+
+  def filterMany[A](elements: Seq[A], filters: Seq[Filter[A]]):Either[ErrorMessage, Seq[A]] =
+  filters.foldLeft(Right(elements): Either[ErrorMessage, Seq[A]])((acc: Either[ErrorMessage, Seq[A]], e: Filter[A]) =&gt; acc.flatMap(filterOnce(_,e)))
+
+  def filterOnce[A](elements: Seq[A], filter: Filter[A]): Either[ErrorMessage, Seq[A]] = elements.filter(filter.predicate) match {
+    case Nil =&gt; Left(filter.filterError)
+    case remaining =&gt; Right(remaining)
+  }
+}
+
+// Let's test!
+
+import RecursiveFunction2Fold._
+
+val neverFailingFilter: Filter[Int] = Filter({i: Int =&gt; true}, "Unreachable")
+val passingFilters: Seq[Filter[Int]] = Seq(neverFailingFilter)
+val reducingFilters: Seq[Filter[Int]] = Seq(neverFailingFilter, Filter({i: Int =&gt; i &lt; 42}, "Oh no, all the given integers are greater than 42!"))
+val breakingFilters: Seq[Filter[Int]] = Seq(neverFailingFilter, Filter({i: Int =&gt; i &lt; -1}, "Oh no, all the given integers are greater than -1!"))
+val elements: Seq[Int] = Seq(1,2,3,42,5)
+
+// tries to run all the filters against the input sequence (to reduce the ~elements~ size)
+assert(filterMany(elements, passingFilters) == Right(List(1, 2, 3, 42, 5)))
+assert(filterMany(elements, reducingFilters) == Right(List(1, 2, 3, 5)))
+// has to fail when the filter produces an empty sequence of elements
+assert(filterMany(elements, breakingFilters) == Left("Oh no, all the given integers are greater than -1!"))
+</pre>
+</div>
+
+<p>
+Done! Tests pass, and the refactoring seems successful. Note that I
+kept the number of tests at minimum to ease the readability: you may
+want to have more tests to feel more secure that the refactoring was
+successful.
+</p>
+
+<p>
+Happy coding!
+</p>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2019-08-06</span>
+        <span title="last modification date" class="post-info">2020-07-25</span>
+        <span title="tags" class="post-info"><a href="/tags/functional/">functional</a>, <a href="/tags/scala/">scala</a></span>
+        <span title="author" class="post-info">Andrea Giugliano</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2019/08/06/fold-the-recursive-function";
+          var disqus_url = "http://ag91.github.io/blog/2019/08/06/fold-the-recursive-function";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea Giugliano</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

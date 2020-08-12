@@ -1,0 +1,126 @@
+#+TITLE:       Automate boring configuration changes
+#+AUTHOR:      Andrea Giugliano
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2019-09-26 Thu
+#+URI:         /blog/%y/%m/%d/automate-boring-configuration-changes
+#+KEYWORDS:    bash
+#+TAGS:        bash
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How I automated some boring configuration changes tasks with a Bash script
+
+Sometimes we do repetitive actions that seem not worth to automate.
+The problem is that sometimes these affect morale and become
+time-consuming: for instance for lack of attention the configuration
+change introduces regressions, which cause an extra deployments to fix
+errors.
+
+Well I had some time to wonder if I could automate adding entries to
+our one of our configuration file in a consistent way. And as a side
+effect I improved my Bash scripting skills.
+
+The configuration file I am speaking about whitelists applications.
+Our configuration file contains entries which represent applications.
+Each entry has an unique identifier. Anytime an application requests a
+service, it has to submit this identifier: the request is fulfilled
+only if the identifier is in the configuration file.
+
+When we insert a new entry manually, we have to satisfy two
+constraints: 
+
+- we have to check that the new identifier is not already present
+- we have to add the entry to multiple configuration files (each
+  representing a different deployment environment)
+
+So our Bash script will do the following sequentially:
+
+1. ask required input
+2. generate an uuid
+3. check if the generated uuid already exists and generate a new one
+   until it does not
+4. make the entry
+5. append entry to the files
+
+So here is the script:
+
+#+begin_src sh
+## Usage: the script will request the necessary inputs to create a new application entry and will alter the configuration files in the repository.
+
+files="some-dir/resources-local/configurationFile.json some-dir/resources-DEV/configurationFile.json some-dir/resources-TST/configurationFile.json some-dir/resources-ACC/configurationFile.json some-dir/resources-PRD/configurationFile.json"
+files_array=($files)
+prd_file=${files_array[${#files_array[@]}-1]} 
+# ask for user input
+read -p 'Application name: ' appname
+read -p 'Type: ' type
+read -p 'Contact name: ' contact_name
+read -p 'Maintainers email address: ' email
+read -p 'Aim of the application: ' description
+echo Current vars: $appname $type $email $description
+
+# generate a new lowercase uuid (it must not be already in the file)
+uuid=$(uuidgen)
+lowercase_uuid=$(echo $uuid | tr '[:upper:]' '[:lower:]')
+echo New uuid: $lowercase_uuid
+# retry if uuid already exists
+while true; do
+    if grep "$lowercase_uuid" $prd_file > /dev/null
+    then
+        uuid=$(uuidgen)
+        lowercase_uuid=$(echo $uuid | tr '[:upper:]' '[:lower:]')
+        echo 'new uuid found in file, created a new one: ' $lowercase_uuid
+    else
+        echo uuid not found
+        break
+    fi
+done
+# end of retry
+
+# make a new configuration entry
+entry='
+{\n
+  "contactName": "'$contact_name'",\n
+  "contactEmail": "'$email'",\n
+  "description": "'$description'",\n
+  "id": "'$lowercase_uuid'",\n
+  "name": "'$appname'",\n
+  "type": [
+    "'$type"
+  ]
+}'
+
+echo $entry
+
+for file in "${files_array[@]}"
+do
+    # remove blank lines at the end of the file
+    sed -i '' -e :a -e '/^\n*$/{$d;N;};/\n$/ba' $file
+    # remove last line (because it contains "]")
+    sed -i '' -e '$ d' $file
+    # remove blank lines at the end of the file
+    sed -i '' -e :a -e '/^\n*$/{$d;N;};/\n$/ba' $file
+    # remove last line (because it contains "}")
+    sed -i '' -e '$ d' $file
+
+    # append entry
+    echo '},\n' $entry '\n]' >> $file
+done
+#+end_src
+
+This kind of script is not perfect, because it works on assumptions like:
+
+- the Production configuration file contains all the entries
+  identifiers
+
+- the user inputs valid information
+
+- indentation of the json files is irrelevant
+
+However, this script made a configuration change a thoughtless process
+on my side. The only automation left is to ask people needing an
+identifier to open a merge request to the repository by using this
+script.
+
+Maybe this can inspire you to hack (better than this) some small and
+frequent&boring tasks you have to do.
+
+Happy hacking!

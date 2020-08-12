@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>How to fit RSS feeds into an org file - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A simple setup to add RSS feeds as children of a dedicated org headline" />
+    <meta name="keywords" content="emacs, org-mode, elisp" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>How to fit RSS feeds into an org file</h1>
+
+<div id="outline-container-org4dfedf1" class="outline-2">
+<h2 id="org4dfedf1">Introduction</h2>
+<div class="outline-text-2" id="text-org4dfedf1">
+<p>
+Hello everyone!
+</p>
+
+<p>
+It is a while I am thinking how to easy my job hunting approach, and
+by easy I mean to integrate it with the typical workflow I follow.
+</p>
+
+
+<p>
+Currently I look for job through website like <a href="https://www.indeed.com/">https://www.indeed.com/</a>,
+and I typically input in the search box things like: "functional
+programming", "graduate software engineer", etc...
+</p>
+
+
+<p>
+This is bothersome, and results in uris like:
+<a href="https://www.indeed.com/jobs?q=functional+programming&amp;l">https://www.indeed.com/jobs?q=functional+programming&amp;l</a>=,
+<a href="https://www.indeed.com/jobs?q=graduate+software+engineer&amp;l">https://www.indeed.com/jobs?q=graduate+software+engineer&amp;l</a>=, etc...
+</p>
+
+
+<p>
+My workflow is completely based on Emacs and Org mode, and using
+Firefox or even Emacs' browser eww requires a lot of clicks and
+screens that I would like to avoid.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgace7ecf" class="outline-2">
+<h2 id="orgace7ecf">The discoveries</h2>
+<div class="outline-text-2" id="text-orgace7ecf">
+<p>
+With a bit of browsing here and there, I discovered that these job
+website support RSS feeds: we add an <code>rss?</code> in the uri and voila
+<a href="http://rss.indeed.com/rss?q-functional-programming-jobs.html">http://rss.indeed.com/rss?q-functional-programming-jobs.html</a>.
+</p>
+
+
+<p>
+This could have meant adding these uris to <a href="https://github.com/skeeto/elfeed">my current feed reader</a>, but
+I would still miss my Org mode integration!
+</p>
+
+
+<p>
+This is where I remembered that Org mode can do feeds:
+<a href="http://orgmode.org/manual/RSS-Feeds.html">http://orgmode.org/manual/RSS-Feeds.html</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org96581b5" class="outline-2">
+<h2 id="org96581b5">The hack</h2>
+<div class="outline-text-2" id="text-org96581b5">
+<p>
+At this point I needed to make the two discoveries work together with
+my workflow: I would like adding these feeds in my main Org file and
+reject the post I have already read.
+</p>
+
+<p>
+Naturally all this is supported by Carsten's fantastic <a href="http://orgmode.org/w/?p=org-mode.git;a=blob_plain;f=lisp/org-feed.el;hb=HEAD">org-feed.el</a>,
+but required a bit of diving into the code from which this post
+intends to save you.
+</p>
+
+<p>
+So:
+</p>
+
+<p>
+1 ) try the manual example:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq org-feed-alist
+      '(("Slashdot"
+         "http://rss.slashdot.org/Slashdot/slashdot"
+         "/tmp/feeds.org" "Slashdot Entries")))
+</pre>
+</div>
+
+<p>
+2 ) then edit the example to support your preferred websites:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq org-feed-alist
+    '(("functional-jobs"
+       "http://rss.indeed.com/rss?q-functional-programming-jobs.html"
+       "/tmp/feeds.org" "Functional Job Feeds"
+       )
+      ("graduate-jobs"
+       "http://rss.indeed.com/rss?q-graduate-software-engineer-jobs.html"
+       "/tmp/feeds.org" "Graduate Job Feeds"
+       )))
+</pre>
+</div>
+
+
+<p>
+Cool, but wait! This creates an Org file <code>/tmp/feeds.org</code> with two new
+headings. Instead, I wanted to add this jobs <b>into an existing file
+under a single heading</b> "Jobs Feeds"
+</p>
+
+<p>
+3 ) let's add the single heading:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq org-feed-alist
+      '(("functional-jobs"
+         "http://rss.indeed.com/rss?q-functional-programming-jobs.html"
+         "/tmp/feeds.org" "Job Feeds"
+         )
+        ("graduate-jobs"
+         "http://rss.indeed.com/rss?q-graduate-software-engineer-jobs.html"
+         "/tmp/feeds.org" "Job Feeds"
+         )))
+</pre>
+</div>
+
+
+<p>
+Tragedy! Now when cannot recognize where the feeds come from and every
+time we reload the feeds they duplicate!!!
+</p>
+
+<p>
+4 ) let's add a template to give an appropriate tag to the heading:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my-for-org-feed/tag-template
+    "creates a org-feed template string with [tag] as Org header tag"
+    (tag)
+  (concat "\n* %h " tag " \nCreated: %U\nOriginal: %a \n\n%description \n\n"))
+
+(setq org-feed-alist
+      `(("functional-jobs";; NOTE the backquote!
+         "http://rss.indeed.com/rss?q-functional-programming-jobs.html"
+         "/tmp/feeds.org" "Functional Job Feeds"
+         :template ,(my-for-org-feed/tag-template ":clojure:uk:"))); and the comma!
+        ("graduate-jobs"
+         "http://rss.indeed.com/rss?q-graduate-software-engineer-jobs.html"
+         "/tmp/feeds.org" "Graduate Job Feeds"
+         )))
+</pre>
+</div>
+
+<p>
+As you can see there is a backquote and a comma in the elisp
+source: in simple words the backquote allows you to choose which
+sexp must be evaluated (by placing before a comma).
+</p>
+
+<p>
+5 ) finally, let's solve the duplication issue:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my-for-org-feed/tag-template
+    "creates a org-feed template string with [tag] as Org header tag"
+    (tag)
+  (concat "\n* %h " tag " \nCreated: %U\nOriginal: %a \n\n%description \n\n"))
+
+(setq org-feed-alist
+      `(("functional-jobs"
+         "http://rss.indeed.com/rss?q-functional-programming-jobs.html"
+         "/tmp/feeds.org" "Functional Job Feeds"
+         :template ,(my-for-org-feed/tag-template ":clojure:uk:")
+         :drawer "functional-jobs"))
+        ("graduate-jobs"
+         "http://rss.indeed.com/rss?q-graduate-software-engineer-jobs.html"
+         "/tmp/feeds.org" "Graduate Job Feeds"
+         :drawer "graduate-jobs")))
+</pre>
+</div>
+
+<p>
+Adding the <code>:drawer</code> bit allows org-feed to make sense of the
+history of the category of feed, and to recognize when we are
+trying to add the same feeds.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org40eadf2" class="outline-2">
+<h2 id="org40eadf2">Conclusion</h2>
+<div class="outline-text-2" id="text-org40eadf2">
+<p>
+With this little hacking of <code>org-feed-alist</code> I can now have all my job
+ads in a single Org header, and transform the most interesting ones in
+tasks.
+</p>
+
+<p>
+Now job hunting is easy to me!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2017-01-29</span>
+        <span title="last modification date" class="post-info">2020-07-25</span>
+        <span title="tags" class="post-info"><a href="/tags/org-mode/">org-mode</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2017/01/29/how-to-fit-rss-feeds-into-an-org-file";
+          var disqus_url = "http://ag91.github.io/blog/2017/01/29/how-to-fit-rss-feeds-into-an-org-file";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

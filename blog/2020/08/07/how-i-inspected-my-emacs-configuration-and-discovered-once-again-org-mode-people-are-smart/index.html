@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>How I inspected my Emacs configuration and discovered once again Org-Mode people are smart - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A little summary of my adventures in making my Emacs init fast again" />
+    <meta name="keywords" content="emacs,org-mode,elisp" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>How I inspected my Emacs configuration and discovered once again Org-Mode people are smart</h1>
+
+<div id="outline-container-orga97f0e3" class="outline-2">
+<h2 id="orga97f0e3">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orga97f0e3">
+<p>
+Use <code>org-babel-load-file</code> on your org-mode based configuration
+directly to exploit its caching mechanism: tangling code blocks is
+slow!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org73738e4" class="outline-2">
+<h2 id="org73738e4">The problem</h2>
+<div class="outline-text-2" id="text-org73738e4">
+<p>
+In my Emacs workflow I liked to have everything in a single org-mode
+file. Even my configuration! Now, although it is nice to have
+everything at a search away, this became significantly slow with time.
+</p>
+
+<p>
+One thing that really bored me was the <code>emacs-init-time</code>: it was
+longer than 20 seconds.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8e6a7a5" class="outline-2">
+<h2 id="org8e6a7a5">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org8e6a7a5">
+<p>
+Add to this that I like to start Emacs anew often, this was
+quite troublesome. <a href="https://brandur.org/interfaces">You do not want to wait on your editor</a>. And more
+importantly you do not want to waste your life.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge4a57cd" class="outline-2">
+<h2 id="orge4a57cd">And there is a solution</h2>
+<div class="outline-text-2" id="text-orge4a57cd">
+<p>
+Well, I started from debugging the initiation time of my packages.
+Some time ago, I found myself spending quite some time fixing
+misconfigurations in my packages, so I decided to label the start and
+the end of a package run time. It would look like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(message "--- expand-region begin")
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(use-package expand-region
+  :bind (("C-=" . er/expand-region)))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(message "--- expand-region end")
+</pre>
+</div>
+
+<p>
+So at any problem I would find in my logging something like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">...
+expand-region begin
+</pre>
+</div>
+
+<p>
+And I would not find an end. That would give away the culprit of my
+problem.
+</p>
+
+<p>
+Since all my packages are setup in this way, the problem of knowing how long
+they take is simple: just swap <code>message</code> for a function that takes
+time.
+</p>
+
+<p>
+Since I did not have patience to search for something already made by
+someone else, I just hacked my way through:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(defun my/init-audit-message (string)
+  "Print out STRING and calculate length of init."
+  (message string)
+  (if (not (string= "end" (substring string -3)))
+      (setq my/init-audit-message-begin (current-time))
+    (message
+     "It took %s seconds in total."
+     (time-to-seconds
+      (time-subtract
+       (current-time)
+       my/init-audit-message-begin))))
+  nil)
+</pre>
+</div>
+
+<p>
+This prints a message after the end saying how long it took to load
+the package.
+</p>
+
+<p>
+Now I would have:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(my/init-audit-message "--- expand-region begin")
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(use-package expand-region
+  :bind (("C-=" . er/expand-region)))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(my/init-audit-message "--- expand-region end")
+</pre>
+</div>
+
+<p>
+And the logging would look like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">...
+expand-region begin
+expand-region end
+It took 0.0001 seconds in total.
+...
+</pre>
+</div>
+
+<p>
+I found out that some packages needed to be load more lazily
+(<code>use-package</code> offers keywords like <code>:defer</code>, <code>:commands</code>, <code>:mode</code>
+just for that), and my initialization time went from 20 seconds to
+approximately 12 seconds.
+</p>
+
+<p>
+This was an improvement, but still disappointing! Where did those
+seconds come from?
+</p>
+
+<p>
+After some head scratching moments I realized my problem was in my
+<code>init.el</code>. My configuration is a literate program written in org-mode.
+So at startup Emacs tangles the Elisp snippets in a <code>configuration.el</code>
+and then loads it. The tangling takes quite some time because it is IO
+bound (writing files to the file system is not that fast and tangling
+is even slower).
+</p>
+
+<p>
+The smart org-mode maintainers are clearly aware of the issue because
+if you peek into <code>org-babel-load-file</code> you will see:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">...
+    (unless (org-file-newer-than-p
+             tangled-file
+             (file-attribute-modification-time
+              (file-attributes (file-truename file))))
+...
+</pre>
+</div>
+
+<p>
+That code avoids tangling unless the configuration file is newer than
+the tangled file. The issue is that I was too many layers of
+indirection away: I was tangling my configuration on Emacs exit which
+resulted always in a new file, so always slow tangling.
+</p>
+
+<p>
+Now I keep the agenda in its own org-mode file and my starting time is
+of at most a couple of seconds (unless I update my configuration).
+Finally happy!!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfdf9d88" class="outline-2">
+<h2 id="orgfdf9d88">Conclusion</h2>
+<div class="outline-text-2" id="text-orgfdf9d88">
+<p>
+So please inspect your configuration performance if you start your
+Emacs multiple times a day and please save yourself some time
+everyday: your time is the most important thing you have!
+</p>
+
+<p>
+Happy hacking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-08-07</span>
+        <span title="last modification date" class="post-info">2020-08-07</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/org-mode/">org-mode</a>, <a href="/tags/elisp/">elisp</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+          //var disqus_developer = 1;
+          var disqus_identifier = "/blog/2020/08/07/how-i-inspected-my-emacs-configuration-and-discovered-once-again-org-mode-people-are-smart";
+          var disqus_url = "http://ag91.github.io/blog/2020/08/07/how-i-inspected-my-emacs-configuration-and-discovered-once-again-org-mode-people-are-smart";
+          var disqus_shortname = 'whereparallelscross';
+          /* * * DON'T EDIT BELOW THIS LINE * * */
+          (function() {
+          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+          })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
