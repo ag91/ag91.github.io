@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Linux, Unix Philosophy and why programs are just filters - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="andrea" />
+    <meta name="description" content="How the Unix design philosophy has still a lot to teach us" />
+    <meta name="keywords" content="linux, unix, book, design" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Linux, Unix Philosophy and why programs are just filters</h1>
+<p>
+I am a passionate reader and it is years that I work on operating
+systems based on Linux. 
+</p>
+
+<p>
+I confess that although reading tiny bits here and there, I never went
+in depth about what design principles Unix was built upon. For
+example, why <code>cd</code> is not <code>change-directory</code>? And why is all based on
+pipes, and <code>stdin</code> and <code>stdout</code>?
+</p>
+
+<p>
+I am sure the Internet has all this information scattered around
+somewhere. However I really was looking for a consistent narration of
+why Unix and Linux are like we see them today.
+</p>
+
+<p>
+I am convinced that just grasping the basics of how large and reliable
+software systems are built can boost your skills as an engineer.
+</p>
+
+<p>
+And there I find it: <a href="https://www.goodreads.com/book/show/2084939.Linux_and_the_Unix_Philosophy">Linux and Unix Philosophy by Mike Gancarz</a> laying
+there in my reading list!
+</p>
+
+<p>
+So let's start from the juicy part: programs are data filters. The
+point, in the words of the author, is that "Programs do not create
+data, people do". This <a href="https://www.youtube.com/watch?v=Nnu1E5Kslig">left me wonder</a>. If you think about it, it is a
+banal truth that carries a lot of meaning. 
+</p>
+
+<p>
+Any program we write ingest data and transforms that to something
+useful. But it does not generate the data in the first place. A
+program without data is useless, and we people are the data providers.
+The side effect of this is that functional programming is trendy for a
+reason: when you grasp how to use functions like <code>map</code> and <code>filter</code>
+you already belong to the functional community and also you are
+explicitly making your programs filter data.
+</p>
+
+<p>
+So with that I looked at <code>|</code>, the pipe symbol, differently: that
+operator lets you compose your programs, i.e., your filters. (By the
+way, did you know the pipe operator passes partial results to the
+composed programs? Roughly speaking, <code>cat file | grep
+"someWord"</code> will not wait <code>cat</code> to pass the whole file contents to <code>grep</code>,
+instead <code>grep</code> will work line by line).
+</p>
+
+<p>
+And that brings us to the other design principle: "Choose portability
+over efficiency". In Unix and Linux everything is a file: directories,
+<code>stdin</code>, <code>stdout</code>, processes, et cetera, are all files. The point here
+is that text files are portable, no strange byte conversions and
+similar. Anybody can open a file, it is standard, easy to share, and
+an abstraction around which you can build software that is uniform.
+</p>
+
+<p>
+"Small is beautiful" is the last principle I want to consider in this
+post. This has much in common with Rich Hickey's talk <a href="https://www.infoq.com/presentations/Simple-Made-Easy/">Simple made
+easy</a>: you want to prefer uni-functional programs. If your programs do
+a single thing, it is more likely you will write them correctly. Then
+to achieve your goal you can just compose your programs. The author
+calls this software leverage: the idea is that delivering and
+composing multiple small programs is more than delivering a single
+program that does the same. The reason is that you can reuse
+uni-functional programs in many different contexts.
+</p>
+
+<p>
+An extra thing I want to mention is an interesting thought about the
+Agile community: Agile people have re-branded and made popular most of
+the Unix principles under the name of eXtreme Programming, Scrum,
+etc... Fundamentally fast prototyping, quick iterations and minimal
+bureaucracy (did I mention that all programs are as minimal as
+possible, even the naming conventions are i.e. <code>cd</code> vs
+<code>change-directory</code>) were all already around from a long time before we
+entered the Agile era (and luckily enough I would say!). 
+</p>
+
+<p>
+(This kind of borrowing ideas reminds me of another worth read I did
+recently which is "<a href="https://austinkleon.com/steal/">Steal Like an Artist</a>" that was suggested by an
+interesting YouTuber <a href="https://aliabdaal.com/">Ali Abdaal</a>, who was brought to my attention from
+a post of the <a href="https://irreal.org/blog/?tag=emacs">Irreal</a> blog.)
+</p>
+
+<p>
+In conclusion this book's gift is a compact list of guidelines to
+design your programs and leverage composition of small programs with a
+single responsibility. Also, I am grateful that Mike decided to
+include this quote by his manager:
+</p>
+
+<p>
+"Software is never finished. It is only delivered." And indeed, I
+strongly agree that interpreting a project as an iteration helps a lot
+in reducing stress.
+</p>
+
+<p>
+Hope you will have time to look this book up too at some point!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-08-14</span>
+        <span title="last modification date" class="post-info">2020-08-14</span>
+        <span title="tags" class="post-info"><a href="/tags/linux/">linux</a>, <a href="/tags/unix/">unix</a>, <a href="/tags/book/">book</a>, <a href="/tags/design/">design</a></span>
+        <span title="author" class="post-info">andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; outlook &lt;dot&gt; com">andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

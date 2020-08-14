@@ -32,9 +32,9 @@
 <div class="post">
 <h1>How I inspected my Emacs configuration and discovered once again Org-Mode people are smart</h1>
 
-<div id="outline-container-orga97f0e3" class="outline-2">
-<h2 id="orga97f0e3">Too long; didn't read</h2>
-<div class="outline-text-2" id="text-orga97f0e3">
+<div id="outline-container-orgba3aee3" class="outline-2">
+<h2 id="orgba3aee3">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgba3aee3">
 <p>
 Use <code>org-babel-load-file</code> on your org-mode based configuration
 directly to exploit its caching mechanism: tangling code blocks is
@@ -43,9 +43,9 @@ slow!
 </div>
 </div>
 
-<div id="outline-container-org73738e4" class="outline-2">
-<h2 id="org73738e4">The problem</h2>
-<div class="outline-text-2" id="text-org73738e4">
+<div id="outline-container-orgf5aa5ca" class="outline-2">
+<h2 id="orgf5aa5ca">The problem</h2>
+<div class="outline-text-2" id="text-orgf5aa5ca">
 <p>
 In my Emacs workflow I liked to have everything in a single org-mode
 file. Even my configuration! Now, although it is nice to have
@@ -59,9 +59,9 @@ longer than 20 seconds.
 </div>
 </div>
 
-<div id="outline-container-org8e6a7a5" class="outline-2">
-<h2 id="org8e6a7a5">It is a problem indeed</h2>
-<div class="outline-text-2" id="text-org8e6a7a5">
+<div id="outline-container-org322ebbc" class="outline-2">
+<h2 id="org322ebbc">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org322ebbc">
 <p>
 Add to this that I like to start Emacs anew often, this was
 quite troublesome. <a href="https://brandur.org/interfaces">You do not want to wait on your editor</a>. And more
@@ -70,9 +70,9 @@ importantly you do not want to waste your life.
 </div>
 </div>
 
-<div id="outline-container-orge4a57cd" class="outline-2">
-<h2 id="orge4a57cd">And there is a solution</h2>
-<div class="outline-text-2" id="text-orge4a57cd">
+<div id="outline-container-orga532570" class="outline-2">
+<h2 id="orga532570">And there is a solution</h2>
+<div class="outline-text-2" id="text-orga532570">
 <p>
 Well, I started from debugging the initiation time of my packages.
 Some time ago, I found myself spending quite some time fixing
@@ -126,7 +126,7 @@ someone else, I just hacked my way through:
 <pre class="src src-emacs-lisp">(defun my/init-audit-message (string)
   "Print out STRING and calculate length of init."
   (message string)
-  (if (not (string= "end" (substring string -3)))
+  (if (not (string= "end" (substring string -3))) 
       (setq my/init-audit-message-begin (current-time))
     (message
      "It took %s seconds in total."
@@ -227,9 +227,9 @@ Finally happy!!
 </div>
 </div>
 
-<div id="outline-container-orgfdf9d88" class="outline-2">
-<h2 id="orgfdf9d88">Conclusion</h2>
-<div class="outline-text-2" id="text-orgfdf9d88">
+<div id="outline-container-orgd28f117" class="outline-2">
+<h2 id="orgd28f117">Conclusion</h2>
+<div class="outline-text-2" id="text-orgd28f117">
 <p>
 So please inspect your configuration performance if you start your
 Emacs multiple times a day and please save yourself some time
@@ -247,27 +247,12 @@ Happy hacking!
     <div>
       <div class="post-meta">
         <span title="post date" class="post-info">2020-08-07</span>
-        <span title="last modification date" class="post-info">2020-08-07</span>
+        <span title="last modification date" class="post-info">2020-08-12</span>
         <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/org-mode/">org-mode</a>, <a href="/tags/elisp/">elisp</a></span>
         <span title="author" class="post-info">Andrea</span>
       </div>
       <section>
         <h1>Comments</h1>
-        <div id="disqus_thread"></div>
-        <script type="text/javascript">
-          //var disqus_developer = 1;
-          var disqus_identifier = "/blog/2020/08/07/how-i-inspected-my-emacs-configuration-and-discovered-once-again-org-mode-people-are-smart";
-          var disqus_url = "http://ag91.github.io/blog/2020/08/07/how-i-inspected-my-emacs-configuration-and-discovered-once-again-org-mode-people-are-smart";
-          var disqus_shortname = 'whereparallelscross';
-          /* * * DON'T EDIT BELOW THIS LINE * * */
-          (function() {
-          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-          })();
-        </script>
-        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
       </section>
       <script src="//code.jquery.com/jquery-latest.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
@@ -286,7 +271,7 @@ Happy hacking!
       <div class="footer">
         <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
         <p>
-          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea</a>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
           &nbsp;&nbsp;-&nbsp;&nbsp;
           Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
           <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>

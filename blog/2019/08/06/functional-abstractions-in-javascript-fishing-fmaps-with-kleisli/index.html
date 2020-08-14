@@ -31,9 +31,9 @@
 <div>
 <div class="post">
 <h1>Functional abstractions in JavaScript: fishing fmaps with Kleisli</h1>
-<div id="outline-container-org7a493c7" class="outline-2">
-<h2 id="org7a493c7">Introduction</h2>
-<div class="outline-text-2" id="text-org7a493c7">
+<div id="outline-container-org31f5baf" class="outline-2">
+<h2 id="org31f5baf">Introduction</h2>
+<div class="outline-text-2" id="text-org31f5baf">
 <p>
 In <a href="https://lunatech.com/blog/W7IorBUAAMac74Ew/functional-abstractions-in-javascript-check-functors-laws">a previous post</a> we used <code>jsverify</code> to check that a JavaScript array
 satisfies Functor's law (about identity and composition).
@@ -89,7 +89,7 @@ var handleInvalidStrings =
 
 var capitalized = (s) =&gt; s.charAt(0) === s.charAt(0).toUpperCase();
 var capitalize = (s) =&gt; s.charAt(0).toUpperCase() + s.slice(1); // https://stackoverflow.com/questions/1026069/how-do-i-make-the-first-letter-of-a-string-uppercase-in-javascript
-const makeErrorsIfNotCapitalized = (l) =&gt;
+const makeErrorsIfNotCapitalized = (l) =&gt; 
       handleInvalidStrings(
         l,
         capitalized,
@@ -136,9 +136,9 @@ using (without knowing).
 </div>
 </div>
 
-<div id="outline-container-orgfca0cd8" class="outline-2">
-<h2 id="orgfca0cd8">There is a Functor in every Kleisli</h2>
-<div class="outline-text-2" id="text-orgfca0cd8">
+<div id="outline-container-org88f2b60" class="outline-2">
+<h2 id="org88f2b60">There is a Functor in every Kleisli</h2>
+<div class="outline-text-2" id="text-org88f2b60">
 <p>
 In the code example we took in consideration, the main functionality
 is given by <code>fixupAndAddErrors</code>. This function is interesting as it
@@ -388,9 +388,9 @@ And Functor is!
 </div>
 </div>
 
-<div id="outline-container-orgb53292b" class="outline-2">
-<h2 id="orgb53292b">How easy it is to add a new validator with Kleisli</h2>
-<div class="outline-text-2" id="text-orgb53292b">
+<div id="outline-container-org296ba73" class="outline-2">
+<h2 id="org296ba73">How easy it is to add a new validator with Kleisli</h2>
+<div class="outline-text-2" id="text-org296ba73">
 <p>
 Let's look at our example before:
 </p>
@@ -516,7 +516,7 @@ fish composition as follows
 !     };
 
   const logErrors = (l) =&gt; l.errors.forEach(e =&gt; console.log(e));
-  const getCapitalizedStrings = (l) =&gt; l.strings;
+  const getCapitalizedStrings = (l) =&gt; l.strings;  
 </pre>
 
 <p>
@@ -583,16 +583,16 @@ Essentially we just need to compose a new validator with "fish": easy!
 </div>
 </div>
 
-<div id="outline-container-org2001474" class="outline-2">
-<h2 id="org2001474">What Kleisli laws represent</h2>
-<div class="outline-text-2" id="text-org2001474">
+<div id="outline-container-orgc545066" class="outline-2">
+<h2 id="orgc545066">What Kleisli laws represent</h2>
+<div class="outline-text-2" id="text-orgc545066">
 <p>
 Let us take a brief moment to get the intuition of what the Kleisli
 laws really mean.
 </p>
 
 <p>
-You may have noticed that we have only two laws for Functors:
+You may have noticed that we have only two laws for Functors: 
 </p>
 
 <ol class="org-ol">
@@ -666,9 +666,9 @@ an effect with them, so we have to wrap them in the <code>fish</code> call.
 </div>
 </div>
 
-<div id="outline-container-org7f09e0e" class="outline-2">
-<h2 id="org7f09e0e">Conclusion</h2>
-<div class="outline-text-2" id="text-org7f09e0e">
+<div id="outline-container-orgc945515" class="outline-2">
+<h2 id="orgc945515">Conclusion</h2>
+<div class="outline-text-2" id="text-orgc945515">
 <p>
 In summary we saw a functional abstraction useful to handle sequential
 effects (like logging and error handling). We saw how Kleisli is a
@@ -699,27 +699,12 @@ known as flatMap</p></div></div>
     <div>
       <div class="post-meta">
         <span title="post date" class="post-info">2019-08-06</span>
-        <span title="last modification date" class="post-info">2020-07-25</span>
+        <span title="last modification date" class="post-info">2020-08-12</span>
         <span title="tags" class="post-info"><a href="/tags/javascript/">javascript</a>, <a href="/tags/jsverify/">jsverify</a>, <a href="/tags/functional/">functional</a></span>
         <span title="author" class="post-info">Andrea Giugliano</span>
       </div>
       <section>
         <h1>Comments</h1>
-        <div id="disqus_thread"></div>
-        <script type="text/javascript">
-          //var disqus_developer = 1;
-          var disqus_identifier = "/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli";
-          var disqus_url = "http://ag91.github.io/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli";
-          var disqus_shortname = 'whereparallelscross';
-          /* * * DON'T EDIT BELOW THIS LINE * * */
-          (function() {
-          var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-          dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-          (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-          })();
-        </script>
-        <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-        <a href="//disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
       </section>
       <script src="//code.jquery.com/jquery-latest.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
@@ -738,7 +723,7 @@ known as flatMap</p></div></div>
       <div class="footer">
         <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
         <p>
-          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev@hotmail.com">Andrea Giugliano</a>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com &lt;dot&gt; ac &lt;dot&gt; uk">Andrea Giugliano</a>
           &nbsp;&nbsp;-&nbsp;&nbsp;
           Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
           <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
