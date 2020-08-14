@@ -1,6 +1,6 @@
 #+TITLE:       Linux, Unix Philosophy and why programs are just filters
 #+AUTHOR:      andrea
-#+EMAIL:       andrea-dev@outlook.com
+#+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2020-08-14 Fri
 #+URI:         /blog/%y/%m/%d/linux-unix-philosophy-and-why-programs-are-just-filters
 #+KEYWORDS:    linux, unix, book, design

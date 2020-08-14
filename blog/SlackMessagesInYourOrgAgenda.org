@@ -1,0 +1,186 @@
+#+TITLE:       Slack messages in your Org Agenda
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-08-14 Fri
+#+URI:         /blog/%y/%m/%d/slack-messages-in-your-org-agenda
+#+KEYWORDS:    emacs, slack, org-mode
+#+TAGS:        emacs, slack, org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to keep up with Slack with your Org Agenda
+* Too long; didn't read
+
+Do not waste your time cycle through Slack, rather make important
+Slack messages appear in your Org mode agenda as TODOs!
+
+* The problem
+
+Slack is a time sink. At work I need to check if some messages pop up
+and promptly respond to them. Well, it would not be the first time I
+miss those because I am dealing with something taking my full
+attention and certainly not the last that I start checking for them
+and suddenly find myself participating into some unrelated and
+time-consuming conversation.
+
+So the question: how to avoid missing messages I care about AND be
+dragged into unnecessary (but nice) chats?
+
+* It is a problem indeed
+
+It does not help if we look at some stats: it seems on average devs
+spend 90 minutes on Slack per day. That is roughly 1/5 of your working
+time! My personal stats have shown that some days I end up spending
+much more time checking Slack (for example in order to be in the loop
+to help solving incidents and likes).
+
+* And there is a solution
+:PROPERTIES:
+:ID:       d0ee6787-71ae-44c1-ba07-04aa5fc1f10d
+:END:
+
+That is where the good old Emacs comes in! Did you know that there is
+an amazing [[rmail:][Emacs Slack client]]? I got to discover it by checking out
+[[https://github.com/jethrokuan/dots/blob/master/.doom.d/config.el][the amazing configuration of Jethro Kuan]], the creator of [[https://blog.jethro.dev/posts/introducing_org_roam/][org-roam]].
+Initially I was a bit shy, and I was thinking: "It would be bad to be
+disturbed in my sacred elispy garden by continuous Slack
+notifications". 
+
+Then an idea started popping up: what if I can remove notifications
+and show messages in my Org Agenda instead. I look at this frequently
+to see what I am left to do for the day, and Slack communications are
+tasks to do of which I do not take note.
+
+So I looked into how notifications work for emacs-slack and a way to
+divert them to my agenda. The first amazing piece of news is that the
+mode use [[https://github.com/jwiegley/alert][alert]]: a mode by John Wiegley who is just a very smart (and
+evidently generous) person and also the creator of [[https://github.com/jwiegley/use-package][use-package]],
+another mode I very much enjoy using. The alert library is just
+designed to allow extension!
+
+The amazing thing is that [[https://stackexchange.com/users/228922/malabarba][Malabarba]] has already shown how to make the
+best of the alert library together with emacs-slack in [[http://endlessparentheses.com/keep-your-slack-distractions-under-control-with-emacs.html][this]] and [[http://endlessparentheses.com/mold-slack-entirely-to-your-liking-with-emacs.html][this]]
+posts. I found them really useful for my setup, thank you Malabarba to
+share that!
+
+So the first step is to setup emacs-slack:
+
+#+begin_src elisp :noeval
+(use-package slack
+  :defer 4
+  :init (make-directory "/tmp/emacs-slack-images/" t)
+  :bind (:map slack-mode-map
+              (("@" . slack-message-embed-mention)
+               ("#" . slack-message-embed-channel)))
+  :custom
+  (slack-buffer-emojify t)
+  (slack-prefer-current-team t)
+  (slack-image-file-directory "/tmp/emacs-slack-images/")
+  :config
+  (when (f-dir-p "someFileOrDirectoryExistingOnlyOnWorkEnvironment")
+    (slack-register-team
+     :name "someTeam"
+     :token (password-store-get "someTeamPass") ;; avoid to store password in plain text please!!
+     :full-and-display-names t)
+    (slack-start)
+    (add-to-list 'org-agenda-files "~/yourOrgAgendaFilesFolder/Slack.org")))
+#+end_src
+
+Note I use Slack only for work so I start it only when on my work
+environment. Also in that case I add an extra Org Agenda file to the
+set of files that compose my agenda: in this way slack messages are
+well separated from my other tasks and will not clutter my home
+agenda.
+
+And now let's handle the notifications. First we need a way to append
+special slack TODO to our dedicated Org mode file. In the alert
+library you can define your own alert handler, like this:
+
+#+begin_src elisp :noeval
+(alert-define-style
+   'my/alert-style :title
+   "Make Org headings for messages I receive - Style"
+   :notifier
+   (lambda (info)
+     (write-region
+      (s-concat
+       "* TODO "
+       (plist-get info :title)
+       " : "
+       (format
+        "%s %s :slack:"
+        (plist-get info :title)
+        (plist-get info :message))
+       "\n"
+       (format "\n <%s>" (format-time-string "%Y-%m-%d %H:%M"))
+       "\n")
+      nil
+      "~/yourOrgAgendaFilesFolder/Slack.org"
+      t)))
+#+end_src
+ 
+Here when we get notified for a message (=:notified= section), we
+append a TODO entry to the agenda file through =write-region=. Note
+that we give it the date including hour and second to make it appear
+in the agenda at the correct time.
+
+The other thing we need to do is the plumbing things together: we want
+only slack notifications to be handled this way
+
+#+begin_src elisp :noeval
+(add-to-list 'alert-user-configuration
+               '(((:category . "slack")) my/alert-style nil))
+#+end_src
+
+Put all together:
+
+#+begin_src elisp :noeval
+(use-package alert
+  :after slack
+  :init
+  (alert-define-style
+   'my/alert-style :title
+   "Make Org headings for messages I receive - Style"
+   :notifier
+   (lambda (info)
+     (write-region
+      (s-concat
+       "* TODO "
+       (plist-get info :title)
+       " : "
+       (format
+        "%s %s :slack:"
+        (plist-get info :title)
+        (plist-get info :message))
+       "\n"
+       (format "\n <%s>" (format-time-string "%Y-%m-%d %H:%M"))
+       "\n")
+      nil
+      "~/yourOrgAgendaFilesFolder/Slack.org"
+      t)))
+  (setq alert-default-style 'message)
+  (add-to-list 'alert-user-configuration
+               '(((:category . "slack")) my/alert-style nil)))
+#+end_src
+
+Note you may find bugs. I have to improve things slightly, so this is
+a basic and drafty implementation but it already gives me great
+satisfaction so I decided to share it anyway.
+
+* Conclusion
+
+What would you do then? Keep jumping at your notifications or getting
+them appear as event in your Org agenda? I strongly prefer the latter:
+a chat is still asynchronous communication that fits very well with my
+agenda workflow. Also you can keep track of how many messages you work
+on in a day as org TODOs (and plan time for these with concrete data
+available that you can easily query with [[https://github.com/alphapapa/org-ql][org-ql]] if you like -- thanks
+[[https://github.com/alphapapa/org-ql][alphapapa]]!!).
+
+If you want to try out: just adapt [[https://github.com/ag91/emacs-slack-org-mode-example][the code in this repository]] to your
+needs!
+
+Finally, I hope to have time soon to add linking from the TODOs to the Emacs Slack
+client buffer, so that I can just jump to the chat buffer and reply on
+the fly. I will blog about this too if I manage!
+
+Hope this frees some of your precious time too!
