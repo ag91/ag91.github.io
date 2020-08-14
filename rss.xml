@@ -4,16 +4,23 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 14 Aug 2020 23:06:17 CEST</pubDate>
-    <lastBuildDate>Fri, 14 Aug 2020 23:06:17 CEST</lastBuildDate>
+    <pubDate>Sat, 15 Aug 2020 00:41:00 CEST</pubDate>
+    <lastBuildDate>Sat, 15 Aug 2020 00:41:00 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
       <title>Linux, Unix Philosophy and why programs are just filters</title>
       <link>http://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters</link>
       <description><![CDATA[How the Unix design philosophy has still a lot to teach us]]></description>
-      <pubDate>2020-08-14</pubDate>
+      <pubDate>2020-08-15</pubDate>
       <guid>http://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters</guid>
+    </item>
+    <item>
+      <title>Slack messages in your Org Agenda</title>
+      <link>http://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda</link>
+      <description><![CDATA[How to keep up with Slack with your Org Agenda]]></description>
+      <pubDate>2020-08-15</pubDate>
+      <guid>http://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda</guid>
     </item>
     <item>
       <title>Automate boring configuration changes</title>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-08-12</pubDate>
       <guid>http://ag91.github.io/blog/2019/02/12/make-org-feed-wget-timeout</guid>
-    </item>
-    <item>
-      <title>Fold the recursive function</title>
-      <link>http://ag91.github.io/blog/2019/08/06/fold-the-recursive-function</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-08-12</pubDate>
-      <guid>http://ag91.github.io/blog/2019/08/06/fold-the-recursive-function</guid>
     </item>
   </channel>
 </rss>
