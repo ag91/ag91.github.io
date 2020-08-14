@@ -1,0 +1,89 @@
+#+TITLE:       Linux, Unix Philosophy and why programs are just filters
+#+AUTHOR:      andrea
+#+EMAIL:       andrea-dev@outlook.com
+#+DATE:        2020-08-14 Fri
+#+URI:         /blog/%y/%m/%d/linux-unix-philosophy-and-why-programs-are-just-filters
+#+KEYWORDS:    linux, unix, book, design
+#+TAGS:        linux, unix, book, design
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How the Unix design philosophy has still a lot to teach us
+I am a passionate reader and it is years that I work on operating
+systems based on Linux. 
+
+I confess that although reading tiny bits here and there, I never went
+in depth about what design principles Unix was built upon. For
+example, why =cd= is not =change-directory=? And why is all based on
+pipes, and =stdin= and =stdout=?
+
+I am sure the Internet has all this information scattered around
+somewhere. However I really was looking for a consistent narration of
+why Unix and Linux are like we see them today.
+
+I am convinced that just grasping the basics of how large and reliable
+software systems are built can boost your skills as an engineer.
+
+And there I find it: [[https://www.goodreads.com/book/show/2084939.Linux_and_the_Unix_Philosophy][Linux and Unix Philosophy by Mike Gancarz]] laying
+there in my reading list!
+
+So let's start from the juicy part: programs are data filters. The
+point, in the words of the author, is that "Programs do not create
+data, people do". This [[https://www.youtube.com/watch?v=Nnu1E5Kslig][left me wonder]]. If you think about it, it is a
+banal truth that carries a lot of meaning. 
+
+Any program we write ingest data and transforms that to something
+useful. But it does not generate the data in the first place. A
+program without data is useless, and we people are the data providers.
+The side effect of this is that functional programming is trendy for a
+reason: when you grasp how to use functions like =map= and =filter=
+you already belong to the functional community and also you are
+explicitly making your programs filter data.
+
+So with that I looked at =|=, the pipe symbol, differently: that
+operator lets you compose your programs, i.e., your filters. (By the
+way, did you know the pipe operator passes partial results to the
+composed programs? Roughly speaking, =cat file | grep
+"someWord"= will not wait =cat= to pass the whole file contents to =grep=,
+instead =grep= will work line by line).
+
+And that brings us to the other design principle: "Choose portability
+over efficiency". In Unix and Linux everything is a file: directories,
+=stdin=, =stdout=, processes, et cetera, are all files. The point here
+is that text files are portable, no strange byte conversions and
+similar. Anybody can open a file, it is standard, easy to share, and
+an abstraction around which you can build software that is uniform.
+
+"Small is beautiful" is the last principle I want to consider in this
+post. This has much in common with Rich Hickey's talk [[https://www.infoq.com/presentations/Simple-Made-Easy/][Simple made
+easy]]: you want to prefer uni-functional programs. If your programs do
+a single thing, it is more likely you will write them correctly. Then
+to achieve your goal you can just compose your programs. The author
+calls this software leverage: the idea is that delivering and
+composing multiple small programs is more than delivering a single
+program that does the same. The reason is that you can reuse
+uni-functional programs in many different contexts.
+
+An extra thing I want to mention is an interesting thought about the
+Agile community: Agile people have re-branded and made popular most of
+the Unix principles under the name of eXtreme Programming, Scrum,
+etc... Fundamentally fast prototyping, quick iterations and minimal
+bureaucracy (did I mention that all programs are as minimal as
+possible, even the naming conventions are i.e. =cd= vs
+=change-directory=) were all already around from a long time before we
+entered the Agile era (and luckily enough I would say!). 
+
+(This kind of borrowing ideas reminds me of another worth read I did
+recently which is "[[https://austinkleon.com/steal/][Steal Like an Artist]]" that was suggested by an
+interesting YouTuber [[https://aliabdaal.com/][Ali Abdaal]], who was brought to my attention from
+a post of the [[https://irreal.org/blog/?tag=emacs][Irreal]] blog.)
+
+In conclusion this book's gift is a compact list of guidelines to
+design your programs and leverage composition of small programs with a
+single responsibility. Also, I am grateful that Mike decided to
+include this quote by his manager:
+
+"Software is never finished. It is only delivered." And indeed, I
+strongly agree that interpreting a project as an iteration helps a lot
+in reducing stress.
+
+Hope you will have time to look this book up too at some point!
