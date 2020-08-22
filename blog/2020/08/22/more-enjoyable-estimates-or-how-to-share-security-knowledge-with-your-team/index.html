@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>More enjoyable estimates, or how to share security knowledge with your team - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="An effective way to embed security knowledge sharing and estimation in your software process" />
+    <meta name="keywords" content="agile,team,estimating" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>More enjoyable estimates, or how to share security knowledge with your team</h1>
+<div id="outline-container-org3888019" class="outline-2">
+<h2 id="org3888019">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org3888019">
+<p>
+Make a dashboard, split it by size and security risk, and let your
+team place stories in the right areas of the dashboard. It takes at
+most five minutes and you can estimate without boredom.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org60342d5" class="outline-2">
+<h2 id="org60342d5">The problem</h2>
+<div class="outline-text-2" id="text-org60342d5">
+<p>
+Estimates are always wrong. People feel uncomfortable in defining a
+time for their tasks because often others will take that as a
+schedule. The <a href="https://agilemanifesto.org/">Agile movement</a> came up with attempts to make this
+activity enjoyable and insightful (think of <a href="https://www.mountaingoatsoftware.com/agile/planning-poker">Planning Poker</a> or <a href="https://www.mountaingoatsoftware.com/blog/estimating-with-tee-shirt-sizes">T-shirt
+sizing</a>). Most of what I read tackled how to quantify the effort needed
+for a story.
+</p>
+
+<p>
+Now, effort is not the only thing worth estimating. As I mentioned <a href="https://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters/">in
+my post "Linux, Unix Philosophy and why programs are just filters"</a>,
+people are data creators. Sometimes this data is confidential. When
+you offer a service to other people, they will create data and you
+will have to deal with that assuming that need to stay confidential.
+Assuming our existing service handles data securely, we would like to
+avoid to make it insecure when we extend it. So, security risk is
+something engineers need to be aware of and ideally estimate.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1ec9f4e" class="outline-2">
+<h2 id="org1ec9f4e">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org1ec9f4e">
+<p>
+Estimating security is difficult. <a href="https://threatmodeler.com/threat-modeling-methodologies-overview-for-your-business/">There are several approaches</a> and
+they always require checklists and lengthy data flow modelling. I
+believe some of these practices happen too infrequently and, if not,
+they are prone to become boring ceremonies. I believe that security
+(and also monitoring, but lets leave this out for now) should be part
+of story planning. It is also disturbing that engineers do not have a
+taste for security issues: if not us, who else could protect users'
+confidentiality?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7e1bf9c" class="outline-2">
+<h2 id="org7e1bf9c">And there is a solution</h2>
+<div class="outline-text-2" id="text-org7e1bf9c">
+<p>
+Recently I had the privilege of collaborating with the smart people of
+<a href="https://dmrs1v41ia0sr.cloudfront.net/">QWAN</a>, and they suggested a simple way to take away the boredom of
+estimating effort: just make a dashboard, split it by story size
+(similar to T-shirt sizing: Small, Large, Extra Large), and let
+everybody in the team place stories in the right area. If somebody
+strongly believe that a story is of a different size, they will point
+it out and the team can debate about it. Shortly this became our
+default approach to estimate stories.
+</p>
+
+<p>
+After seeing how effective and efficient this simple method was, I
+thought: "What about approaching security the same way?". Here my
+proposal: let's make our dashboard a matrix where we also have a risk
+size.
+</p>
+
+<p>
+This is a sample dashboard I am thinking of:
+</p>
+
+
+<div class="figure">
+<p><img src="/assets/blog/2020/08/22/more-enjoyable-estimates-or-how-to-share-security-knowledge-with-your-team/boardEmpty.jpg" alt="boardEmpty.jpg" />
+</p>
+</div>
+
+<p>
+Story size (or complexity) stands for how difficult is to implement a
+feature. Security stands for how likely this will break
+confidentiality.
+</p>
+
+<p>
+I also like that teams customize the dashboard a little, this is what
+I would do for making it more familiar to me (I think it also
+increases efficiency in recognizing where to place things):
+</p>
+
+
+<div class="figure">
+<p><img src="/assets/blog/2020/08/22/more-enjoyable-estimates-or-how-to-share-security-knowledge-with-your-team/boardEmptyWithPics.jpg" alt="boardEmptyWithPics.jpg" />
+</p>
+</div>
+
+<p>
+What I propose is that given a backlog of stories, the team members
+will concurrently move them in the right areas. For example:
+</p>
+
+
+
+<div class="figure">
+<p><img src="/assets/blog/2020/08/22/more-enjoyable-estimates-or-how-to-share-security-knowledge-with-your-team/boardUseExample.jpg" alt="boardUseExample.jpg" />
+</p>
+</div>
+
+<p>
+In the example above, the team estimated that changing static text is
+simple and has no effect on user's security. Instead they estimated
+that opening an internal API to the public is of average complexity,
+but it risks to expose users' confidential data.
+</p>
+
+<p>
+<span class="underline">Important note: the point of this method is the debate within the
+team.</span> The main benefit of any effort estimation is to refine our
+understanding of the effort itself (think of "grokking the effort" if
+you enjoyed the sci-fi book <a href="https://en.wikipedia.org/wiki/Stranger_in_a_Strange_Land">"Stranger in a Strange Land"</a>). Also in
+this case, the main benefit of estimating security is the generated
+debate about security topics: imagine a team member positioning the
+"opening API to public" into the "Safe" area; now another colleague
+will move that story into the "Horror" area; ideally the first will
+ask the latter why and this will trigger knowledge sharing about
+security risks and concerns.
+</p>
+
+<p>
+I propose that this approach can make visible the security concerns of
+user stories. 
+</p>
+
+<p>
+I envision that a business could use security estimates to roughly
+calculate the risk a company is taking at every iteration, and take
+decisions accordingly. Although this is just a wild guess because
+these estimates are subjective to the team, and so likely unreliable
+(but all estimates are like that).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org48fb470" class="outline-2">
+<h2 id="org48fb470">Conclusion</h2>
+<div class="outline-text-2" id="text-org48fb470">
+<p>
+So the steps are easy, make a dashboard, split it by size and risk,
+take your backlog of stories/tasks and ask your team to put it in the
+right area of your dashboard. We need more security awareness and
+knowledge sharing and we may make that happen through effective
+security estimates.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8326e8b" class="outline-2">
+<h2 id="org8326e8b">Minor Notes</h2>
+<div class="outline-text-2" id="text-org8326e8b">
+<p>
+The software I used for making this example board is <a href="https://miro.com/">Miro</a>, which I
+found quite enjoyable to use and helpful for remote collaboration.
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-08-22</span>
+        <span title="last modification date" class="post-info">2020-08-22</span>
+        <span title="tags" class="post-info"><a href="/tags/agile/">agile</a>, <a href="/tags/team/">team</a>, <a href="/tags/estimating/">estimating</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
