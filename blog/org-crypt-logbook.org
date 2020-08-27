@@ -1,0 +1,229 @@
+#+TITLE:       Org crypt and LOGBOOK: how they can work together for a secure agenda.
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-08-28 Fri
+#+URI:         /blog/%y/%m/%d/org-crypt-and-logbook-how-they-can-work-together-for-a-secure-agenda
+#+KEYWORDS:    org-mode,org-crypt,emacs
+#+TAGS:        org-mode,org-crypt,emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A deep dive in fixing a malfunction of org-crypt and the LOGBOOK drawer, and a show of how customizable Org Mode is
+
+* Too long; didn't read
+
+Do you use org-crypt to protect your agenda headlines? Do you clock in
+your tasks to measure how much time you spend on them? Well if you
+edit ~org-property-drawer-re~ dynamically you will spare some of the
+clumsiness of org-decrypt (please see the last code snippet at the
+bottom for the running solution). Be careful to not store sensitive
+information in the heading drawers though, because org-crypt will
+leave them in plain text.
+
+* The problem
+
+I started using [[https://orgmode.org/manual/Org-Crypt.html][org-crypt]] recently. This is a mode that substitutes
+the contents of your heading with a [[https://en.wikipedia.org/wiki/GNU_Privacy_Guard][PGP hash]] for entries you tag
+~:crypt:~. The result is amazing: protected agenda files, files still
+in plain text (so git can handle them with no problem), and even
+compressed in size (the hash reduces the text and so the size of the
+file)!
+
+Anyway, a little bug keeps bothering me: sometimes I find I cannot
+decrypt an headline. When I try to make it visible, it stays
+encrypted. 
+
+The problem is that if I reschedule an entry, I set Org Mode to add
+a logbook drawer with the created time of the entry, but then
+~org-crypt-decrypt-entry~ runs on the wrong line.
+
+So for example this entry will stay encrypted after I run the
+function on it:
+
+#+begin_src org
+,* TODO some test heading :crypt:
+SCHEDULED: <2020-08-23 Sun>
+:PROPERTIES:
+:CREATED:  [2020-08-22 Sat 16:05]
+:END:
+:LOGBOOK:
+- Rescheduled from "[2020-08-22 Sat]" on [2020-08-22 Sat 16:05]
+:END:
+-----BEGIN PGP MESSAGE-----
+
+hQEMAwE6qFgoORDaAQgAgzT7pr5uvL6X1KU4WH7yYyk4h0ITtuVT2sT3O0qSlQyN
+YXv7YQ0MvXSLXxUaXqm+a81cMmox3k13ifAT5/t9rcympNAYOuvWjOXsNA85uglT
+ZO3NExSJ8jhdcI/NlPLqBxioUEDGEXBo5nBQxrheD3/+j5tlTAwUZM7xPcj7bYcD
+mq6hVj3PigDO/E+e1LYfRJfVH6nszrYnF36dlONPDlRp2pGyODXM455bwCrWe1WM
+WuDsPkQN621Ga5P07yXzQYDjQNcBoeFLGQUB7udKutl2g0DyYvTECfUUY2Zx3bnt
+Noq1wamAmpNMtJru8oZsuLKZ7a77rWkSvOETqKEr6NJJAamY8oUCuDdw2+BMnuDr
+JGITMd9cWHLS758e0c0x9Gmm7ntn55816RN0qeaCOIw9ap5ie8NxcU4dwDNWh5y9
+1iruu+PK9gk2Zg==
+=qpA1
+-----END PGP MESSAGE-----
+
+#+end_src
+
+(You imagine the cold sweating the first time this happened.)
+
+* It is a problem indeed
+
+In practice this means that given you use LOGBOOK drawers, any
+rescheduling, clocking in and out would result in making your entry
+difficult to decrypt. The immediate workaround is to delete the drawer
+and try to decrypt again, but that information is useful and I would
+rather avoid this clumsiness! So exploration time: let's fix this and
+save any reader the headache.
+
+* And there is a solution
+
+Let's examine the function:
+
+#+begin_src elisp :noeval
+(defun org-decrypt-entry ()
+  "Decrypt the content of the current headline."
+  (interactive)
+  (require 'epg)
+  (unless (org-before-first-heading-p)
+    (org-with-wide-buffer
+     (org-back-to-heading t)
+     (let ((heading-point (point))
+           (heading-was-invisible-p
+            (save-excursion
+              (outline-end-of-heading)
+              (org-invisible-p))))
+       (org-end-of-meta-data)
+       (when (looking-at "-----BEGIN PGP MESSAGE-----")
+         ; some decrypting logic
+         ;...
+           nil))))))
+#+end_src
+
+So roughly we:
+
+1. go back to the heading ~(org-back-to-heading t)~
+
+2. move to the end of the ~:PROPERTIES:~ drawer ~(org-end-of-meta-data)~
+
+3. decrypt if we are on the regexp ~(when (looking-at "-----BEGIN PGP MESSAGE-----")~
+
+Maybe we found a bug in Org Mode? Let's look at ~org-end-of-meta-data~:
+
+#+begin_src elisp :noeval
+(defun org-end-of-meta-data (&optional full)
+  "Skip planning line and properties drawer in current entry.
+When optional argument FULL is non-nil, also skip empty lines,
+clocking lines and regular drawers at the beginning of the
+entry."
+  (org-back-to-heading t)
+  (forward-line)
+  (when (looking-at-p org-planning-line-re) (forward-line))
+  (when (looking-at org-property-drawer-re)
+    (goto-char (match-end 0))
+    (forward-line))
+  (when (and full (not (org-at-heading-p)))
+    ;; we do not care about the rest, it seems error handling...
+    ))
+#+end_src
+
+We move after the property drawer in case we run the bit of code
+~(looking-at org-property-drawer-re)~. So the problem here is that the
+~org-property-drawer-re~ by default excludes the regexp for
+~:LOGBOOK:~
+
+This seems to nail the problem, but before attempting to fix the
+function let's think. I found the problem with decryption, but what
+about encryption?
+
+Let's then look at ~org-encrypt-entry~:
+
+#+begin_src elisp :noeval
+(defun org-encrypt-entry ()
+  "Encrypt the content of the current headline."
+  (interactive)
+  (require 'epg)
+  (org-with-wide-buffer
+   (org-back-to-heading t)
+   (setq-local epg-context (epg-make-context nil t t))
+   (let ((start-heading (point)))
+     (org-end-of-meta-data)
+     (unless (looking-at-p "-----BEGIN PGP MESSAGE-----")
+       ;...
+   ))))   
+   #+end_src
+ 
+Mmm, same pattern same problem. It seems that if we fix
+~(org-end-of-meta-data)~ we will indeed fix also the encryption of the
+entry.
+
+Now let's try to fix it.
+ 
+First let's set the right regexp for ~:LOGBOOK:~. We can do that by
+copying the elders and sit on their shoulders (or also just creative
+copy-pasting). 
+
+Let's inspect the current ~org-property-drawer-re~ value:
+
+#+begin_src elisp :exports results
+org-property-drawer-re
+#+end_src
+
+#+RESULTS:
+: ^[ 	]*:PROPERTIES:[ 	]*
+: \(?:[ 	]*:\S-+:\(?: .*\)?[ 	]*
+: \)*?[ 	]*:END:[ 	]*$
+
+So most likely adding a new entry that has LOGBOOK instead of
+PROPERTIES will make the trick. Time to use ~regexp-builder~, [[https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder][the
+amazing mode to test your regexp live]]. After a bit of playing around
+with it, this is the regexp:
+
+#+begin_src elisp :noeval
+(setq org-property-drawer-re
+  (concat "^[ 	]*:[A-Z]*:[ 	]*\n"
+       "[[:ascii:]]*"
+       "[ \t]*:END:[ \t]*$"))
+#+end_src
+
+The original regexp only matches ~PROPERTIES~ drawers that contains
+entries structured like "x:y". I want instead to match
+":ANYTHING:anything:END:", where the first anything could be
+"PROPERTIES" or "LOGBOOK" or "BLA", and the second "anything" can
+be any text enclosed within.
+
+And indeed this fixes the org-crypt problem. However this breaks other
+functionalities in Org Mode: for example adding a note now keeps
+creating new LOGBOOK drawers. This calls for an [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Advising-Functions.html][advice]] (good old
+[[https://stackoverflow.com/questions/242177/what-is-aspect-oriented-programming][aspect oriented programming]]):
+
+#+begin_src elisp :noeval
+(defun my/with-catching-all-drawers (fn)
+  (let ((org-property-drawer-re
+         (concat "^[ 	]*:[A-Z]*:[ 	]*\n"
+                 "[^*]*"
+                 "[ \t]*:END:[ \t]*$")))
+    (funcall fn)))
+
+(advice-add
+ 'org-encrypt-entry :around
+ 'my/with-catching-all-drawers)
+
+(advice-add
+ 'org-decrypt-entry :around
+ 'my/with-catching-all-drawers)
+   #+end_src
+
+Now our regexp applies only in the context of org-encrypt, and other
+Org Mode functionalities can still work safely.
+ 
+* Conclusion
+
+So give a try and see if this makes your workflow smoother. Just setup
+org-crypt and run the last snippet of elisp will make your day! 
+
+Note that a concern with this solution is that now notes added to a
+task tagged with ~:crypt:~ stay as plain text, which may be dangerous
+if you store sensitive information in them. So just make sure to avoid
+storing your passwords in headlines notes... Use a password manager
+for that :)
+
+Be fabulous!
