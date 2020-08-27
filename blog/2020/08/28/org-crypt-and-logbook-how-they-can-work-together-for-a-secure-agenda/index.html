@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Org crypt and LOGBOOK: how they can work together for a secure agenda. - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A deep dive in fixing a malfunction of org-crypt and the LOGBOOK drawer, and a show of how customizable Org Mode is" />
+    <meta name="keywords" content="org-mode,org-crypt,emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Org crypt and LOGBOOK: how they can work together for a secure agenda.</h1>
+
+<div id="outline-container-org1d4cb0c" class="outline-2">
+<h2 id="org1d4cb0c">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org1d4cb0c">
+<p>
+Do you use org-crypt to protect your agenda headlines? Do you clock in
+your tasks to measure how much time you spend on them? Well if you
+edit <code>org-property-drawer-re</code> dynamically you will spare some of the
+clumsiness of org-decrypt (please see the last code snippet at the
+bottom for the running solution). Be careful to not store sensitive
+information in the heading drawers though, because org-crypt will
+leave them in plain text.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgca825e3" class="outline-2">
+<h2 id="orgca825e3">The problem</h2>
+<div class="outline-text-2" id="text-orgca825e3">
+<p>
+I started using <a href="https://orgmode.org/manual/Org-Crypt.html">org-crypt</a> recently. This is a mode that substitutes
+the contents of your heading with a <a href="https://en.wikipedia.org/wiki/GNU_Privacy_Guard">PGP hash</a> for entries you tag
+<code>:crypt:</code>. The result is amazing: protected agenda files, files still
+in plain text (so git can handle them with no problem), and even
+compressed in size (the hash reduces the text and so the size of the
+file)!
+</p>
+
+<p>
+Anyway, a little bug keeps bothering me: sometimes I find I cannot
+decrypt an headline. When I try to make it visible, it stays
+encrypted. 
+</p>
+
+<p>
+The problem is that if I reschedule an entry, I set Org Mode to add
+a logbook drawer with the created time of the entry, but then
+<code>org-crypt-decrypt-entry</code> runs on the wrong line.
+</p>
+
+<p>
+So for example this entry will stay encrypted after I run the
+function on it:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* TODO some test heading :crypt:
+SCHEDULED: &lt;2020-08-23 Sun&gt;
+:PROPERTIES:
+:CREATED:  [2020-08-22 Sat 16:05]
+:END:
+:LOGBOOK:
+- Rescheduled from "[2020-08-22 Sat]" on [2020-08-22 Sat 16:05]
+:END:
+-----BEGIN PGP MESSAGE-----
+
+hQEMAwE6qFgoORDaAQgAgzT7pr5uvL6X1KU4WH7yYyk4h0ITtuVT2sT3O0qSlQyN
+YXv7YQ0MvXSLXxUaXqm+a81cMmox3k13ifAT5/t9rcympNAYOuvWjOXsNA85uglT
+ZO3NExSJ8jhdcI/NlPLqBxioUEDGEXBo5nBQxrheD3/+j5tlTAwUZM7xPcj7bYcD
+mq6hVj3PigDO/E+e1LYfRJfVH6nszrYnF36dlONPDlRp2pGyODXM455bwCrWe1WM
+WuDsPkQN621Ga5P07yXzQYDjQNcBoeFLGQUB7udKutl2g0DyYvTECfUUY2Zx3bnt
+Noq1wamAmpNMtJru8oZsuLKZ7a77rWkSvOETqKEr6NJJAamY8oUCuDdw2+BMnuDr
+JGITMd9cWHLS758e0c0x9Gmm7ntn55816RN0qeaCOIw9ap5ie8NxcU4dwDNWh5y9
+1iruu+PK9gk2Zg==
+=qpA1
+-----END PGP MESSAGE-----
+
+</pre>
+</div>
+
+<p>
+(You imagine the cold sweating the first time this happened.)
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf0e8b38" class="outline-2">
+<h2 id="orgf0e8b38">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgf0e8b38">
+<p>
+In practice this means that given you use LOGBOOK drawers, any
+rescheduling, clocking in and out would result in making your entry
+difficult to decrypt. The immediate workaround is to delete the drawer
+and try to decrypt again, but that information is useful and I would
+rather avoid this clumsiness! So exploration time: let's fix this and
+save any reader the headache.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org37df1da" class="outline-2">
+<h2 id="org37df1da">And there is a solution</h2>
+<div class="outline-text-2" id="text-org37df1da">
+<p>
+Let's examine the function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun org-decrypt-entry ()
+  "Decrypt the content of the current headline."
+  (interactive)
+  (require 'epg)
+  (unless (org-before-first-heading-p)
+    (org-with-wide-buffer
+     (org-back-to-heading t)
+     (let ((heading-point (point))
+           (heading-was-invisible-p
+            (save-excursion
+              (outline-end-of-heading)
+              (org-invisible-p))))
+       (org-end-of-meta-data)
+       (when (looking-at "-----BEGIN PGP MESSAGE-----")
+         ; some decrypting logic
+         ;...
+           nil))))))
+</pre>
+</div>
+
+<p>
+So roughly we:
+</p>
+
+<ol class="org-ol">
+<li>go back to the heading <code>(org-back-to-heading t)</code></li>
+
+<li>move to the end of the <code>:PROPERTIES:</code> drawer <code>(org-end-of-meta-data)</code></li>
+
+<li>decrypt if we are on the regexp <code>(when (looking-at "-----BEGIN PGP MESSAGE-----")</code></li>
+</ol>
+
+<p>
+Maybe we found a bug in Org Mode? Let's look at <code>org-end-of-meta-data</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun org-end-of-meta-data (&amp;optional full)
+  "Skip planning line and properties drawer in current entry.
+When optional argument FULL is non-nil, also skip empty lines,
+clocking lines and regular drawers at the beginning of the
+entry."
+  (org-back-to-heading t)
+  (forward-line)
+  (when (looking-at-p org-planning-line-re) (forward-line))
+  (when (looking-at org-property-drawer-re)
+    (goto-char (match-end 0))
+    (forward-line))
+  (when (and full (not (org-at-heading-p)))
+    ;; we do not care about the rest, it seems error handling...
+    ))
+</pre>
+</div>
+
+<p>
+We move after the property drawer in case we run the bit of code
+<code>(looking-at org-property-drawer-re)</code>. So the problem here is that the
+<code>org-property-drawer-re</code> by default excludes the regexp for
+<code>:LOGBOOK:</code>
+</p>
+
+<p>
+This seems to nail the problem, but before attempting to fix the
+function let's think. I found the problem with decryption, but what
+about encryption?
+</p>
+
+<p>
+Let's then look at <code>org-encrypt-entry</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun org-encrypt-entry ()
+  "Encrypt the content of the current headline."
+  (interactive)
+  (require 'epg)
+  (org-with-wide-buffer
+   (org-back-to-heading t)
+   (setq-local epg-context (epg-make-context nil t t))
+   (let ((start-heading (point)))
+     (org-end-of-meta-data)
+     (unless (looking-at-p "-----BEGIN PGP MESSAGE-----")
+       ;...
+   ))))   
+</pre>
+</div>
+
+<p>
+Mmm, same pattern same problem. It seems that if we fix
+<code>(org-end-of-meta-data)</code> we will indeed fix also the encryption of the
+entry.
+</p>
+
+<p>
+Now let's try to fix it.
+</p>
+
+<p>
+First let's set the right regexp for <code>:LOGBOOK:</code>. We can do that by
+copying the elders and sit on their shoulders (or also just creative
+copy-pasting). 
+</p>
+
+<p>
+Let's inspect the current <code>org-property-drawer-re</code> value:
+</p>
+
+<pre class="example">
+^[ 	]*:PROPERTIES:[ 	]*
+\(?:[ 	]*:\S-+:\(?: .*\)?[ 	]*
+\)*?[ 	]*:END:[ 	]*$
+</pre>
+
+
+<p>
+So most likely adding a new entry that has LOGBOOK instead of
+PROPERTIES will make the trick. Time to use <code>regexp-builder</code>, <a href="https://www.masteringemacs.org/article/re-builder-interactive-regexp-builder">the
+amazing mode to test your regexp live</a>. After a bit of playing around
+with it, this is the regexp:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq org-property-drawer-re
+  (concat "^[ 	]*:[A-Z]*:[ 	]*\n"
+       "[[:ascii:]]*"
+       "[ \t]*:END:[ \t]*$"))
+</pre>
+</div>
+
+<p>
+The original regexp only matches <code>PROPERTIES</code> drawers that contains
+entries structured like "x:y". I want instead to match
+":ANYTHING:anything:END:", where the first anything could be
+"PROPERTIES" or "LOGBOOK" or "BLA", and the second "anything" can
+be any text enclosed within.
+</p>
+
+<p>
+And indeed this fixes the org-crypt problem. However this breaks other
+functionalities in Org Mode: for example adding a note now keeps
+creating new LOGBOOK drawers. This calls for an <a href="https://www.gnu.org/software/emacs/manual/html_node/elisp/Advising-Functions.html">advice</a> (good old
+<a href="https://stackoverflow.com/questions/242177/what-is-aspect-oriented-programming">aspect oriented programming</a>):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/with-catching-all-drawers (fn)
+  (let ((org-property-drawer-re
+         (concat "^[ 	]*:[A-Z]*:[ 	]*\n"
+                 "[^*]*"
+                 "[ \t]*:END:[ \t]*$")))
+    (funcall fn)))
+
+(advice-add
+ 'org-encrypt-entry :around
+ 'my/with-catching-all-drawers)
+
+(advice-add
+ 'org-decrypt-entry :around
+ 'my/with-catching-all-drawers)
+</pre>
+</div>
+
+<p>
+Now our regexp applies only in the context of org-encrypt, and other
+Org Mode functionalities can still work safely.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org93946ab" class="outline-2">
+<h2 id="org93946ab">Conclusion</h2>
+<div class="outline-text-2" id="text-org93946ab">
+<p>
+So give a try and see if this makes your workflow smoother. Just setup
+org-crypt and run the last snippet of elisp will make your day! 
+</p>
+
+<p>
+Note that a concern with this solution is that now notes added to a
+task tagged with <code>:crypt:</code> stay as plain text, which may be dangerous
+if you store sensitive information in them. So just make sure to avoid
+storing your passwords in headlines notes... Use a password manager
+for that :)
+</p>
+
+<p>
+Be fabulous!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-08-28</span>
+        <span title="last modification date" class="post-info">2020-08-28</span>
+        <span title="tags" class="post-info"><a href="/tags/org-mode/">org-mode</a>, <a href="/tags/org-crypt/">org-crypt</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

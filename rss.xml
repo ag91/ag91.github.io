@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 22 Aug 2020 15:30:58 CEST</pubDate>
-    <lastBuildDate>Sat, 22 Aug 2020 15:30:58 CEST</lastBuildDate>
+    <pubDate>Fri, 28 Aug 2020 00:40:13 CEST</pubDate>
+    <lastBuildDate>Fri, 28 Aug 2020 00:40:13 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Org crypt and LOGBOOK: how they can work together for a secure agenda.</title>
+      <link>http://ag91.github.io/blog/2020/08/28/org-crypt-and-logbook-how-they-can-work-together-for-a-secure-agenda</link>
+      <description><![CDATA[A deep dive in fixing a malfunction of org-crypt and the LOGBOOK drawer, and a show of how customizable Org Mode is]]></description>
+      <pubDate>2020-08-28</pubDate>
+      <guid>http://ag91.github.io/blog/2020/08/28/org-crypt-and-logbook-how-they-can-work-together-for-a-secure-agenda</guid>
+    </item>
+    <item>
       <title>More enjoyable estimates, or how to share security knowledge with your team</title>
       <link>http://ag91.github.io/blog/2020/08/22/more-enjoyable-estimates-or-how-to-share-security-knowledge-with-your-team</link>
-      <description><![CDATA[An effective way to embed security knowledge sharing and estimation in your software process]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-08-22</pubDate>
       <guid>http://ag91.github.io/blog/2020/08/22/more-enjoyable-estimates-or-how-to-share-security-knowledge-with-your-team</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-08-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/07/28/how-to-integrate-yasnippet-and-yankpad-with-org-capture</guid>
-    </item>
-    <item>
-      <title>JVisualVM, or how to observe the state of your Java Virtual Machine</title>
-      <link>http://ag91.github.io/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-08-12</pubDate>
-      <guid>http://ag91.github.io/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine</guid>
     </item>
   </channel>
 </rss>
