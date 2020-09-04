@@ -249,6 +249,9 @@ IDE2MS44OCwtMTA2Ljc4IDE2OS4xOSwtMTE0LjQ0IDE3Mi4zOCwtMTA4LjIxIi8+CjwvZz4KPC9n
 Pgo8L3N2Zz4K")
 #+END_SRC
 
+#+RESULTS:
+[[file:OnLispOrgRoam.svg]]
+
 See [[https://www.orgroam.com/manual/Installation-_00281_0029.html#Installation-_00281_0029][org-roam documentation]] on how to make the nodes clickable!
 
 * Conclusion
