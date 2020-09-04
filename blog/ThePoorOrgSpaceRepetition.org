@@ -1,0 +1,264 @@
+#+TITLE:       The Poor Org-User Spaced Repetition
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-09-04 Fri
+#+URI:         /blog/%y/%m/%d/the-poor-org-user-spaced-repetition
+#+KEYWORDS:    org-mode,learning
+#+TAGS:        org-mode,learning,org-roam
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to do spaced repetition learning with Org Mode and even with Org Roam!
+
+* Too long; didn't read
+
+Use vanilla Org Mode for your space repetitions. I show you how a bit
+of Elisp (jump to the bottom to try out) can transform your agenda
+files into an effective learning exercise. You can integrate this with
+anything, even org-roam!
+
+* The problem
+
+Before discovering the (mandatory) [[https://www.coursera.org/learn/learning-how-to-learn][Learning how to learn]] course, I got
+in touch with the concept of [[https://en.wikipedia.org/wiki/Spaced_learning][spaced learning]]. In short a trick to
+learn effectively: you fix memories by repeating learning sessions
+over spaced period of times. Now I was already an Emacs user and I was
+sure Org Mode should have become my knowledge vector. The only thing:
+external packages required me to encode my knowledge in a certain way
+to present it to me at given intervals.
+
+* It is a problem indeed
+
+I dislike extra effort and always try to make the most of my laziness
+(attempting to emulate [[https://www.haskell.org/][Haskell]]). And the fact that I had all this
+headings stored with precious beacons of knowledge pained me: how many
+doors was that missing knowledge keeping shut for me?
+
+That thought anguished me enough to push me to write some code.
+
+* And there is a solution
+
+The idea was: I want this knowledge to pop up in my Org Agenda, then I
+want to review that knowledge, then I want this rescheduled
+automatically for later and disappear from my agenda. 
+
+This design guided me to the following code:
+
+#+begin_src elisp :noeval
+(defun my/space-repeat-if-tag-spaced (e)
+  "Resets the header on the TODO states and increases the date
+according to a suggested spaced repetition interval."
+  (let* ((spaced-rep-map '((0 . "++1d")
+                          (1 . "++2d")
+                          (2 . "++10d")
+                          (3 . "++30d")
+                          (4 . "++60d")
+                          (5 . "++4m")))
+         (spaced-key "spaced")
+         (tags (org-get-tags nil t))
+         (spaced-todo-p (member spaced-key tags))
+         (repetition-n (first (cdr spaced-todo-p)))
+         (n+1 (if repetition-n (+ 1 (string-to-number (substring repetition-n (- (length repetition-n) 1) (length repetition-n)))) 0))
+         (spaced-repetition-p (alist-get n+1 spaced-rep-map))
+         (new-repetition-tag (concat "repetition" (number-to-string n+1)))
+         (new-tags (reverse (if repetition-n
+                                (seq-reduce
+                                 (lambda (a x) (if (string-equal x repetition-n) (cons new-repetition-tag a) (cons x a)))
+                                 tags
+                                 '())
+                              (seq-reduce
+                               (lambda (a x) (if (string-equal x spaced-key) (cons new-repetition-tag (cons x a)) (cons x a)))
+                               tags
+                               '())))))
+    (if (and spaced-todo-p spaced-repetition-p)
+      (progn
+          ;; avoid infinitive looping
+          (remove-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced)
+          ;; reset to previous state
+          (org-call-with-arg 'org-todo 'left)
+          ;; schedule to next spaced repetition
+          (org-schedule nil (alist-get n+1 spaced-rep-map))
+          ;; rewrite local tags
+          (org-set-tags new-tags)
+          (add-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced))
+        )))
+
+(add-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced)
+#+end_src
+
+With this any heading like
+
+#+begin_src text :noeval
+ * Some important knowledge :spaced:
+ SCHEDULED <someTime>
+#+end_src
+
+will appear in my agenda according to the time interval in the
+=spaced-rep-map= let over lambda (which is also [[https://letoverlambda.com/][the title of a lovely
+Lispy book]], by the way). If I tick it done, the program will
+reschedule it and add a new tag to it =:repetition1:=, so I can keep
+track of my progress.
+
+Note that I set the map to the intervals that I found in some
+reference at the time:
+
+#+begin_src elisp :noeval
+((0 . "++1d")
+(1 . "++2d")
+(2 . "++10d")
+(3 . "++30d")
+(4 . "++60d")
+(5 . "++4m"))
+#+end_src
+
+After 5 repetitions and some months I expect to have learned my
+knowledge. You can easily set your own period and more (or less)
+repetitions.
+
+I have used this method for years now and I must say it works for me.
+At the beginning of the year I coupled this with [[https://www.orgroam.com/][org-roam]] notes, and I
+am loving it.
+
+In particular something I like to do with org-roam is to have special
+Elisp links in my headings, they look like:
+
+#+begin_src text :noeval
+ * TODO [[elisp:(org-roam-graph 1 "/org-roam-notes-path/someNote.org")][review someNote]]             :spaced:repetition4:
+ SCHEDULED: <2020-10-30 Fri>
+#+end_src
+
+This way I can review my knowledge through the power of [[https://en.wikipedia.org/wiki/Graphviz][graphviz]]'s dot
+diagrams looking like:
+
+#+BEGIN_SRC emacs-lisp :results file :exports results :file "OnLispOrgRoam.svg"
+  (base64-decode-string
+      "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjwh
+RE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIKICJodHRwOi8vd3d3
+LnczLm9yZy9HcmFwaGljcy9TVkcvMS4xL0RURC9zdmcxMS5kdGQiPgo8IS0tIEdlbmVyYXRlZCBi
+eSBncmFwaHZpeiB2ZXJzaW9uIDIuNDMuMCAoMCkKIC0tPgo8IS0tIFRpdGxlOiBvcmcmIzQ1O3Jv
+YW0gUGFnZXM6IDEgLS0+Cjxzdmcgd2lkdGg9IjMwNHB0IiBoZWlnaHQ9IjE4OHB0Igogdmlld0Jv
+eD0iMC4wMCAwLjAwIDMwNC4wMCAxODguMDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAw
+L3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgo8ZyBpZD0i
+Z3JhcGgwIiBjbGFzcz0iZ3JhcGgiIHRyYW5zZm9ybT0ic2NhbGUoMSAxKSByb3RhdGUoMCkgdHJh
+bnNsYXRlKDQgMTg0KSI+Cjx0aXRsZT5vcmcmIzQ1O3JvYW08L3RpdGxlPgo8cG9seWdvbiBmaWxs
+PSJ3aGl0ZSIgc3Ryb2tlPSJ0cmFuc3BhcmVudCIgcG9pbnRzPSItNCw0IC00LC0xODQgMzAwLC0x
+ODQgMzAwLDQgLTQsNCIvPgo8IS0tIC9ob21lL2FuZHJlYS93b3Jrc3BhY2UvYWdlbmRhL25vdGVz
+LzIwMjAwMjIxMTU0MzA4X3BhdWxfZ3JhaGFtLm9yZyAtLT4KPGcgaWQ9Im5vZGUxIiBjbGFzcz0i
+bm9kZSI+Cjx0aXRsZT4vaG9tZS9hbmRyZWEvd29ya3NwYWNlL2FnZW5kYS9ub3Rlcy8yMDIwMDIy
+MTE1NDMwOF9wYXVsX2dyYWhhbS5vcmc8L3RpdGxlPgo8ZyBpZD0iYV9ub2RlMSI+PGEgeGxpbms6
+aHJlZj0ib3JnLXByb3RvY29sOi8vcm9hbS1maWxlP2ZpbGU9JTJGaG9tZSUyRmFuZHJlYSUyRndv
+cmtzcGFjZSUyRmFnZW5kYSUyRm5vdGVzJTJGMjAyMDAyMjExNTQzMDhfcGF1bF9ncmFoYW0ub3Jn
+IiB4bGluazp0aXRsZT0iUGF1bCBHcmFoYW0iPgo8cG9seWdvbiBmaWxsPSIjZWVlZWVlIiBzdHJv
+a2U9InRyYW5zcGFyZW50IiBwb2ludHM9IjEzMC41LC0zNiA0MS41LC0zNiA0MS41LDAgMTMwLjUs
+MCAxMzAuNSwtMzYiLz4KPHBvbHlsaW5lIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2M5YzljOSIgcG9p
+bnRzPSI0MS41LDAgMTMwLjUsMCAiLz4KPHRleHQgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iODYi
+IHk9Ii0xNC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZp
+bGw9IiMxMTExMTEiPlBhdWwgR3JhaGFtPC90ZXh0Pgo8L2E+CjwvZz4KPC9nPgo8IS0tIC9ob21l
+L2FuZHJlYS93b3Jrc3BhY2UvYWdlbmRhL25vdGVzLzIwMjAwMjIxMTU0NTUzX2xpc3Aub3JnIC0t
+Pgo8ZyBpZD0ibm9kZTIiIGNsYXNzPSJub2RlIj4KPHRpdGxlPi9ob21lL2FuZHJlYS93b3Jrc3Bh
+Y2UvYWdlbmRhL25vdGVzLzIwMjAwMjIxMTU0NTUzX2xpc3Aub3JnPC90aXRsZT4KPGcgaWQ9ImFf
+bm9kZTIiPjxhIHhsaW5rOmhyZWY9Im9yZy1wcm90b2NvbDovL3JvYW0tZmlsZT9maWxlPSUyRmhv
+bWUlMkZhbmRyZWElMkZ3b3Jrc3BhY2UlMkZhZ2VuZGElMkZub3RlcyUyRjIwMjAwMjIxMTU0NTUz
+X2xpc3Aub3JnIiB4bGluazp0aXRsZT0ibGlzcCI+Cjxwb2x5Z29uIGZpbGw9IiNlZWVlZWUiIHN0
+cm9rZT0idHJhbnNwYXJlbnQiIHBvaW50cz0iNTQsLTE4MCAwLC0xODAgMCwtMTQ0IDU0LC0xNDQg
+NTQsLTE4MCIvPgo8cG9seWxpbmUgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzljOWM5IiBwb2ludHM9
+IjAsLTE0NCA1NCwtMTQ0ICIvPgo8dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIyNyIgeT0i
+LTE1OC4zIiBmb250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9
+IiMxMTExMTEiPmxpc3A8L3RleHQ+CjwvYT4KPC9nPgo8L2c+CjwhLS0gL2hvbWUvYW5kcmVhL3dv
+cmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQ1NTNfbGlzcC5vcmcmIzQ1OyZndDsvaG9t
+ZS9hbmRyZWEvd29ya3NwYWNlL2FnZW5kYS9ub3Rlcy8yMDIwMDIyMTE1NDMwOF9wYXVsX2dyYWhh
+bS5vcmcgLS0+CjxnIGlkPSJlZGdlMiIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+L2hvbWUvYW5kcmVh
+L3dvcmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQ1NTNfbGlzcC5vcmcmIzQ1OyZndDsv
+aG9tZS9hbmRyZWEvd29ya3NwYWNlL2FnZW5kYS9ub3Rlcy8yMDIwMDIyMTE1NDMwOF9wYXVsX2dy
+YWhhbS5vcmc8L3RpdGxlPgo8cGF0aCBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMzMzMiIGQ9Ik0z
+NC4xMiwtMTQzLjg3QzQ0LjI2LC0xMTkuNDYgNjIuOTcsLTc0LjQzIDc0LjkzLC00NS42NCIvPgo8
+cG9seWdvbiBmaWxsPSIjMzMzMzMzIiBzdHJva2U9IiMzMzMzMzMiIHBvaW50cz0iNzguMjUsLTQ2
+Ljc3IDc4Ljg2LC0zNi4xOSA3MS43OSwtNDQuMDggNzguMjUsLTQ2Ljc3Ii8+CjwvZz4KPCEtLSAv
+aG9tZS9hbmRyZWEvd29ya3NwYWNlL2FnZW5kYS9ub3Rlcy8yMDIwMDIyMTE1NDY1NV9vbl9saXNw
+Lm9yZyAtLT4KPGcgaWQ9Im5vZGUzIiBjbGFzcz0ibm9kZSI+Cjx0aXRsZT4vaG9tZS9hbmRyZWEv
+d29ya3NwYWNlL2FnZW5kYS9ub3Rlcy8yMDIwMDIyMTE1NDY1NV9vbl9saXNwLm9yZzwvdGl0bGU+
+CjxnIGlkPSJhX25vZGUzIj48YSB4bGluazpocmVmPSJvcmctcHJvdG9jb2w6Ly9yb2FtLWZpbGU/
+ZmlsZT0lMkZob21lJTJGYW5kcmVhJTJGd29ya3NwYWNlJTJGYWdlbmRhJTJGbm90ZXMlMkYyMDIw
+MDIyMTE1NDY1NV9vbl9saXNwLm9yZyIgeGxpbms6dGl0bGU9Ik9uIExpc3AiPgo8cG9seWdvbiBm
+aWxsPSIjZWVlZWVlIiBzdHJva2U9InRyYW5zcGFyZW50IiBwb2ludHM9IjE2MS41LC0xMDggMTAw
+LjUsLTEwOCAxMDAuNSwtNzIgMTYxLjUsLTcyIDE2MS41LC0xMDgiLz4KPHBvbHlsaW5lIGZpbGw9
+Im5vbmUiIHN0cm9rZT0iI2M5YzljOSIgcG9pbnRzPSIxMDAuNSwtNzIgMTYxLjUsLTcyICIvPgo8
+dGV4dCB0ZXh0LWFuY2hvcj0ibWlkZGxlIiB4PSIxMzEiIHk9Ii04Ni4zIiBmb250LWZhbWlseT0i
+VGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMxMTExMTEiPk9uIExpc3A8L3Rl
+eHQ+CjwvYT4KPC9nPgo8L2c+CjwhLS0gL2hvbWUvYW5kcmVhL3dvcmtzcGFjZS9hZ2VuZGEvbm90
+ZXMvMjAyMDAyMjExNTQ1NTNfbGlzcC5vcmcmIzQ1OyZndDsvaG9tZS9hbmRyZWEvd29ya3NwYWNl
+L2FnZW5kYS9ub3Rlcy8yMDIwMDIyMTE1NDY1NV9vbl9saXNwLm9yZyAtLT4KPGcgaWQ9ImVkZ2U0
+IiBjbGFzcz0iZWRnZSI+Cjx0aXRsZT4vaG9tZS9hbmRyZWEvd29ya3NwYWNlL2FnZW5kYS9ub3Rl
+cy8yMDIwMDIyMTE1NDU1M19saXNwLm9yZyYjNDU7Jmd0Oy9ob21lL2FuZHJlYS93b3Jrc3BhY2Uv
+YWdlbmRhL25vdGVzLzIwMjAwMjIxMTU0NjU1X29uX2xpc3Aub3JnPC90aXRsZT4KPHBhdGggZmls
+bD0ibm9uZSIgc3Ryb2tlPSIjMzMzMzMzIiBkPSJNNTIuNDQsLTE0My44OEM2NS43OSwtMTM0Ljg5
+IDgyLjMyLC0xMjMuNzYgOTYuNzgsLTExNC4wMyIvPgo8cG9seWdvbiBmaWxsPSIjMzMzMzMzIiBz
+dHJva2U9IiMzMzMzMzMiIHBvaW50cz0iOTkuMTIsLTExNi42OCAxMDUuNDYsLTEwOC4xOSA5NS4y
+MSwtMTEwLjg3IDk5LjEyLC0xMTYuNjgiLz4KPC9nPgo8IS0tIC9ob21lL2FuZHJlYS93b3Jrc3Bh
+Y2UvYWdlbmRhL25vdGVzLzIwMjAwMjIxMTU0NjU1X29uX2xpc3Aub3JnJiM0NTsmZ3Q7L2hvbWUv
+YW5kcmVhL3dvcmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQzMDhfcGF1bF9ncmFoYW0u
+b3JnIC0tPgo8ZyBpZD0iZWRnZTEiIGNsYXNzPSJlZGdlIj4KPHRpdGxlPi9ob21lL2FuZHJlYS93
+b3Jrc3BhY2UvYWdlbmRhL25vdGVzLzIwMjAwMjIxMTU0NjU1X29uX2xpc3Aub3JnJiM0NTsmZ3Q7
+L2hvbWUvYW5kcmVhL3dvcmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQzMDhfcGF1bF9n
+cmFoYW0ub3JnPC90aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzMzMzMzIiBkPSJN
+MTE5Ljg4LC03MS43QzExNC42NCwtNjMuNTYgMTA4LjMsLTUzLjY5IDEwMi41MiwtNDQuNyIvPgo8
+cG9seWdvbiBmaWxsPSIjMzMzMzMzIiBzdHJva2U9IiMzMzMzMzMiIHBvaW50cz0iMTA1LjM1LC00
+Mi42MiA5NywtMzYuMSA5OS40NiwtNDYuNDEgMTA1LjM1LC00Mi42MiIvPgo8L2c+CjwhLS0gL2hv
+bWUvYW5kcmVhL3dvcmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQ3NDNfZnVuY3Rpb25h
+bF9wcm9ncmFtbWluZy5vcmcgLS0+CjxnIGlkPSJub2RlNCIgY2xhc3M9Im5vZGUiPgo8dGl0bGU+
+L2hvbWUvYW5kcmVhL3dvcmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQ3NDNfZnVuY3Rp
+b25hbF9wcm9ncmFtbWluZy5vcmc8L3RpdGxlPgo8ZyBpZD0iYV9ub2RlNCI+PGEgeGxpbms6aHJl
+Zj0ib3JnLXByb3RvY29sOi8vcm9hbS1maWxlP2ZpbGU9JTJGaG9tZSUyRmFuZHJlYSUyRndvcmtz
+cGFjZSUyRmFnZW5kYSUyRm5vdGVzJTJGMjAyMDAyMjExNTQ3NDNfZnVuY3Rpb25hbF9wcm9ncmFt
+bWluZy5vcmciIHhsaW5rOnRpdGxlPSJmdW5jdGlvbmFsIHByb2dyYW1taW5nIj4KPHBvbHlnb24g
+ZmlsbD0iI2VlZWVlZSIgc3Ryb2tlPSJ0cmFuc3BhcmVudCIgcG9pbnRzPSIyMjIsLTE4MCA3Miwt
+MTgwIDcyLC0xNDQgMjIyLC0xNDQgMjIyLC0xODAiLz4KPHBvbHlsaW5lIGZpbGw9Im5vbmUiIHN0
+cm9rZT0iI2M5YzljOSIgcG9pbnRzPSI3MiwtMTQ0IDIyMiwtMTQ0ICIvPgo8dGV4dCB0ZXh0LWFu
+Y2hvcj0ibWlkZGxlIiB4PSIxNDciIHk9Ii0xNTguMyIgZm9udC1mYW1pbHk9IlRpbWVzLHNlcmlm
+IiBmb250LXNpemU9IjE0LjAwIiBmaWxsPSIjMTExMTExIj5mdW5jdGlvbmFsIHByb2dyYW1taW5n
+PC90ZXh0Pgo8L2E+CjwvZz4KPC9nPgo8IS0tIC9ob21lL2FuZHJlYS93b3Jrc3BhY2UvYWdlbmRh
+L25vdGVzLzIwMjAwMjIxMTU0NzQzX2Z1bmN0aW9uYWxfcHJvZ3JhbW1pbmcub3JnJiM0NTsmZ3Q7
+L2hvbWUvYW5kcmVhL3dvcmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQ2NTVfb25fbGlz
+cC5vcmcgLS0+CjxnIGlkPSJlZGdlNSIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+L2hvbWUvYW5kcmVh
+L3dvcmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQ3NDNfZnVuY3Rpb25hbF9wcm9ncmFt
+bWluZy5vcmcmIzQ1OyZndDsvaG9tZS9hbmRyZWEvd29ya3NwYWNlL2FnZW5kYS9ub3Rlcy8yMDIw
+MDIyMTE1NDY1NV9vbl9saXNwLm9yZzwvdGl0bGU+CjxwYXRoIGZpbGw9Im5vbmUiIHN0cm9rZT0i
+IzMzMzMzMyIgZD0iTTE0My4wNCwtMTQzLjdDMTQxLjI4LC0xMzUuOTggMTM5LjE2LC0xMjYuNzEg
+MTM3LjIsLTExOC4xMSIvPgo8cG9seWdvbiBmaWxsPSIjMzMzMzMzIiBzdHJva2U9IiMzMzMzMzMi
+IHBvaW50cz0iMTQwLjU1LC0xMTcuMDcgMTM0LjkxLC0xMDguMSAxMzMuNzMsLTExOC42MyAxNDAu
+NTUsLTExNy4wNyIvPgo8L2c+CjwhLS0gL2hvbWUvYW5kcmVhL3dvcmtzcGFjZS9hZ2VuZGEvbm90
+ZXMvMjAyMDAyMjExNTQ3NTZfbWFjcm9zLm9yZyAtLT4KPGcgaWQ9Im5vZGU1IiBjbGFzcz0ibm9k
+ZSI+Cjx0aXRsZT4vaG9tZS9hbmRyZWEvd29ya3NwYWNlL2FnZW5kYS9ub3Rlcy8yMDIwMDIyMTE1
+NDc1Nl9tYWNyb3Mub3JnPC90aXRsZT4KPGcgaWQ9ImFfbm9kZTUiPjxhIHhsaW5rOmhyZWY9Im9y
+Zy1wcm90b2NvbDovL3JvYW0tZmlsZT9maWxlPSUyRmhvbWUlMkZhbmRyZWElMkZ3b3Jrc3BhY2Ul
+MkZhZ2VuZGElMkZub3RlcyUyRjIwMjAwMjIxMTU0NzU2X21hY3Jvcy5vcmciIHhsaW5rOnRpdGxl
+PSJtYWNyb3MiPgo8cG9seWdvbiBmaWxsPSIjZWVlZWVlIiBzdHJva2U9InRyYW5zcGFyZW50IiBw
+b2ludHM9IjI5NiwtMTgwIDI0MCwtMTgwIDI0MCwtMTQ0IDI5NiwtMTQ0IDI5NiwtMTgwIi8+Cjxw
+b2x5bGluZSBmaWxsPSJub25lIiBzdHJva2U9IiNjOWM5YzkiIHBvaW50cz0iMjQwLC0xNDQgMjk2
+LC0xNDQgIi8+Cjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjI2OCIgeT0iLTE1OC4zIiBm
+b250LWZhbWlseT0iVGltZXMsc2VyaWYiIGZvbnQtc2l6ZT0iMTQuMDAiIGZpbGw9IiMxMTExMTEi
+Pm1hY3JvczwvdGV4dD4KPC9hPgo8L2c+CjwvZz4KPCEtLSAvaG9tZS9hbmRyZWEvd29ya3NwYWNl
+L2FnZW5kYS9ub3Rlcy8yMDIwMDIyMTE1NDc1Nl9tYWNyb3Mub3JnJiM0NTsmZ3Q7L2hvbWUvYW5k
+cmVhL3dvcmtzcGFjZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQ2NTVfb25fbGlzcC5vcmcgLS0+
+CjxnIGlkPSJlZGdlMyIgY2xhc3M9ImVkZ2UiPgo8dGl0bGU+L2hvbWUvYW5kcmVhL3dvcmtzcGFj
+ZS9hZ2VuZGEvbm90ZXMvMjAyMDAyMjExNTQ3NTZfbWFjcm9zLm9yZyYjNDU7Jmd0Oy9ob21lL2Fu
+ZHJlYS93b3Jrc3BhY2UvYWdlbmRhL25vdGVzLzIwMjAwMjIxMTU0NjU1X29uX2xpc3Aub3JnPC90
+aXRsZT4KPHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzMzMzMzIiBkPSJNMjM5Ljk1LC0xNDYu
+NjdDMjIwLjA4LC0xMzYuNTIgMTkzLjE1LC0xMjIuNzUgMTcxLjAzLC0xMTEuNDUiLz4KPHBvbHln
+b24gZmlsbD0iIzMzMzMzMyIgc3Ryb2tlPSIjMzMzMzMzIiBwb2ludHM9IjE3Mi4zOCwtMTA4LjIx
+IDE2MS44OCwtMTA2Ljc4IDE2OS4xOSwtMTE0LjQ0IDE3Mi4zOCwtMTA4LjIxIi8+CjwvZz4KPC9n
+Pgo8L3N2Zz4K")
+#+END_SRC
+
+See [[https://www.orgroam.com/manual/Installation-_00281_0029.html#Installation-_00281_0029][org-roam documentation]] on how to make the nodes clickable!
+
+* Conclusion
+
+I believe this is a precious snippet of my configuration, and I hope
+you will enjoy as much as I have.
+
+So just run that snippet and create a knowledge task: give a try to
+space repetition, you may find out how to learn better and more
+easily!
+
+I am always curious about the reader smartness: how are you going to
+use this? Just get in touch if you wish to share it and exchange ideas!
