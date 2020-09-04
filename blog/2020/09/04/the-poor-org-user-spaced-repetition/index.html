@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>The Poor Org-User Spaced Repetition - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to do spaced repetition learning with Org Mode and even with Org Roam!" />
+    <meta name="keywords" content="org-mode,learning" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>The Poor Org-User Spaced Repetition</h1>
+
+<div id="outline-container-org2d64ac1" class="outline-2">
+<h2 id="org2d64ac1">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org2d64ac1">
+<p>
+Use vanilla Org Mode for your space repetitions. I show you how a bit
+of Elisp (jump to the bottom to try out) can transform your agenda
+files into an effective learning exercise. You can integrate this with
+anything, even org-roam!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org69f99b7" class="outline-2">
+<h2 id="org69f99b7">The problem</h2>
+<div class="outline-text-2" id="text-org69f99b7">
+<p>
+Before discovering the (mandatory) <a href="https://www.coursera.org/learn/learning-how-to-learn">Learning how to learn</a> course, I got
+in touch with the concept of <a href="https://en.wikipedia.org/wiki/Spaced_learning">spaced learning</a>. In short a trick to
+learn effectively: you fix memories by repeating learning sessions
+over spaced period of times. Now I was already an Emacs user and I was
+sure Org Mode should have become my knowledge vector. The only thing:
+external packages required me to encode my knowledge in a certain way
+to present it to me at given intervals.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga29dd6f" class="outline-2">
+<h2 id="orga29dd6f">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orga29dd6f">
+<p>
+I dislike extra effort and always try to make the most of my laziness
+(attempting to emulate <a href="https://www.haskell.org/">Haskell</a>). And the fact that I had all this
+headings stored with precious beacons of knowledge pained me: how many
+doors was that missing knowledge keeping shut for me?
+</p>
+
+<p>
+That thought anguished me enough to push me to write some code.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1e31d5b" class="outline-2">
+<h2 id="org1e31d5b">And there is a solution</h2>
+<div class="outline-text-2" id="text-org1e31d5b">
+<p>
+The idea was: I want this knowledge to pop up in my Org Agenda, then I
+want to review that knowledge, then I want this rescheduled
+automatically for later and disappear from my agenda. 
+</p>
+
+<p>
+This design guided me to the following code:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/space-repeat-if-tag-spaced (e)
+  "Resets the header on the TODO states and increases the date
+according to a suggested spaced repetition interval."
+  (let* ((spaced-rep-map '((0 . "++1d")
+                          (1 . "++2d")
+                          (2 . "++10d")
+                          (3 . "++30d")
+                          (4 . "++60d")
+                          (5 . "++4m")))
+         (spaced-key "spaced")
+         (tags (org-get-tags nil t))
+         (spaced-todo-p (member spaced-key tags))
+         (repetition-n (first (cdr spaced-todo-p)))
+         (n+1 (if repetition-n (+ 1 (string-to-number (substring repetition-n (- (length repetition-n) 1) (length repetition-n)))) 0))
+         (spaced-repetition-p (alist-get n+1 spaced-rep-map))
+         (new-repetition-tag (concat "repetition" (number-to-string n+1)))
+         (new-tags (reverse (if repetition-n
+                                (seq-reduce
+                                 (lambda (a x) (if (string-equal x repetition-n) (cons new-repetition-tag a) (cons x a)))
+                                 tags
+                                 '())
+                              (seq-reduce
+                               (lambda (a x) (if (string-equal x spaced-key) (cons new-repetition-tag (cons x a)) (cons x a)))
+                               tags
+                               '())))))
+    (if (and spaced-todo-p spaced-repetition-p)
+      (progn
+          ;; avoid infinitive looping
+          (remove-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced)
+          ;; reset to previous state
+          (org-call-with-arg 'org-todo 'left)
+          ;; schedule to next spaced repetition
+          (org-schedule nil (alist-get n+1 spaced-rep-map))
+          ;; rewrite local tags
+          (org-set-tags new-tags)
+          (add-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced))
+        )))
+
+(add-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced)
+</pre>
+</div>
+
+<p>
+With this any heading like
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">* Some important knowledge :spaced:
+SCHEDULED &lt;someTime&gt;
+</pre>
+</div>
+
+<p>
+will appear in my agenda according to the time interval in the
+<code>spaced-rep-map</code> let over lambda (which is also <a href="https://letoverlambda.com/">the title of a lovely
+Lispy book</a>, by the way). If I tick it done, the program will
+reschedule it and add a new tag to it <code>:repetition1:</code>, so I can keep
+track of my progress.
+</p>
+
+<p>
+Note that I set the map to the intervals that I found in some
+reference at the time:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">((0 . "++1d")
+(1 . "++2d")
+(2 . "++10d")
+(3 . "++30d")
+(4 . "++60d")
+(5 . "++4m"))
+</pre>
+</div>
+
+<p>
+After 5 repetitions and some months I expect to have learned my
+knowledge. You can easily set your own period and more (or less)
+repetitions.
+</p>
+
+<p>
+I have used this method for years now and I must say it works for me.
+At the beginning of the year I coupled this with <a href="https://www.orgroam.com/">org-roam</a> notes, and I
+am loving it.
+</p>
+
+<p>
+In particular something I like to do with org-roam is to have special
+Elisp links in my headings, they look like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">* TODO [[elisp:(org-roam-graph 1 "/org-roam-notes-path/someNote.org")][review someNote]]             :spaced:repetition4:
+SCHEDULED: &lt;2020-10-30 Fri&gt;
+</pre>
+</div>
+
+<p>
+This way I can review my knowledge through the power of <a href="https://en.wikipedia.org/wiki/Graphviz">graphviz</a>'s dot
+diagrams looking like:
+</p>
+
+
+<div class="figure">
+<p><object type="image/svg+xml" data="../OnLispOrgRoam.svg" class="org-svg">
+Sorry, your browser does not support SVG.</object>
+</p>
+</div>
+
+<p>
+See <a href="https://www.orgroam.com/manual/Installation-_00281_0029.html#Installation-_00281_0029">org-roam documentation</a> on how to make the nodes clickable!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5992087" class="outline-2">
+<h2 id="org5992087">Conclusion</h2>
+<div class="outline-text-2" id="text-org5992087">
+<p>
+I believe this is a precious snippet of my configuration, and I hope
+you will enjoy as much as I have.
+</p>
+
+<p>
+So just run that snippet and create a knowledge task: give a try to
+space repetition, you may find out how to learn better and more
+easily!
+</p>
+
+<p>
+I am always curious about the reader smartness: how are you going to
+use this? Just get in touch if you wish to share it and exchange ideas!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-09-04</span>
+        <span title="last modification date" class="post-info">2020-09-04</span>
+        <span title="tags" class="post-info"><a href="/tags/org-mode/">org-mode</a>, <a href="/tags/learning/">learning</a>, <a href="/tags/org-roam/">org-roam</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
