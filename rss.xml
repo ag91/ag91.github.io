@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 04 Sep 2020 22:59:29 CEST</pubDate>
-    <lastBuildDate>Fri, 04 Sep 2020 22:59:29 CEST</lastBuildDate>
+    <pubDate>Sat, 12 Sep 2020 00:29:35 CEST</pubDate>
+    <lastBuildDate>Sat, 12 Sep 2020 00:29:35 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Org mode links for Emacs Slack</title>
+      <link>http://ag91.github.io/blog/2020/09/12/org-mode-links-for-emacs-slack</link>
+      <description><![CDATA[How to extend Org links to work with Emacs Slack]]></description>
+      <pubDate>2020-09-12</pubDate>
+      <guid>http://ag91.github.io/blog/2020/09/12/org-mode-links-for-emacs-slack</guid>
+    </item>
+    <item>
       <title>The Poor Org-User Spaced Repetition</title>
       <link>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</link>
-      <description><![CDATA[How to do spaced repetition learning with Org Mode and even with Org Roam!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-09-04</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-08-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/08/07/how-i-inspected-my-emacs-configuration-and-discovered-once-again-org-mode-people-are-smart</guid>
-    </item>
-    <item>
-      <title>How to jump to next bullet point in org mode</title>
-      <link>http://ag91.github.io/blog/2019/07/01/how-to-jump-to-next-bullet-point-in-org-mode</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-08-12</pubDate>
-      <guid>http://ag91.github.io/blog/2019/07/01/how-to-jump-to-next-bullet-point-in-org-mode</guid>
     </item>
   </channel>
 </rss>

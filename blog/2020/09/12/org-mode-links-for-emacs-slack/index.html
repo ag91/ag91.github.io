@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Org mode links for Emacs Slack - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to extend Org links to work with Emacs Slack" />
+    <meta name="keywords" content="emacs,org-mode,slack" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Org mode links for Emacs Slack</h1>
+<div id="outline-container-org28b2fbc" class="outline-2">
+<h2 id="org28b2fbc">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org28b2fbc">
+<p>
+<a href="https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/">I shared how to have slack messages pop up in your Org agenda</a>, here I
+show how to just click on your messages to go back to the channel with
+Org Links. You can find the code on:
+<a href="https://github.com/ag91/ol-emacs-slack">https://github.com/ag91/ol-emacs-slack</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2132776" class="outline-2">
+<h2 id="org2132776">The problem</h2>
+<div class="outline-text-2" id="text-org2132776">
+<p>
+I recently shared <a href="https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/">how to integrate Emacs Slack with the Org Agenda</a> (I
+also added it to <a href="https://orgmode.org/worg/org-hacks.html">Worg</a>, and by the way it generated an interesting
+discussion on <a href="https://github.com/yuya373/emacs-slack/issues/528">an issue of Emacs Slack</a>). A bothering thing in my
+workflow was to find the conversation present in my agenda. A few
+times I ended up in the wrong group channel, and it really felt that
+something was missing.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgba8bfb8" class="outline-2">
+<h2 id="orgba8bfb8">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgba8bfb8">
+<p>
+The funny thing is that other people would like to have this feature:
+<a href="https://github.com/yuya373/emacs-slack/issues/475">https://github.com/yuya373/emacs-slack/issues/475</a>. How good is to feel
+I am not the only one?!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge55e94d" class="outline-2">
+<h2 id="orge55e94d">And there is a solution</h2>
+<div class="outline-text-2" id="text-orge55e94d">
+<p>
+That is what brought me to implement my first custom Org Link! Kudos
+to Org developers: it is easy-peasy :D
+</p>
+
+<p>
+The Org Link interface is elegant:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(org-link-set-parameters "emacs-slack"
+                         :follow #'ol/slack-follow-link
+                         :export #'ol/slack-export
+                         :store #'ol/slack-store-link)
+</pre>
+</div>
+
+<p>
+We need a way to follow a link, to export it to another format and to
+store it. So far easy!
+</p>
+
+<p>
+Let's get to the Emacs Slack side of things: easiest to hardest.
+</p>
+</div>
+
+<div id="outline-container-org17b53e0" class="outline-3">
+<h3 id="org17b53e0">Exporting</h3>
+<div class="outline-text-3" id="text-org17b53e0">
+<p>
+Banal copy paste from the Org Link <a href="https://orgmode.org/manual/Adding-Hyperlink-Types.html">example</a>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ol/slack-export (link description format)
+  "Export a emacs-slack link from Org files."
+  (let ((desc (or description link)))
+    desc))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org3333ba1" class="outline-3">
+<h3 id="org3333ba1">Storing</h3>
+<div class="outline-text-3" id="text-org3333ba1">
+<p>
+You need to know that the Emacs Slack code is Common Lisp flavoured
+Elisp AND Object Oriented! This was my first experience with the
+object system of Common Lisp: cooooooool (and a slightly painful for a
+functional programmer)!!!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ol/slack-store-link ()
+  "Store a link to a man page."
+  (when (eq major-mode 'slack-message-buffer-mode)
+    (let* ((buf slack-current-buffer)
+           (team (slack-buffer-team buf))
+           (team-name (oref team name))
+           (room (slack-buffer-room buf))
+           (room-name (slack-room-name room team))
+           (link (funcall
+                  slack-message-notification-title-format-function
+                  team-name
+                  room-name
+                  (cl-typep buf 'slack-thread-message-buffer)))
+           (description ))
+      (org-link-store-props
+       :type "emacs-slack"
+       :link (concat "emacs-slack:" link)
+       :description (concat "Slack message in #" room-name)
+       ))))
+</pre>
+</div>
+
+<p>
+You see <code>oref</code> there? Object orientation in action: that is a property
+getter :) Even the slack buffer is an object. Very-super-cool!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org15fd01f" class="outline-3">
+<h3 id="org15fd01f">Following</h3>
+<div class="outline-text-3" id="text-org15fd01f">
+<p>
+Here there are dragons! Fundamentally this is the function I came up with:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ol/slack-follow-link (link)
+  "Follow LINK with format `   team - channel'."
+  (let* ((team (--&gt; link
+                    (s-split "-" it)
+                    first
+                    s-trim))
+         (team-object (ol/slack-string-to-team team)))
+    (slack-room-display (ol/slack-string-to-room team-object link) team-object)))
+</pre>
+</div>
+
+<p>
+I really needed a function that takes the name of a room and the name
+of a team and opens the room for me. That is missing in the code base,
+and my unfamiliarity with Common Lisp syntax slowed down my progress
+(it is a couple of weeks I am crunching the code). Funny thing? I also
+needed to unfold a macro:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ol/slack-room-select (room rooms team)
+  "Select ROOM from ROOMS and TEAM."
+  (let* ((alist (slack-room-names
+                 rooms team #'(lambda (rs) (cl-remove-if #'slack-room-hidden-p rs))))
+         (selected (cdr (cl-assoc room alist :test 'ol/room-name-equal))))
+    selected))
+</pre>
+</div>
+
+<p>
+In the original code the above is in a macro, but I really needed a
+sane way of comparing the room name with the input string:
+<code>ol/room-name-equal</code>.
+</p>
+
+<p>
+My code is insane though (I will refactor if anybody asks me!):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ol/room-name-equal (room channel-room)
+  "Check ROOM is equal to CHANNEL-ROOM."
+  (string=
+   (s-downcase (s-trim room))
+   (s-downcase
+    (let ((trimmed (s-trim (s-chop-prefix " * " channel-room))))
+      (if (&gt; (length trimmed) (length room))
+          (substring trimmed 0 (length room))
+        trimmed)))))
+</pre>
+</div>
+
+<p>
+It seems that random spaces and characters appear in front and at the
+end of room names and I dealt with it by trial and error: so please
+report issues if for some reason does not work for you.
+</p>
+
+<p>
+Also worth to know that there are 3 kinds of rooms: ims, groups and
+channel. I found way of distinguish them, but also open an issue on
+the repository if you find errors.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org60616d7" class="outline-2">
+<h2 id="org60616d7">Conclusion</h2>
+<div class="outline-text-2" id="text-org60616d7">
+<p>
+What a lovely deep dive in the code of Emacs Slack. Object orientation
+in Lisp: the language is just majestic and paradigm-inclusive. Please
+smile at my amusement when you store your first Emacs Slack link!
+</p>
+
+<p>
+Happy Hacking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-09-12</span>
+        <span title="last modification date" class="post-info">2020-09-12</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/org-mode/">org-mode</a>, <a href="/tags/slack/">slack</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
