@@ -1,0 +1,166 @@
+#+TITLE:       Org mode links for Emacs Slack
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-09-12 Sat
+#+URI:         /blog/%y/%m/%d/org-mode-links-for-emacs-slack
+#+KEYWORDS:    emacs,org-mode,slack
+#+TAGS:        emacs,org-mode,slack
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to extend Org links to work with Emacs Slack
+* Too long; didn't read
+
+[[https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/][I shared how to have slack messages pop up in your Org agenda]], here I
+show how to just click on your messages to go back to the channel with
+Org Links. You can find the code on:
+https://github.com/ag91/ol-emacs-slack.
+
+* The problem
+
+I recently shared [[https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/][how to integrate Emacs Slack with the Org Agenda]] (I
+also added it to [[https://orgmode.org/worg/org-hacks.html][Worg]], and by the way it generated an interesting
+discussion on [[https://github.com/yuya373/emacs-slack/issues/528][an issue of Emacs Slack]]). A bothering thing in my
+workflow was to find the conversation present in my agenda. A few
+times I ended up in the wrong group channel, and it really felt that
+something was missing.
+
+* It is a problem indeed
+
+The funny thing is that other people would like to have this feature:
+https://github.com/yuya373/emacs-slack/issues/475. How good is to feel
+I am not the only one?!
+
+* And there is a solution
+
+That is what brought me to implement my first custom Org Link! Kudos
+to Org developers: it is easy-peasy :D
+
+The Org Link interface is elegant:
+
+#+begin_src elisp :noeval
+(org-link-set-parameters "emacs-slack"
+                         :follow #'ol/slack-follow-link
+                         :export #'ol/slack-export
+                         :store #'ol/slack-store-link)
+#+end_src                                   
+
+We need a way to follow a link, to export it to another format and to
+store it. So far easy!
+
+Let's get to the Emacs Slack side of things: easiest to hardest.
+
+** Exporting
+:PROPERTIES:
+:CREATED:  [2020-09-12 Sat 00:06]
+:END:
+
+Banal copy paste from the Org Link [[https://orgmode.org/manual/Adding-Hyperlink-Types.html][example]]:
+
+#+begin_src elisp :noeval
+(defun ol/slack-export (link description format)
+  "Export a emacs-slack link from Org files."
+  (let ((desc (or description link)))
+    desc))
+#+end_src
+
+** Storing
+:PROPERTIES:
+:CREATED:  [2020-09-12 Sat 00:11]
+:END:
+
+You need to know that the Emacs Slack code is Common Lisp flavoured
+Elisp AND Object Oriented! This was my first experience with the
+object system of Common Lisp: cooooooool (and a slightly painful for a
+functional programmer)!!!
+
+#+begin_src elisp :noeval
+(defun ol/slack-store-link ()
+  "Store a link to a man page."
+  (when (eq major-mode 'slack-message-buffer-mode)
+    (let* ((buf slack-current-buffer)
+           (team (slack-buffer-team buf))
+           (team-name (oref team name))
+           (room (slack-buffer-room buf))
+           (room-name (slack-room-name room team))
+           (link (funcall
+                  slack-message-notification-title-format-function
+                  team-name
+                  room-name
+                  (cl-typep buf 'slack-thread-message-buffer)))
+           (description ))
+      (org-link-store-props
+       :type "emacs-slack"
+       :link (concat "emacs-slack:" link)
+       :description (concat "Slack message in #" room-name)
+       ))))
+#+end_src
+
+You see =oref= there? Object orientation in action: that is a property
+getter :) Even the slack buffer is an object. Very-super-cool!
+
+** Following
+:PROPERTIES:
+:CREATED:  [2020-09-12 Sat 00:15]
+:END:
+
+Here there are dragons! Fundamentally this is the function I came up with:
+
+#+begin_src elisp :noeval
+(defun ol/slack-follow-link (link)
+  "Follow LINK with format `   team - channel'."
+  (let* ((team (--> link
+                    (s-split "-" it)
+                    first
+                    s-trim))
+         (team-object (ol/slack-string-to-team team)))
+    (slack-room-display (ol/slack-string-to-room team-object link) team-object)))
+#+end_src
+
+I really needed a function that takes the name of a room and the name
+of a team and opens the room for me. That is missing in the code base,
+and my unfamiliarity with Common Lisp syntax slowed down my progress
+(it is a couple of weeks I am crunching the code). Funny thing? I also
+needed to unfold a macro:
+
+#+begin_src elisp :noeval
+(defun ol/slack-room-select (room rooms team)
+  "Select ROOM from ROOMS and TEAM."
+  (let* ((alist (slack-room-names
+                 rooms team #'(lambda (rs) (cl-remove-if #'slack-room-hidden-p rs))))
+         (selected (cdr (cl-assoc room alist :test 'ol/room-name-equal))))
+    selected))
+#+end_src
+
+In the original code the above is in a macro, but I really needed a
+sane way of comparing the room name with the input string:
+=ol/room-name-equal=.
+
+My code is insane though (I will refactor if anybody asks me!):
+
+#+begin_src elisp :noeval
+(defun ol/room-name-equal (room channel-room)
+  "Check ROOM is equal to CHANNEL-ROOM."
+  (string=
+   (s-downcase (s-trim room))
+   (s-downcase
+    (let ((trimmed (s-trim (s-chop-prefix " * " channel-room))))
+      (if (> (length trimmed) (length room))
+          (substring trimmed 0 (length room))
+        trimmed)))))
+#+end_src
+
+It seems that random spaces and characters appear in front and at the
+end of room names and I dealt with it by trial and error: so please
+report issues if for some reason does not work for you.
+
+Also worth to know that there are 3 kinds of rooms: ims, groups and
+channel. I found way of distinguish them, but also open an issue on
+the repository if you find errors.
+
+* Conclusion
+
+What a lovely deep dive in the code of Emacs Slack. Object orientation
+in Lisp: the language is just majestic and paradigm-inclusive. Please
+smile at my amusement when you store your first Emacs Slack link!
+
+Happy Hacking!
