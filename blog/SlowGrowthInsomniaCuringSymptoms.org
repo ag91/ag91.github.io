@@ -1,0 +1,118 @@
+#+TITLE:       Slow Growth, Insomnia and Curing Symptoms
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-09-12 Sat
+#+URI:         /blog/%y/%m/%d/slow-growth-insomnia-and-curing-symptoms
+#+KEYWORDS:    society,learning
+#+TAGS:        society,learning
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A moment of panic and slow growth
+There are moments in your life when, as a colleague would say, a bunch
+of scattered dots becomes a cheetah. That is to say that all of a
+sudden a pattern emerges and you can define it. And as Tom DeMarco
+said in his book [[https://www.goodreads.com/book/show/123715.Slack][Slack]]: when you learn something that is significant
+for you, your first reaction is to panic.
+
+I guess today I panicked.
+
+It started while I found myself in a project proposal about inducing
+insomniacs to sleep by using digital screens. James Lech, this smart
+scientist from South Africa, is dedicating his time into exploiting
+light to influence people behavior. In a gist (my understanding of)
+the idea is that you press a button and the screen on which you are
+watching a movie starts flickering in an imperceptible way, slowly and
+implicitly bringing you in the arms of Morpheus.
+
+And while we were debating the ethical concerns of this, my brain
+slowed down and gave an order to information it gathered so far.
+
+Oh my, panic! We need to slow down. And for we, I mean the whole circus. 
+
+The main pain point that started the thought is: why are we trying to
+put people to sleep in the first place? In the worst case scenario,
+they have a persistent disorder. I know something about mental
+illnesses, and in my experience I can tell you: it is just disorder.
+Returning to health requires you to look at the mess, accept the mess,
+and to take the painful but *insightful* journey of ordering the mess.
+Ideally you need a shoulder on which to cry while doing this.
+
+Note: the insightful part is fundamental to avoid making a mess again.
+I humbly believe this applies to burnout as it applies to sleep. And
+the point that everybody gets lost at is the observation bit. In
+permaculture literature observation is key: you cannot change an
+ecological system without understanding it, and you cannot understand
+it without quietly and patiently looking at it (look at the work by
+Donella H. Meadows for good foundations in system thinking).
+
+Now, in my experience observing yourself is more difficult than
+observing a garden and seeing where those unwelcome slugs that love
+your salad come from. Observing how your current self is making you
+insomniac/burnt out/unhappy is a ugly self-discovery experience. Who
+wants to say I am imperfect? Well, apart from Gilberto Freyre who
+stated: "If it depended on me, I would never be ripe, nor in the ideas
+nor in the style, but always green, uncomplished, always
+experimental".
+
+People take the pill instead. The easy way out is doing more of the
+same and when the body~spirit is painful just give it a palliative
+(e.g., a pill/coke/light). That is blinding yourself and accumulating
+extra damage. That is what the subpar leaders end up doing when they
+surround themselves of [[https://en.wikipedia.org/wiki/Yes_Man_(film)]['yes'-men]]. In [[https://en.wikipedia.org/wiki/Good_to_Great][Good to Great]] Jim C. Collins
+explains that great leaders work on facts no matter how painful those
+sound. I want to be a great leader of my body and spirit. Bare, cruel
+facts give you visibility and open prospects to action. First accept
+the facts and then try to understand them, maybe act on them. This is
+lengthy. But what else have you better to do? I mean what else than to
+care about yourself?
+
+That question sparked the memory of the label on the seat in front of
+you that your hostess gently invites you to look at before the flight
+starts: the adults put the inflatable jacket on themselves *before*
+the children. Once they can protect themselves they are in the
+position of taking care of others. It is on the label; it is
+mandatory; it makes common sense. It also applies to your well being.
+
+Society/companies/schools are requiring people to keep going with
+whatever they do no matter the pain they feel. They are also making
+the pain people feel something that lowers their status and so
+something to hide. *And* they are _demanding_ to do this more
+efficiently. Mental health issues are *normal* because we are walking
+wonders (consider just how amazing it is that your eyes can perceive
+this text and you can make sense of words!) but we are still so
+fragile. As Scott Alexander says in his [[https://slatestarcodex.com/2014/07/30/meditations-on-moloch/][Meditations On Moloch]]:
+"Competition and optimization are blind idiotic processes and they
+fully intend to deny us even one lousy galaxy". I want to get to the
+end of my life and say "I really explored myself" as Carol S. Dweck
+tells an old lady said in her book [[https://www.goodreads.com/book/show/40745.Mindset][Mindset]]. I would despise to say: "I
+wasted my life, but in the most efficient way".
+
+This reminds me of the urge I felt of hiding in a Tibetan monastery
+for a year when I heard people deciding that young people lives where
+more valuable than old people's ones during the COVID-19: I really
+wanted extra time to explore myself in depth and find out how blind I
+am myself to the enormous value elders have to offer to our society.
+
+This is what I mean by slowing down the whole circus: we need time to
+understand ourselves and our evolving community. Someone would think
+life is too short for that. Bertrand Russell wrote: "Most men would
+rather die, than think. Many do". I am fine with that, but I would
+like to shape a society that encourages you to think, to take your
+time, and to address issues together with some like-minded person. If
+you want to rush, work 120-hours weeks like Elon Musk, and burn like a
+flame, you are free to do so. I would find it surprising if that is
+the desire of the majority. In any case I demand to be in charge of my
+time and for the "normality" stereotype to be a healthy one. One that
+paves the road for sustainable growth, not rushed consumption.
+
+This was my 'panic' experience. I saw in a moment that as a society we
+are causing our own pain and focusing on efficiently curing the
+symptoms of this. Instead, let's slowly learn about ourselves and,
+once we are ready, about the others.
+
+P.S.: if you suffer insomnia due to anxiety, please try what Jane
+McGonigal suggests in [[https://www.goodreads.com/book/show/24611964-superbetter?from_search=true&from_srp=true&qid=11NGNd7C0C&rank=1][SuperBetter]]: "As soon as you feel your nerves,
+say "I'm excited" or "Get excited!" to yourself. Out loud. Say it a
+few times. "I'm excited". "Get excited!"". Apparently anxiety and
+excitement are the same thing in the brain, and you can easily
+exchange the one for the other with a bit of "mind-fu".
