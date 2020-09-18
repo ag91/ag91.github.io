@@ -1,0 +1,90 @@
+#+TITLE:       Emacs Slack and My Peaceful Modeline
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-09-18 Fri
+#+URI:         /blog/%y/%m/%d/emacs-slack-and-my-peaceful-modeline
+#+KEYWORDS:    emacs, emacs-slack, elisp
+#+TAGS:        emacs, emacs-slack, elisp
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How I bent Slack notification to keep my mind at peace
+
+* Too long; didn't read
+
+I like my Emacs modeline to be clean. [[https://github.com/yuya373/emacs-slack][Emacs Slack]] uses [[https://github.com/jorgenschaefer/circe/pull/379][Circe]]'s
+=tracking.el= and I show here how to mute it so that new Slack
+conversations leave you focused.
+
+The hack for now is =(defun tracking-status () "")= in your
+configuration, while hopefully [[https://github.com/jorgenschaefer/circe/pull/379][this PR]] will get merged soon.
+
+* The problem
+
+My Emacs modeline is precious. I like to keep it minimal: file
+characteristics, lines, major mode and Org clocking.
+
+A lot of modes propose their alerts to appear in the modeline. For
+some time, for example, I used happily [[https://github.com/iqbalansari/mu4e-alert][mu4e-alert]], and I ended up
+realizing that little blinking in the modeline disrupted my
+concentration. Some users would likely find counterproductive to have
+feeds, emails and Slack running in Emacs if you care for your
+concentration (for example, I am referring here to [[https://www.manueluberti.eu//emacs/2020/09/08/end-of-era/][Manuel Uberti's
+recent post]]).
+
+I like these tools in Emacs because I can customize them to my
+workflow: [[https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/][having Slack conversations end up in my Org Agenda]] and [[https://ag91.github.io/blog/2020/09/12/org-mode-links-for-emacs-slack/][being
+able to access them with one click]] facilitates my work while delaying
+distractions.
+
+Emacs Slack notifications gave me some troubles though: any new
+message in my agenda would also have an entry in my modeline.
+Distraction!
+
+* It is a problem indeed
+
+The funny thing is that you end up doing bad stuff, although you know
+it is deleterious. As soon as I receive a Slack message in a channel I
+have joined, I end up instinctively clicking on the modeline entry
+Emacs Slack created for me. Naturally, most of the time is a waste of
+time, and I interrupted my work for nothing.
+
+Other nasty bit? There is a notification for each channel that had
+some activity. If you have many channels, the list of channel names
+occupy the whole modeline! Goodbye dear Org Clock, goodbye column
+number!
+
+Or not?
+
+* And there is a solution
+
+Well absolutely not! I started looking for an Emacs Slack variable to
+customize, and I discovered the mode uses a third party library for
+tracking buffers activity: [[https://github.com/jorgenschaefer/circe/blob/master/tracking.el][Circe's tracking.el]]. And they have the
+variable I was looking for: =tracking-max-mode-line-entries=! You can
+limit the "abusive" occupation of the modeline by =(setq
+tracking-max-mode-line-entries 1)=: this will limit the number of
+entries in the modeline to 1.
+
+As you can imagine that is insufficient for me, so I immediately try
+=(setq tracking-max-mode-line-entries 0)=. Unluckily that uncovers a
+bug: there is still an entry in my modeline. So I need to hack my way
+through, you can get rid of the function altogether by overwriting the
+function that generates the modeline string =(defun tracking-status ()
+nil)=.
+
+That really felt a hack, so I also opened an [[https://github.com/jorgenschaefer/circe/issues/378][issue]] and [[https://github.com/jorgenschaefer/circe/pull/379][now a PR]] to
+allow fellow distraction-free users to have it their way.
+
+In my fixing effort I also discovered there is an alternative testing
+library for Emacs from the same author of Circe:
+https://github.com/jorgenschaefer/emacs-buttercup. I will likely write
+something about it because I like testing and I typically use [[https://www.gnu.org/software/emacs/manual/html_node/ert/index.html][ERT]]
+which comes by default.
+
+* Conclusion
+
+Keep your state of flow distraction free! Here I showed how for me
+that means to keep my modeline free from Slack notifications, and I
+hope you find your own peace of mind while you are at work.
+
+I wish you mindful hacking!
