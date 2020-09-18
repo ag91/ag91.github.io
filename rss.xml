@@ -4,10 +4,17 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 12 Sep 2020 23:46:31 CEST</pubDate>
-    <lastBuildDate>Sat, 12 Sep 2020 23:46:31 CEST</lastBuildDate>
+    <pubDate>Fri, 18 Sep 2020 22:13:59 CEST</pubDate>
+    <lastBuildDate>Fri, 18 Sep 2020 22:13:59 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
+    <item>
+      <title>Emacs Slack and My Peaceful Modeline</title>
+      <link>http://ag91.github.io/blog/2020/09/18/emacs-slack-and-my-peaceful-modeline</link>
+      <description><![CDATA[How I bent Slack notification to keep my mind at peace]]></description>
+      <pubDate>2020-09-18</pubDate>
+      <guid>http://ag91.github.io/blog/2020/09/18/emacs-slack-and-my-peaceful-modeline</guid>
+    </item>
     <item>
       <title>Org mode links for Emacs Slack</title>
       <link>http://ag91.github.io/blog/2020/09/12/org-mode-links-for-emacs-slack</link>
@@ -18,7 +25,7 @@
     <item>
       <title>Slow Growth, Insomnia and Curing Symptoms</title>
       <link>http://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms</link>
-      <description><![CDATA[A moment of panic and slow growth]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-09-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-08-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/05/02/fail-fast-and-then-fail-better</guid>
-    </item>
-    <item>
-      <title>Functional abstractions in JavaScript: fishing fmaps with Kleisli</title>
-      <link>http://ag91.github.io/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-08-12</pubDate>
-      <guid>http://ag91.github.io/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli</guid>
     </item>
   </channel>
 </rss>
