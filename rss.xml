@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 18 Sep 2020 22:13:59 CEST</pubDate>
-    <lastBuildDate>Fri, 18 Sep 2020 22:13:59 CEST</lastBuildDate>
+    <pubDate>Wed, 23 Sep 2020 23:09:42 CEST</pubDate>
+    <lastBuildDate>Wed, 23 Sep 2020 23:09:42 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>The Poor Org-User Spaced Repetition</title>
+      <link>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</link>
+      <description><![CDATA[How to do spaced repetition learning with Org Mode and even with Org Roam!]]></description>
+      <pubDate>2020-09-23</pubDate>
+      <guid>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</guid>
+    </item>
+    <item>
       <title>Emacs Slack and My Peaceful Modeline</title>
       <link>http://ag91.github.io/blog/2020/09/18/emacs-slack-and-my-peaceful-modeline</link>
-      <description><![CDATA[How I bent Slack notification to keep my mind at peace]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-09-18</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/18/emacs-slack-and-my-peaceful-modeline</guid>
     </item>
@@ -28,13 +35,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-09-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms</guid>
-    </item>
-    <item>
-      <title>The Poor Org-User Spaced Repetition</title>
-      <link>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-09-04</pubDate>
-      <guid>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</guid>
     </item>
     <item>
       <title>Org crypt and LOGBOOK: how they can work together for a secure agenda.</title>

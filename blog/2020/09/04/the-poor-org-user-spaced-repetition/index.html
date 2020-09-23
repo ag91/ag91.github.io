@@ -32,9 +32,9 @@
 <div class="post">
 <h1>The Poor Org-User Spaced Repetition</h1>
 
-<div id="outline-container-orgddbb95d" class="outline-2">
-<h2 id="orgddbb95d">Too long; didn't read</h2>
-<div class="outline-text-2" id="text-orgddbb95d">
+<div id="outline-container-org7cd1a8a" class="outline-2">
+<h2 id="org7cd1a8a">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org7cd1a8a">
 <p>
 Use vanilla Org Mode for your space repetitions. I show you how a bit
 of Elisp (jump to the bottom to try out) can transform your agenda
@@ -44,9 +44,9 @@ anything, even org-roam!
 </div>
 </div>
 
-<div id="outline-container-org7e635c9" class="outline-2">
-<h2 id="org7e635c9">The problem</h2>
-<div class="outline-text-2" id="text-org7e635c9">
+<div id="outline-container-org98e29dd" class="outline-2">
+<h2 id="org98e29dd">The problem</h2>
+<div class="outline-text-2" id="text-org98e29dd">
 <p>
 Before discovering the (mandatory) <a href="https://www.coursera.org/learn/learning-how-to-learn">Learning how to learn</a> course, I got
 in touch with the concept of <a href="https://en.wikipedia.org/wiki/Spaced_learning">spaced learning</a>. In short a trick to
@@ -59,9 +59,9 @@ to present it to me at given intervals.
 </div>
 </div>
 
-<div id="outline-container-orgcf901bc" class="outline-2">
-<h2 id="orgcf901bc">It is a problem indeed</h2>
-<div class="outline-text-2" id="text-orgcf901bc">
+<div id="outline-container-org607398e" class="outline-2">
+<h2 id="org607398e">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org607398e">
 <p>
 I dislike extra effort and always try to make the most of my laziness
 (attempting to emulate <a href="https://www.haskell.org/">Haskell</a>). And the fact that I had all this
@@ -75,9 +75,9 @@ That thought anguished me enough to push me to write some code.
 </div>
 </div>
 
-<div id="outline-container-orgefd3fc7" class="outline-2">
-<h2 id="orgefd3fc7">And there is a solution</h2>
-<div class="outline-text-2" id="text-orgefd3fc7">
+<div id="outline-container-orgd7bff68" class="outline-2">
+<h2 id="orgd7bff68">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgd7bff68">
 <p>
 The idea was: I want this knowledge to pop up in my Org Agenda, then I
 want to review that knowledge, then I want this rescheduled
@@ -193,7 +193,7 @@ diagrams looking like:
 </p>
 
 
-<div class="figure">
+<div id="org94b27a2" class="figure">
 <p><object type="image/svg+xml" data="../OnLispOrgRoam.svg" class="org-svg">
 Sorry, your browser does not support SVG.</object>
 </p>
@@ -205,9 +205,9 @@ See <a href="https://www.orgroam.com/manual/Installation-_00281_0029.html#Instal
 </div>
 </div>
 
-<div id="outline-container-org65f7c47" class="outline-2">
-<h2 id="org65f7c47">Conclusion</h2>
-<div class="outline-text-2" id="text-org65f7c47">
+<div id="outline-container-org3204f9f" class="outline-2">
+<h2 id="org3204f9f">Conclusion</h2>
+<div class="outline-text-2" id="text-org3204f9f">
 <p>
 I believe this is a precious snippet of my configuration, and I hope
 you will enjoy as much as I have.
@@ -226,12 +226,66 @@ use this? Just get in touch if you wish to share it and exchange ideas!
 </div>
 </div>
 
+
+<div id="outline-container-org8f4ed3c" class="outline-2">
+<h2 id="org8f4ed3c">Update 2020-09-23</h2>
+<div class="outline-text-2" id="text-org8f4ed3c">
+<p>
+Thanks to Art, I discovered that the above code does not work in a
+more recent version of Emacs. This is the fixed code that uses the API:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/space-repeat-if-tag-spaced (e)
+  "Resets the header on the TODO states and increases the date
+according to a suggested spaced repetition interval."
+  (let* ((spaced-rep-map '((0 . "++1d")
+                           (1 . "++2d")
+                           (2 . "++10d")
+                           (3 . "++30d")
+                           (4 . "++60d")
+                           (5 . "++4m")))
+         (spaced-key "spaced")
+         (tags (org-get-tags))
+         (spaced-todo-p (member spaced-key tags))
+         (repetition-n (car (cdr spaced-todo-p)))
+         (n+1 (if repetition-n (+ 1 (string-to-number (substring repetition-n (- (length repetition-n) 1) (length repetition-n)))) 0))
+         (spaced-repetition-p (alist-get n+1 spaced-rep-map))
+         (new-repetition-tag (concat "repetition" (number-to-string n+1)))
+         (new-tags (reverse (if repetition-n
+                                (seq-reduce
+                                 (lambda (a x) (if (string-equal x repetition-n) (cons new-repetition-tag a) (cons x a)))
+                                 tags
+                                 '())
+                              (seq-reduce
+                               (lambda (a x) (if (string-equal x spaced-key) (cons new-repetition-tag (cons x a)) (cons x a)))
+                               tags
+                               '())))))
+    (if (and spaced-todo-p spaced-repetition-p)
+        (progn
+          ;; avoid infinitive looping
+          (remove-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced)
+          ;; reset to previous state
+          (org-call-with-arg 'org-todo 'left)
+          ;; schedule to next spaced repetition
+          (org-schedule nil (alist-get n+1 spaced-rep-map))
+          ;; rewrite local tags
+          (org-set-tags-to new-tags)
+          (add-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced))
+      )))
+
+(add-hook 'org-trigger-hook 'my/space-repeat-if-tag-spaced)
+</pre>
+</div>
+</div>
+</div>
+
 </div>
 </div>
     <div>
       <div class="post-meta">
         <span title="post date" class="post-info">2020-09-04</span>
-        <span title="last modification date" class="post-info">2020-09-04</span>
+        <span title="last modification date" class="post-info">2020-09-23</span>
         <span title="tags" class="post-info"><a href="/tags/org-mode/">org-mode</a>, <a href="/tags/learning/">learning</a>, <a href="/tags/org-roam/">org-roam</a></span>
         <span title="author" class="post-info">Andrea</span>
       </div>
