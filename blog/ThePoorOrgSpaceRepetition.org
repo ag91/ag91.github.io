@@ -273,7 +273,8 @@ use this? Just get in touch if you wish to share it and exchange ideas!
 :END:
 
 Thanks to Art, I discovered that the above code does not work in a
-more recent version of Emacs. This is the fixed code that uses the API:
+more recent version of Emacs. This is the fixed code that uses the new
+API:
 
 #+begin_src elisp
 (defun my/space-repeat-if-tag-spaced (e)
