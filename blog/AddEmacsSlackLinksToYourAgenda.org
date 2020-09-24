@@ -1,0 +1,55 @@
+#+TITLE:       Composition Update: Slack links in your Org Agenda
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-09-24 Thu
+#+URI:         /blog/%y/%m/%d/composition-update-add-slack-links-to-org-agenda
+#+KEYWORDS:    slack,emacs,org-mode
+#+TAGS:        slack,emacs,org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to extend the Slack entries in your agenda with links
+
+This is a mini update about how I compose my previous work on [[https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/][Slack
+messages in the Org Agenda]] and [[https://ag91.github.io/blog/2020/09/12/org-mode-links-for-emacs-slack/][Org Mode Links for Emacs Slack]]:
+essentially if you use [[https://github.com/ag91/ol-emacs-slack][ol-emacs-slack]] just change your code from what
+is [[https://github.com/ag91/emacs-slack-org-mode-example/blob/master/emacs-slack-org-mode.el][here]] to:
+
+#+begin_src elisp :noeval
+(use-package alert
+  :after slack
+  :init
+  (alert-define-style
+   'my/alert-style :title
+   "Make Org headings for messages I receive - Style"
+   :notifier
+   (lambda (info)
+     (when (get-buffer "Slack.org") (with-current-buffer "Slack.org" (save-buffer)))
+     (write-region
+      (s-concat
+       "* TODO "
+       (plist-get info :title)
+       " : "
+       (format
+        "[[emacs-slack:%s][%s]] :slack:"
+        (plist-get info :title)
+        (s-truncate 127 (s-replace "\n" ";" (plist-get info :message))))
+       "\n"
+       (format "<%s>" (format-time-string "%Y-%m-%d %H:%M"))
+       "\n"
+       (plist-get info :message)
+       "\n")
+      nil
+      "~/<yourPath>/Slack.org"
+      t)))
+  (setq alert-default-style 'message)
+  (add-to-list 'alert-user-configuration
+               '(((:category . "slack")) my/alert-style nil)))
+#+end_src
+
+You will now have entries in your agenda that will bring you to the
+related Emacs Slack room! Easy and quick to reply to new messages.
+
+Happy hacking!
+
+P.S.: thanks to Jolle for [[https://github.com/ag91/ol-emacs-slack/pull/1][improving ol-emacs-slack]] and making me
+remember to share this!
