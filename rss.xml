@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Wed, 23 Sep 2020 23:11:28 CEST</pubDate>
-    <lastBuildDate>Wed, 23 Sep 2020 23:11:28 CEST</lastBuildDate>
+    <pubDate>Thu, 24 Sep 2020 19:59:43 CEST</pubDate>
+    <lastBuildDate>Thu, 24 Sep 2020 19:59:43 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Composition Update: Slack links in your Org Agenda</title>
+      <link>http://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda</link>
+      <description><![CDATA[How to extend the Slack entries in your agenda with links]]></description>
+      <pubDate>2020-09-24</pubDate>
+      <guid>http://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda</guid>
+    </item>
+    <item>
       <title>The Poor Org-User Spaced Repetition</title>
       <link>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</link>
-      <description><![CDATA[How to do spaced repetition learning with Org Mode and even with Org Roam!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-09-23</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-08-12</pubDate>
       <guid>http://ag91.github.io/blog/2019/09/26/automate-boring-configuration-changes</guid>
-    </item>
-    <item>
-      <title>Fail fast and then fail better</title>
-      <link>http://ag91.github.io/blog/2020/05/02/fail-fast-and-then-fail-better</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-08-12</pubDate>
-      <guid>http://ag91.github.io/blog/2020/05/02/fail-fast-and-then-fail-better</guid>
     </item>
   </channel>
 </rss>
