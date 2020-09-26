@@ -1,0 +1,132 @@
+#+TITLE:       Life is short. But not short enough to skip planning
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-09-26 Sat
+#+URI:         /blog/%y/%m/%d/life-is-short-but-not-short-enough-to-skip-planning
+#+KEYWORDS:    growt,society,agile,planning
+#+TAGS:        growt,society,agile,planning
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How planning makes your present better
+
+#+begin_quote
+There's no such thing as bad weather, just bad clothing choices.
+
+-- Amanda Palmer
+#+end_quote
+
+#+begin_quote
+Plans are worthless but planning is everything
+
+-- Dwight D. Eisenhower
+#+end_quote
+
+Life is short. Sometimes the news make us feel that even getting to
+tomorrow is uncertain. Well, the future does not exist, right? We may
+as well focus on the present and enjoy ourselves in an Epicurean way,
+shall we not? I guess it is time to discover how planning to reach a
+desired future helps you have a better present.
+
+Let's start from decision fatigue. Imagine your brain like a battery
+([[https://knowingneurons.com/2012/12/14/brain-battery/][apparently it is actually a thing]]). Any conscious decision you take
+lowers its charge.
+
+Now think I put you in a labyrinth with traps: any time you choose a
+direction or you avoid a trap you consume a unit of energy. If your
+brain does not have enough energy to deal with both directions and
+traps you cannot exit the labyrinth. If this remembers you of your
+Friday afternoon, _it is not a coincidence_. And decision fatigue
+affects everything: from your boss deciding to give a raise to your
+slacking colleague, to you ruining your diet with a fast food over a
+slow food.
+
+But: what if you decide at the beginning to always go right? Now, you
+have lost a unit of energy at the start of your journey, but the rest
+of your energy is available to deal with traps. And you may have even
+enough energy to find a better strategy to deal with directions.
+
+Planning is deciding a strategy in advance. The main aim of planning
+is discarding possibilities \a priori\ so that you can invest your
+decision energy on the important and unexpected things.
+
+Planning can happen at multiple levels of granularity: if you want to
+define how to spend the next minute of your life, chances are you can
+be extremely more precise than defining exactly what you are going to
+be doing in 10 years from now.
+
+Short term planning is an art in itself. The insightful book [[https://www.goodreads.com/book/show/26114603-work-clean][Work
+Clean The life-changing power of mise-en-place by Dan Charnas]] makes
+this crystal clear: the best chefs plan backwards. Planning backwards
+means to imagine a perfectly served dish and reconstruct all the
+actions that bring you from there to where you are now.
+
+The problem in planning long term is that you lack information and
+context. Planning backwards with a 10 years resolution is still
+useful, but you need to make a lot of assumptions and most likely they
+will fail to happen. [fn::By the way, that is also why the Agile
+movement started; as Bob Martin tells in his book [[https://www.goodreads.com/book/show/45280021-clean-agile?from_search=true&from_srp=true&qid=DBXLWumze9&rank=1][Clean Agile]]: "Agile
+is about knowing, as early as possible, just how screwed we are. The
+reason we want to know this as early as possible is so that we can
+manage the situation".]
+
+A long term plan should rather be a vision. A vision is the why you
+carry on making short term plans and go to troubles to make them
+happen. A vision is a major advantage, in the words of Darren Hardy
+from his book [[https://www.goodreads.com/book/show/9420697-the-compound-effect][The Compound Effect]]: "The person who has a clear,
+compelling, and white-hot burning why will always defeat even the best
+of the best at doing the how".
+
+A vision can be a simple but focused statement like: "You'll be third
+graders soon!". That gave young pupils a new identity to strive for
+and made them focus their energies on. This kind of clarity reduces
+the actions you need to perform and increases their power. As a side
+effect this creates what system theory calls feedback loops: you see
+yourself a bit closer to your goal, you get excited, and you do more.
+In general, this concept of having a clear why, before even discussing
+what and how to do something, is so powerful that [[https://www.youtube.com/watch?v=u4ZoJKF_VuA][Simon Sinek]] focuses
+his consulting career on making this enter people's heads.
+
+Ideally, pick a big vision because just the fact that you will strive
+for that new identity will make you feel proud.
+
+If you ever need help at picking a satisfying vision for yourself, I
+would suggest the three questions Tony Hsieh uses to judge actions on
+the long term:
+
+- What would happen if everyone in the world would do this?
+
+- What would the world look like?
+
+- What would the net effect be on the overall happiness in the world?
+
+
+Now, say you have a vision, and you know about backward planning: all
+you are left with is defining milestones that you believe will make
+you progress towards your vision. For this middle level planning I try
+to follow the suggestions of a highly respected manager like Andrew S.
+Grove: plan next year in the context of next 5 years and repeat next
+year. This way your plans react to the context: sometimes they will
+proceed faster and most often they will need a bit longer to succeed,
+or even get restructured altogether.
+
+[[https://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms/][As I wrote about before]], finding a vision is the kind of activity that
+can have huge impact on your life and so it takes all the time you
+need (i.e., no scarcity/rushed thinking here!). As Dan Jorndt told
+about his company: "We're a crawl, walk, run company". This means that
+even successful companies take time to get their root system deep
+enough to, then, solidly sustain the bulk of their enterprise. This is
+even more true for the individual, and I believe what I read in a
+[[https://news.ycombinator.com/item?id=1474454][Hacker News comment]]: "it's not just having the experience, the best
+part may be the planning".
+
+Life is always different from what you imagine. I guess that just
+means we can enjoy it twice: in what we imagine it to be and in seeing
+what actually comes out of the egg.
+
+To conclude: we all have our labyrinths, from bringing food on the
+table to finding a way to keep all our stakeholders happy, and a
+limited set of mental energy. Let's use plan to get out of our
+labyrinths. Possibly let's follow the lead of Scott Adams (a.k.a.,
+Dilbert creator): "I wouldn't be satisfied simply escaping from my
+prison of silence; I was planning to escape, free the other inmates,
+shoot the warden, and burn down the prison".
