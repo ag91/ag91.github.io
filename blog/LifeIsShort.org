@@ -3,8 +3,8 @@
 #+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2020-09-26 Sat
 #+URI:         /blog/%y/%m/%d/life-is-short-but-not-short-enough-to-skip-planning
-#+KEYWORDS:    growt,society,agile,planning
-#+TAGS:        growt,society,agile,planning
+#+KEYWORDS:    growth,society,agile,planning
+#+TAGS:        growth,society,agile,planning
 #+LANGUAGE:    en
 #+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
 #+DESCRIPTION: How planning makes your present better

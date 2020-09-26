@@ -1,0 +1,208 @@
+#+TITLE:       Org Agenda and Your Future, or how to keep score of your long term goals with Org Mode
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-09-27 Sun
+#+URI:         /blog/%y/%m/%d/org-agenda-and-your-future-or-how-to-keep-score-of-your-long-term-goals-with-org-mode
+#+KEYWORDS:    org-mode,planning,growth,yasnippet
+#+TAGS:        org-mode,planning,growth,yasnippet
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to keep score of your long term goals with Org Mode
+
+* Too long; didn't read
+
+Here I show how to leverage Org mode to define long term goals and
+more importantly how to track your progress towards reaching your
+vision. In short a mix of tags, Org Agenda filters, Org Archive and
+[[https://github.com/alphapapa/org-ql][org-ql]].
+
+* The problem
+
+Successful people choose daily tasks by thinking about the effect
+these have on their future. And effective people create a feedback
+loop that makes them excited about their progress.
+
+Progress -> excitement -> more progress.
+
+So I wondered: how can I make my Org todo lists help me with my long
+term goals in a structured manner?
+
+* It is a problem indeed
+
+Well [[https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning][I dedicate a whole post on the importance of a vision and how to
+pick a good one]]. In the same post I also explain how planning becomes
+more precise the closer the tasks get to the present moment. Now Org
+supports task lists, supports stats via [[https://github.com/alphapapa][alphapapa]]'s org-ql, and
+supports customizable views of headings through the Agenda. I really
+missed a way to transform Org from a simple todo list manager in a
+long-term goals manager.
+
+* And there is a solution
+
+So I created my own approach! In a talk by John Wiegley I saw how he
+alters his agenda according to where he is: for example, if he cannot
+ping the Internet his agenda will exclude tasks that require
+networking. He does this through tags and agenda filters. That kick
+started my thinking process: what about marking tasks by their
+importance on my immediate, medium-term and long-term goals?
+
+So I came up with tags that look like:
+
+#+begin_src text :noeval
+:0yr:, :5yr:, :10yr:, :20yr:
+#+end_src
+
+In my mind these represent the number of years I believe accomplishing
+this tasks will affect.
+
+I could say that I started with writing down a vision first, but
+well... I am a coder! And, indeed, I just started playing with the Org
+Agenda customization.
+
+My goal: seeing tasks with =:20yr:= appear at the top of my agenda and
+those with =:0yr:= at the bottom. Let's see how to hack it.
+
+The variable =org-agenda-sorting-strategy= defines in what order the
+Org Agenda view displays tasks (kudos to Org developers to leave this
+open to extension!). So if you want to order by a tag, all you need to
+do is to add a =org-agenda-cmp-user-defined= comparison and apply it
+to the strategy variable. Well it is easier to show:
+
+#+begin_src elisp :noeval
+(defun my/org-agenda-sort-longterm-tags (el1 el2)
+  "Prioritize agenda items EL1 and EL2 that contains tags in the form :[0-9]yr: relatively to the number of years."
+  (let* ((regex ":\\([0-9]+\\)yr:")
+	 (years-el1 (progn
+		      ;; this can fail because the regex is not found or there is no tag for :Xyr:, so I am handling with the zeros
+		      (if (string-match regex el1)
+			  (string-to-number (or (match-string 1 el1) "0"))
+			0)))
+	 (years-el2 (progn
+		      (if (string-match regex el2)
+			  (string-to-number (or (match-string 1 el2) "0"))
+			0))
+		    ))
+    ;; TODO I am sure there is a cleaner way to implement this comparison...
+    (if (> years-el1 years-el2)
+	1
+      (if (> years-el2 years-el1)
+	  -1
+	nil))))
+
+(setq org-agenda-cmp-user-defined 'my/org-agenda-sort-longterm-tags)
+
+(setq org-agenda-sorting-strategy
+      '((agenda habit-down time-up user-defined-down priority-down category-keep)
+	(todo priority-down category-keep)
+	(tags priority-down category-keep)
+	(search category-keep)))
+#+end_src
+
+In the above =my/org-agenda-sort-longterm-tags= compares tags so that
+=:20yr: > :10yr:= and =:10yr: < :20yr:= and =:20yr: = :20yr:= (the
+compare operator in programming languages typically returns positive,
+negative and zero integers to reflect these cases). The other
+important bits are:
+
+- =(setq org-agenda-cmp-user-defined 'my/org-agenda-sort-longterm-tags)=
+
+  this make my comparison operator available
+
+- =user-defined-down=
+
+  this activates my comparison in the agenda.
+
+
+At this point I needed to define my vision. This took much longer than
+my programming, and in part is still a work in progress. (The bit I am
+proud of is the statement "I am the catalyzer of sustainable
+improvements that include as many people as possible", because it
+keeps staying the same and guiding me in challenging moments.)
+
+What I think you will find more interesting [fn::get in touch if you
+want me to share more about my inner travel to find a vision for
+myself] is that I ended up splitting my Org files to represent the
+goals I want to achieve, and more importantly defining Org Capture
+templates that allowed me to define the kind of tag I described above
+([[https://ag91.github.io/blog/2020/07/28/how-to-integrate-yasnippet-and-yankpad-with-org-capture/][I use my templating extension to make this easy to maintain for
+myself]]).
+
+An minimal example of Yankpad template you can use with this approach
+is:
+
+#+begin_src text 
+\* TODO $1 :${2:$$(yas-choose-value (list "0yr" "5yr" "10yr" "20yr"))}:
+  SCHEDULED: %t
+See: %a
+#+end_src
+
+Each of these files has a category (this means that my Org file starts
+with a property line =#+CATEGORY: Some Vision=) that nicely display in
+the agenda: so I can quickly see both the kind of vision I am
+targeting (through the category) and the weight it has on my future
+(through the tag).
+
+Finally some metrics for setting up a feedback loop. Because we said
+that we want to get excitement for our progress, right? Right. So, I
+looked into org-ql. That again is a mode that I always wanted to use,
+but I did not know for what. I found out it is great to do weekly
+reviews of my achievements. I have a periodic task in my agenda with
+source blocks that look like this:
+
+#+begin_src elisp :noeval
+(let ((files (concatenate 'list (org-agenda-files) (list "my.org_archive"))))
+  (-->
+   (my/get-stats-tasks "DONE" -31 nil  nil files)
+   (s-concat 
+    "\n"
+    (format "Tasks marked DONE last month (today is: %s): %s\n" (current-time-string) it)
+    (format "    Tasks done last month (%s) with category\n\n" (current-time-string))
+    (format "    Vision1  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Category1"))
+    (format "    Vision2  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Category2"))))
+#+end_src
+
+Note: I am also using my [[https://orgmode.org/manual/Archiving.html][archive]] for retrieving done tasks! Archiving
+removes clutter from my files, so they feel clean and compact when I
+look at them.
+
+The =my/get-stats-tasks= function retrieves the necessary statistics
+(this is just a wrapper around the org-ql query API):
+
+#+begin_src elisp :noeval
+(defun my/get-stats-tasks (todo-tag from &optional tag to files category)
+  "Get stats for tasks of last week with TODO-TAG TAG FROM optionally define TO date and source FILES to use."
+  (let ((tasks
+         (org-ql-query
+           :from (or files (org-agenda-files))
+           :where
+           `(and (todo ,todo-tag)
+                 (if ,tag (tags ,tag) t)
+                 (if ,category (category ,category) t)
+                 (ts :from ,from :to ,(or to 'today))))))
+    `((tasks . ,(length tasks))
+      (tasks-per-day . ,(/ (length tasks) (abs from))))))
+#+end_src
+
+With this approach I am a C-c C-c away from my feedback loop, and I
+can monitor where I am spending more effort and adjust if needed.
+
+
+By the way, I am using this system from a while and... I am totally
+not so precise: often I get the task category wrong or I estimate
+wrongly the effect of the tasks on my future. I find this effort
+valuable in orienting me towards keeping track of these things.
+
+So please be forgiving with yourself if you are planning on using a
+similar strategy.
+
+* Conclusion
+
+Focusing your energies on what you want to happen is important. Life
+is short so I believe we cannot run after all that is attractive, if
+we want to be effective. So if you take a single thing from this post:
+develop a vision, and let it guide you through your future. Then help
+yourself with your tools, Org mode and Emacs in general are amazing
+instruments if you tame them.
+
+Feel free to get in touch if you want to share your approach or you
+have questions. I like receiving mails from the readers :)
