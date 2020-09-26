@@ -4,16 +4,23 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 26 Sep 2020 23:59:04 CEST</pubDate>
-    <lastBuildDate>Sat, 26 Sep 2020 23:59:04 CEST</lastBuildDate>
+    <pubDate>Sun, 27 Sep 2020 00:06:38 CEST</pubDate>
+    <lastBuildDate>Sun, 27 Sep 2020 00:06:38 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
       <title>Life is short. But not short enough to skip planning</title>
       <link>http://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning</link>
       <description><![CDATA[How planning makes your present better]]></description>
-      <pubDate>2020-09-26</pubDate>
+      <pubDate>2020-09-27</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning</guid>
+    </item>
+    <item>
+      <title>Org Agenda and Your Future, or how to keep score of your long term goals with Org Mode</title>
+      <link>http://ag91.github.io/blog/2020/09/27/org-agenda-and-your-future-or-how-to-keep-score-of-your-long-term-goals-with-org-mode</link>
+      <description><![CDATA[How to keep score of your long term goals with Org Mode]]></description>
+      <pubDate>2020-09-27</pubDate>
+      <guid>http://ag91.github.io/blog/2020/09/27/org-agenda-and-your-future-or-how-to-keep-score-of-your-long-term-goals-with-org-mode</guid>
     </item>
     <item>
       <title>Composition Update: Slack links in your Org Agenda</title>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-08-15</pubDate>
       <guid>http://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters</guid>
-    </item>
-    <item>
-      <title>Slack messages in your Org Agenda</title>
-      <link>http://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-08-15</pubDate>
-      <guid>http://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda</guid>
     </item>
   </channel>
 </rss>

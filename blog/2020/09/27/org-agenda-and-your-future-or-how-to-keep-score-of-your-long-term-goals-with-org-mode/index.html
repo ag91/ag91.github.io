@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Org Agenda and Your Future, or how to keep score of your long term goals with Org Mode - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to keep score of your long term goals with Org Mode" />
+    <meta name="keywords" content="org-mode,planning,growth,yasnippet" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Org Agenda and Your Future, or how to keep score of your long term goals with Org Mode</h1>
+
+<div id="outline-container-org9225e6c" class="outline-2">
+<h2 id="org9225e6c">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org9225e6c">
+<p>
+Here I show how to leverage Org mode to define long term goals and
+more importantly how to track your progress towards reaching your
+vision. In short a mix of tags, Org Agenda filters, Org Archive and
+<a href="https://github.com/alphapapa/org-ql">org-ql</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org453038f" class="outline-2">
+<h2 id="org453038f">The problem</h2>
+<div class="outline-text-2" id="text-org453038f">
+<p>
+Successful people choose daily tasks by thinking about the effect
+these have on their future. And effective people create a feedback
+loop that makes them excited about their progress.
+</p>
+
+<p>
+Progress -&gt; excitement -&gt; more progress.
+</p>
+
+<p>
+So I wondered: how can I make my Org todo lists help me with my long
+term goals in a structured manner?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbd939a1" class="outline-2">
+<h2 id="orgbd939a1">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgbd939a1">
+<p>
+Well <a href="https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning">I dedicate a whole post on the importance of a vision and how to
+pick a good one</a>. In the same post I also explain how planning becomes
+more precise the closer the tasks get to the present moment. Now Org
+supports task lists, supports stats via <a href="https://github.com/alphapapa">alphapapa</a>'s org-ql, and
+supports customizable views of headings through the Agenda. I really
+missed a way to transform Org from a simple todo list manager in a
+long-term goals manager.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgea0d41b" class="outline-2">
+<h2 id="orgea0d41b">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgea0d41b">
+<p>
+So I created my own approach! In a talk by John Wiegley I saw how he
+alters his agenda according to where he is: for example, if he cannot
+ping the Internet his agenda will exclude tasks that require
+networking. He does this through tags and agenda filters. That kick
+started my thinking process: what about marking tasks by their
+importance on my immediate, medium-term and long-term goals?
+</p>
+
+<p>
+So I came up with tags that look like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">:0yr:, :5yr:, :10yr:, :20yr:
+</pre>
+</div>
+
+<p>
+In my mind these represent the number of years I believe accomplishing
+this tasks will affect.
+</p>
+
+<p>
+I could say that I started with writing down a vision first, but
+well... I am a coder! And, indeed, I just started playing with the Org
+Agenda customization.
+</p>
+
+<p>
+My goal: seeing tasks with <code>:20yr:</code> appear at the top of my agenda and
+those with <code>:0yr:</code> at the bottom. Let's see how to hack it.
+</p>
+
+<p>
+The variable <code>org-agenda-sorting-strategy</code> defines in what order the
+Org Agenda view displays tasks (kudos to Org developers to leave this
+open to extension!). So if you want to order by a tag, all you need to
+do is to add a <code>org-agenda-cmp-user-defined</code> comparison and apply it
+to the strategy variable. Well it is easier to show:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/org-agenda-sort-longterm-tags (el1 el2)
+  "Prioritize agenda items EL1 and EL2 that contains tags in the form :[0-9]yr: relatively to the number of years."
+  (let* ((regex ":\\([0-9]+\\)yr:")
+         (years-el1 (progn
+                      ;; this can fail because the regex is not found or there is no tag for :Xyr:, so I am handling with the zeros
+                      (if (string-match regex el1)
+                          (string-to-number (or (match-string 1 el1) "0"))
+                        0)))
+         (years-el2 (progn
+                      (if (string-match regex el2)
+                          (string-to-number (or (match-string 1 el2) "0"))
+                        0))
+                    ))
+    ;; TODO I am sure there is a cleaner way to implement this comparison...
+    (if (&gt; years-el1 years-el2)
+        1
+      (if (&gt; years-el2 years-el1)
+          -1
+        nil))))
+
+(setq org-agenda-cmp-user-defined 'my/org-agenda-sort-longterm-tags)
+
+(setq org-agenda-sorting-strategy
+      '((agenda habit-down time-up user-defined-down priority-down category-keep)
+        (todo priority-down category-keep)
+        (tags priority-down category-keep)
+        (search category-keep)))
+</pre>
+</div>
+
+<p>
+In the above <code>my/org-agenda-sort-longterm-tags</code> compares tags so that
+<code>:20yr: &gt; :10yr:</code> and <code>:10yr: &lt; :20yr:</code> and <code>:20yr: = :20yr:</code> (the
+compare operator in programming languages typically returns positive,
+negative and zero integers to reflect these cases). The other
+important bits are:
+</p>
+
+<ul class="org-ul">
+<li><p>
+<code>(setq org-agenda-cmp-user-defined 'my/org-agenda-sort-longterm-tags)</code>
+</p>
+
+<p>
+this make my comparison operator available
+</p></li>
+
+<li><p>
+<code>user-defined-down</code>
+</p>
+
+<p>
+this activates my comparison in the agenda.
+</p></li>
+</ul>
+
+
+<p>
+At this point I needed to define my vision. This took much longer than
+my programming, and in part is still a work in progress. (The bit I am
+proud of is the statement "I am the catalyzer of sustainable
+improvements that include as many people as possible", because it
+keeps staying the same and guiding me in challenging moments.)
+</p>
+
+<p>
+What I think you will find more interesting <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup> is that I ended up splitting my Org files to represent the
+goals I want to achieve, and more importantly defining Org Capture
+templates that allowed me to define the kind of tag I described above
+(<a href="https://ag91.github.io/blog/2020/07/28/how-to-integrate-yasnippet-and-yankpad-with-org-capture/">I use my templating extension to make this easy to maintain for
+myself</a>).
+</p>
+
+<p>
+An minimal example of Yankpad template you can use with this approach
+is:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">\* TODO $1 :${2:$$(yas-choose-value (list "0yr" "5yr" "10yr" "20yr"))}:
+  SCHEDULED: %t
+See: %a
+</pre>
+</div>
+
+<p>
+Each of these files has a category (this means that my Org file starts
+with a property line <code>#+CATEGORY: Some Vision</code>) that nicely display in
+the agenda: so I can quickly see both the kind of vision I am
+targeting (through the category) and the weight it has on my future
+(through the tag).
+</p>
+
+<p>
+Finally some metrics for setting up a feedback loop. Because we said
+that we want to get excitement for our progress, right? Right. So, I
+looked into org-ql. That again is a mode that I always wanted to use,
+but I did not know for what. I found out it is great to do weekly
+reviews of my achievements. I have a periodic task in my agenda with
+source blocks that look like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(let ((files (concatenate 'list (org-agenda-files) (list "my.org_archive"))))
+  (--&gt;
+   (my/get-stats-tasks "DONE" -31 nil  nil files)
+   (s-concat 
+    "\n"
+    (format "Tasks marked DONE last month (today is: %s): %s\n" (current-time-string) it)
+    (format "    Tasks done last month (%s) with category\n\n" (current-time-string))
+    (format "    Vision1  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Category1"))
+    (format "    Vision2  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Category2"))))
+</pre>
+</div>
+
+<p>
+Note: I am also using my <a href="https://orgmode.org/manual/Archiving.html">archive</a> for retrieving done tasks! Archiving
+removes clutter from my files, so they feel clean and compact when I
+look at them.
+</p>
+
+<p>
+The <code>my/get-stats-tasks</code> function retrieves the necessary statistics
+(this is just a wrapper around the org-ql query API):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/get-stats-tasks (todo-tag from &amp;optional tag to files category)
+  "Get stats for tasks of last week with TODO-TAG TAG FROM optionally define TO date and source FILES to use."
+  (let ((tasks
+         (org-ql-query
+           :from (or files (org-agenda-files))
+           :where
+           `(and (todo ,todo-tag)
+                 (if ,tag (tags ,tag) t)
+                 (if ,category (category ,category) t)
+                 (ts :from ,from :to ,(or to 'today))))))
+    `((tasks . ,(length tasks))
+      (tasks-per-day . ,(/ (length tasks) (abs from))))))
+</pre>
+</div>
+
+<p>
+With this approach I am a C-c C-c away from my feedback loop, and I
+can monitor where I am spending more effort and adjust if needed.
+</p>
+
+
+<p>
+By the way, I am using this system from a while and... I am totally
+not so precise: often I get the task category wrong or I estimate
+wrongly the effect of the tasks on my future. I find this effort
+valuable in orienting me towards keeping track of these things.
+</p>
+
+<p>
+So please be forgiving with yourself if you are planning on using a
+similar strategy.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org37133fa" class="outline-2">
+<h2 id="org37133fa">Conclusion</h2>
+<div class="outline-text-2" id="text-org37133fa">
+<p>
+Focusing your energies on what you want to happen is important. Life
+is short so I believe we cannot run after all that is attractive, if
+we want to be effective. So if you take a single thing from this post:
+develop a vision, and let it guide you through your future. Then help
+yourself with your tools, Org mode and Emacs in general are amazing
+instruments if you tame them.
+</p>
+
+<p>
+Feel free to get in touch if you want to share your approach or you
+have questions. I like receiving mails from the readers :)
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">get in touch if you
+want me to share more about my inner travel to find a vision for
+myself</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-09-27</span>
+        <span title="last modification date" class="post-info">2020-09-27</span>
+        <span title="tags" class="post-info"><a href="/tags/org-mode/">org-mode</a>, <a href="/tags/planning/">planning</a>, <a href="/tags/growth/">growth</a>, <a href="/tags/yasnippet/">yasnippet</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
