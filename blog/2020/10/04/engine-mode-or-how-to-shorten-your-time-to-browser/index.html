@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Engine-mode, or how to shorten your time-to-browser - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Make Internet searches optimal through key shortcuts" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Engine-mode, or how to shorten your time-to-browser</h1>
+
+<div id="outline-container-org0bae8c3" class="outline-2">
+<h2 id="org0bae8c3">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org0bae8c3">
+<p>
+Use <a href="https://github.com/hrs/engine-mode">engine-mode</a> for searches, it is brilliant and fantastic for work (see code below for engines to search Jira and Confluence).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org25069e8" class="outline-2">
+<h2 id="org25069e8">The problem</h2>
+<div class="outline-text-2" id="text-org25069e8">
+<p>
+I cannot remember Jira stories codes. Do you know those STORY-123?
+Sometimes I need these codes for documentation and I vaguely remember
+the title of a story. Then I need to go to Jira, search my board, find
+my story and... tada! I get the code and even a link as a bonus. This is boring!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org73d1dac" class="outline-2">
+<h2 id="org73d1dac">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org73d1dac">
+<p>
+Interestingly, I had the same problem for finding books. I like to
+reference books <a href="https://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters/">in</a> <a href="https://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms/">my</a> <a href="https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning/">posts</a>, and I like to use GoodReads so that
+readers can look at reviews other than mines. And again it takes quite some clicking to find the books I want to reference.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga2f1e72" class="outline-2">
+<h2 id="orga2f1e72">And there is a solution</h2>
+<div class="outline-text-2" id="text-orga2f1e72">
+<p>
+And I remembered a dark corner of my Emacs configuration: there it was
+<code>engine-mode</code>. I remember to have heard of this mode and have
+immediately thought it useful. Then I forgot about it. Now it is saving me time!
+</p>
+
+<p>
+This mode is about using keybindings to search terms in your favourite search engines.
+The configuration is straightforward:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package engine-mode
+  :defer
+  :config
+  (engine/set-keymap-prefix (kbd "C-c e"))  
+  (defengine goodreads
+      "https://www.goodreads.com/search?q=%s&amp;search_type=books"
+      :keybinding "r"))
+</pre>
+</div>
+
+<p>
+If you load the configuration above, you will be able to search a book
+(title, author or ISBN) by pressing <code>C-c e r</code>. AND it will search the
+region if you have marked one with <code>C-space</code>! That is really useful to
+me!
+</p>
+
+<p>
+Now the way to come up with engines is to:
+</p>
+<ol class="org-ol">
+<li>go to a website,</li>
+<li>search some text in its search bar,</li>
+<li>save the URL produced</li>
+<li>substitute the text you searched in the url with the <code>%s</code>, which
+will let <code>engine-mode</code> to inject your query when you compose the
+keybinding</li>
+</ol>
+
+<p>
+Sometimes though it is a bit challenging and that is the case of Jira.
+I needed to play a little with things to find the right search URL for
+my team and the following is what I came up with:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defengine zd-jira-bg
+    "https://jira.&lt;your-domain&gt;/issues/?filter=-9&amp;jql=project %%3D &lt;your-project-id&gt; AND text%%20 ~ \"%s\" order by updated DESC"
+          :keybinding "x")
+</pre>
+</div>
+
+<p>
+You should substitute the bits that have <code>&lt;xxx&gt;</code> in it. The domain is
+easy. The project id requires a second of search: you want to look
+into the functionality of Jira that lets you filter stories, select a
+board from the menu and see what is the id. Probably even easier to
+put this in your browser search bar
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">https://jira.&lt;your-domain&gt;/issues/?filter=-9&amp;jql=text%%20 ~ \"bla\" order by updated DESC,
+</pre>
+</div>
+
+
+<p>
+and then select a project from the Jira user interface.
+</p>
+
+<p>
+Note that projects with multiple words need to go between quotes:
+these will look like
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">https://jira.&lt;your-domain&gt;/issues/?filter=-9&amp;jql=project %%3D \"&lt;your-project-id-with-multiple-words&gt;\" AND text%%20 ~ \"%s\" order by updated DESC
+</pre>
+</div>
+
+<p>
+Importantly, the <code>text</code> bit of the URL allows you to search both in
+the heading and the body of the story. That is helpful if your memory
+is a bit imprecise, otherwise you can use more focused filters (like
+<code>description</code> or I think <code>title</code>, experiment with the Jira UI for
+finding your best filters).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0d5d172" class="outline-2">
+<h2 id="org0d5d172">Conclusion</h2>
+<div class="outline-text-2" id="text-org0d5d172">
+<p>
+I am enjoying myself at searching stories and resources online
+directly from Emacs. I like using the <code>!g/y/???</code> syntax of <a href="https://html.duckduckgo.com/html/">DuckDuckGo</a>,
+but Emacs keybindings are just faster (and spend less electricity/TCP packets).
+Give a chance to <code>engine-mode</code> and see if you enjoy it as well as I do.
+</p>
+
+<p>
+Happy browsing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-10-04</span>
+        <span title="last modification date" class="post-info">2020-10-04</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
