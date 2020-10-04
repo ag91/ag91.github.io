@@ -1,0 +1,104 @@
+#+TITLE:       Engine-mode, or how to shorten your time-to-browser
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-10-04 Sun
+#+URI:         /blog/%y/%m/%d/engine-mode-or-how-to-shorten-your-time-to-browser
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Make Internet searches optimal through key shortcuts
+
+* Too long; didn't read
+
+Use [[https://github.com/hrs/engine-mode][engine-mode]] for searches, it is brilliant and fantastic for work (see code below for engines to search Jira and Confluence).
+
+* The problem
+
+I cannot remember Jira stories codes. Do you know those STORY-123?
+Sometimes I need these codes for documentation and I vaguely remember
+the title of a story. Then I need to go to Jira, search my board, find
+my story and... tada! I get the code and even a link as a bonus. This is boring!
+
+* It is a problem indeed
+
+Interestingly, I had the same problem for finding books. I like to
+reference books [[https://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters/][in]] [[https://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms/][my]] [[https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning/][posts]], and I like to use GoodReads so that
+readers can look at reviews other than mines. And again it takes quite some clicking to find the books I want to reference.
+
+* And there is a solution
+
+And I remembered a dark corner of my Emacs configuration: there it was
+=engine-mode=. I remember to have heard of this mode and have
+immediately thought it useful. Then I forgot about it. Now it is saving me time!
+
+This mode is about using keybindings to search terms in your favourite search engines.
+The configuration is straightforward:
+
+#+begin_src elisp :noeval
+(use-package engine-mode
+  :defer
+  :config
+  (engine/set-keymap-prefix (kbd "C-c e"))  
+  (defengine goodreads
+      "https://www.goodreads.com/search?q=%s&search_type=books"
+      :keybinding "r"))
+#+end_src
+
+If you load the configuration above, you will be able to search a book
+(title, author or ISBN) by pressing =C-c e r=. AND it will search the
+region if you have marked one with =C-space=! That is really useful to
+me!
+
+Now the way to come up with engines is to:
+1. go to a website, 
+2. search some text in its search bar,
+3. save the URL produced
+4. substitute the text you searched in the url with the =%s=, which
+   will let =engine-mode= to inject your query when you compose the
+   keybinding
+
+Sometimes though it is a bit challenging and that is the case of Jira.
+I needed to play a little with things to find the right search URL for
+my team and the following is what I came up with:
+
+#+begin_src elisp :noeval
+(defengine zd-jira-bg
+    "https://jira.<your-domain>/issues/?filter=-9&jql=project %%3D <your-project-id> AND text%%20 ~ \"%s\" order by updated DESC"
+          :keybinding "x")
+#+end_src
+
+You should substitute the bits that have =<xxx>= in it. The domain is
+easy. The project id requires a second of search: you want to look
+into the functionality of Jira that lets you filter stories, select a
+board from the menu and see what is the id. Probably even easier to
+put this in your browser search bar
+
+#+begin_src text 
+https://jira.<your-domain>/issues/?filter=-9&jql=text%%20 ~ \"bla\" order by updated DESC,
+#+end_src
+
+
+and then select a project from the Jira user interface.
+
+Note that projects with multiple words need to go between quotes:
+these will look like
+
+#+begin_src text 
+https://jira.<your-domain>/issues/?filter=-9&jql=project %%3D \"<your-project-id-with-multiple-words>\" AND text%%20 ~ \"%s\" order by updated DESC
+#+end_src
+
+Importantly, the =text= bit of the URL allows you to search both in
+the heading and the body of the story. That is helpful if your memory
+is a bit imprecise, otherwise you can use more focused filters (like
+=description= or I think =title=, experiment with the Jira UI for
+finding your best filters).
+
+* Conclusion
+
+I am enjoying myself at searching stories and resources online
+directly from Emacs. I like using the =!g/y/???= syntax of [[https://html.duckduckgo.com/html/][DuckDuckGo]],
+but Emacs keybindings are just faster (and spend less electricity/TCP packets).
+Give a chance to =engine-mode= and see if you enjoy it as well as I do.
+
+Happy browsing!
