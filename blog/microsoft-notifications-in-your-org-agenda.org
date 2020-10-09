@@ -3260,7 +3260,7 @@ Fg/+Io/4Wj4z/wCg2f8AwFg/+IoA+o6K+XP+Fo+M/wDoNn/wFg/+Io/4Wj4z/wCg2f8AwFg/+IoA
 
 7. define flow details (i.e., specify from what team channel and to what slack channel)
 
-   #+BEGIN_SRC emacs-lisp  :results file :exports results :file "defineFlow.jpg"
+   #+BEGIN_SRC emacs-lisp :results file :exports results :file "defineFlow.jpg"
   (base64-decode-string
       "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
 FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
@@ -4058,3 +4058,11 @@ couple of steps.
 At this point you should be receiving notifications via Slack! And
 hopefully in your Org Agenda too.
 
+* Conclusion
+
+So, if you use Microsoft tools for work and you also use Slack: this
+is your chance of ruling them all! Set up a Power Automate automated
+flow and receive notifications in Slack (and you can discover
+integrations I could neither imagine).
+
+Happy focus!
