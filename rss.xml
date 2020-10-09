@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 04 Oct 2020 23:08:19 CEST</pubDate>
-    <lastBuildDate>Sun, 04 Oct 2020 23:08:19 CEST</lastBuildDate>
+    <pubDate>Fri, 09 Oct 2020 20:26:23 CEST</pubDate>
+    <lastBuildDate>Fri, 09 Oct 2020 20:26:23 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Microsoft (Teams) notifications in your Org Agenda (through Emacs Slack)</title>
+      <link>http://ag91.github.io/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)</link>
+      <description><![CDATA[Emails and chats together through Power Automate]]></description>
+      <pubDate>2020-10-09</pubDate>
+      <guid>http://ag91.github.io/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)</guid>
+    </item>
+    <item>
       <title>Engine-mode, or how to shorten your time-to-browser</title>
       <link>http://ag91.github.io/blog/2020/10/04/engine-mode-or-how-to-shorten-your-time-to-browser</link>
-      <description><![CDATA[Make Internet searches optimal through key shortcuts]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-10-04</pubDate>
       <guid>http://ag91.github.io/blog/2020/10/04/engine-mode-or-how-to-shorten-your-time-to-browser</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-08-28</pubDate>
       <guid>http://ag91.github.io/blog/2020/08/28/org-crypt-and-logbook-how-they-can-work-together-for-a-secure-agenda</guid>
-    </item>
-    <item>
-      <title>More enjoyable estimates, or how to share security knowledge with your team</title>
-      <link>http://ag91.github.io/blog/2020/08/22/more-enjoyable-estimates-or-how-to-share-security-knowledge-with-your-team</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-08-22</pubDate>
-      <guid>http://ag91.github.io/blog/2020/08/22/more-enjoyable-estimates-or-how-to-share-security-knowledge-with-your-team</guid>
     </item>
   </channel>
 </rss>

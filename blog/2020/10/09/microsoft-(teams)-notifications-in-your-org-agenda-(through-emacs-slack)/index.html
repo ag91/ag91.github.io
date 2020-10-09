@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Microsoft (Teams) notifications in your Org Agenda (through Emacs Slack) - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Emails and chats together through Power Automate" />
+    <meta name="keywords" content="elisp, emacs-slack, org-mode" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Microsoft (Teams) notifications in your Org Agenda (through Emacs Slack)</h1>
+<div id="outline-container-org2cff836" class="outline-2">
+<h2 id="org2cff836">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org2cff836">
+<p>
+You can forward Microsoft notifications to Slack (as long you can access Power Automate). This way you can
+<a href="https://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda/">make your Org Agenda a dashboard for your Microsoft notifications</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6ca8f61" class="outline-2">
+<h2 id="org6ca8f61">The problem</h2>
+<div class="outline-text-2" id="text-org6ca8f61">
+<p>
+Ping! Ah, somebody is looking for me. Ping! there is a pull request to
+review. Ping! Oh, I need to reply my manager. And I got three
+important mails, aargh!
+</p>
+
+<p>
+Well, that is a bad moment of my interactions with Microsoft
+technology at work...
+</p>
+
+<p>
+Some time ago, I managed to seal <a href="https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda">my Slack distractions within my Org
+Agenda</a>, but as <a href="https://goodreads.com/book/show/566213.The_Secrets_of_Consulting?from_search=true&amp;amp;from_srp=true&amp;amp;qid=oRpVuWciQC&amp;amp;rank=1">Gerald Weinberg</a> says: "Once you eliminate your number
+one problem, YOU promote number two". Notifications just ruin my focus
+and I get headache from cycling through all the clients/websites I
+need to keep an eye upon.
+</p>
+
+<p>
+Still I need to be aware of them and react to them at some point.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdd4ec85" class="outline-2">
+<h2 id="orgdd4ec85">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgdd4ec85">
+<p>
+And emails! I just prefer this medium over chats, but even another
+place where to look.
+</p>
+
+<p>
+Unluckily for each of these I need to plugin a different piece of
+software and sometime this software does not even exist yet (for
+example, there is no Teams client for Emacs yet).
+</p>
+
+<p>
+How amazing if I could just inject in my agenda all this work
+communication and deal with it at my own time? If it is <b>really</b>
+urgent I would receive a call anyway (also I look often at my agenda).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org693cd5c" class="outline-2">
+<h2 id="org693cd5c">And there is a solution</h2>
+<div class="outline-text-2" id="text-org693cd5c">
+<p>
+Then I heard a colleague mention how he automated a lot of his
+Microsoft workflows. He spoke of connectors and plugging in random
+services on the web. So I thought: do you want to see that I can
+forward Microsoft notifications to Slack?!
+</p>
+
+<p>
+I asked him for a tutorial and: YES! You can forward both emails and
+chat notifications to Slack. Most of the steps are setup in the
+Microsoft platform, so I am going to explain them in pictures:
+</p>
+
+<ol class="org-ol">
+<li><p>
+make sure you have access to <a href="https://emea.flow.microsoft.com/">https://emea.flow.microsoft.com/</a>
+</p>
+
+<p>
+This is Power Automate, the service that lets you integrate services.
+</p>
+
+<p>
+You may need to ask access to an administrator if your organization
+subscribes to it.
+</p></li>
+
+<li><p>
+I suggest to make a private channel on Slack where you can forward notifications
+</p>
+
+<p>
+Note: Slack is a third-party tool, so if you forward your email
+there I suggest to include only the necessary data.
+</p></li>
+
+<li>now browse to <a href="https://emea.flow.microsoft.com/">https://emea.flow.microsoft.com/</a></li>
+
+<li><p>
+then click on Create in the left bar
+</p>
+
+
+<div id="orgde6b9c2" class="figure">
+<p><img src="/assets/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)/leftbar.jpg" alt="/assets/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)/leftbar.jpg" />
+</p>
+</div></li>
+
+<li><p>
+choose Automated flow
+</p>
+
+
+<div id="orgcf3fadc" class="figure">
+<p><img src="/assets/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)/automatedFlow.jpg" alt="/assets/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)/automatedFlow.jpg" />
+</p>
+</div></li>
+
+<li><p>
+select the trigger you want to use (let's start from Teams)
+</p>
+
+
+<div id="org35c950e" class="figure">
+<p><img src="/assets/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)/selectTeamsTrigger.jpg" alt="/assets/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)/selectTeamsTrigger.jpg" />
+</p>
+</div></li>
+
+<li><p>
+define flow details (i.e., specify from what team channel and to what slack channel)
+</p>
+
+
+<div id="org8b621ad" class="figure">
+<p><img src="/assets/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)/defineFlow.jpg" alt="/assets/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)/defineFlow.jpg" />
+</p>
+</div>
+
+<p>
+Note: there is chance that your private channel is unavailable in
+the proposed target channel list. If so, just input the name
+manually selecting the last option in the list.
+</p></li>
+
+<li><p>
+(optional) you can test your automated flow by clicking the "Test" button on the top right
+</p>
+
+<p>
+I found it easier to test the email connector because for Teams you
+need to ask somebody to mention you in the Teams channel you
+selected. You can send emails to yourself though (I told you I like
+emails more).
+</p></li>
+
+<li>Then save your flow and enjoy receiving notifications from your Slack private channel!</li>
+</ol>
+
+<p>
+I have just tried a combination of forwarding of emails and Teams
+mentions for some channels and my notification stress has already gone
+down a lot!
+</p>
+
+<p>
+Now for the Org mode power users: if you want to make these
+notifications show in your Org Agenda (as in <a href="https://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda">here</a>), you need another
+couple of steps.
+</p>
+
+<ol class="org-ol">
+<li><p>
+In the flow definition you should add to the message body a mention
+to yourself (you know, the Slack's @username thingy) to make sure
+notifications reach Emacs Slack
+</p>
+
+<p>
+You can write this like <code>&lt;@someId&gt;</code> and you can find your id
+through Emacs Slack with <code>slack-user-select</code> which will display
+information about the user, included their Slack id.
+</p></li>
+
+<li><p>
+You need to modify Emacs Slack to receive private channel
+notifications, because the code seems broken for that:
+</p>
+
+<p>
+Redefine <code>slack-message-notify-p</code> with the following definition in
+your init file.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun slack-message-notify-p (message room team)
+  (and (not (slack-message-minep message team))
+       (or (slack-im-p room)
+           (slack-group-p room)
+           (slack-room-subscribedp room team)
+           (slack-message-mentioned-p message team)
+           (slack-message-subscribed-thread-message-p message room))))
+</pre>
+</div>
+
+<p>
+I needed to remove <code>slack-mpim-p</code> from the original definition
+because it was always returning <code>nil</code>, preventing notifications
+from happen.
+</p></li>
+</ol>
+
+<p>
+At this point you should be receiving notifications via Slack! And
+hopefully in your Org Agenda too.
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-10-09</span>
+        <span title="last modification date" class="post-info">2020-10-09</span>
+        <span title="tags" class="post-info"><a href="/tags/elisp/">elisp</a>, <a href="/tags/emacs-slack/">emacs-slack</a>, <a href="/tags/org-mode/">org-mode</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
