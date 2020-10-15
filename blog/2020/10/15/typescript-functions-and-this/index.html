@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <title>Tag: functional - Where parallels cross</title>
+    <title>TypeScript, functions and this - Where parallels cross</title>
     <meta charset="utf-8" />
     <meta name="author" content="Andrea" />
+    <meta name="description" content="How TypeScript treats the this keyword for the function scope" />
+    <meta name="keywords" content="typescript, functional" />
     <link rel="stylesheet" href="/media/css/main.css" type="text/css">
     <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
   </head>
@@ -25,17 +27,99 @@
         </form>
       </header>
     </div>
+
+<div>
+<div class="post">
+<h1>TypeScript, functions and this</h1>
+<p>
+This week I just had a challenging moment and I want to share my
+little TypeScript learning with you (probably you know about <code>this</code>
+already -a pun lol-, but who knows).
+</p>
+
+<p>
+I had this piece of code
+</p>
+
+<div class="org-src-container">
+<pre class="src src-typescript">const someFn = !!this.someData ?
+    this.service.doSomething :
+    this.service.doSomethingElse;
+</pre>
+</div>
+
+
+<p>
+with which I wanted to trigger the right function according to the
+presence of <code>someData</code>.
+</p>
+
+<p>
+Funny thing: if you used <code>someFn(someArgument)</code> it would fail with
+<code>this is undefined</code>.
+</p>
+
+<p>
+This error happens because the <code>this.service</code> scope disappears as soon
+as you call the function.
+</p>
+
+<p>
+So I thought: <code>.bind(this.service)</code> to the rescue! 
+</p>
+
+<div class="org-src-container">
+<pre class="src src-typescript">const someFn = (!!this.someData ?
+    this.service.doSomething :
+    this.service.doSomethingElse).bind(this.service);
+</pre>
+</div>
+
+
+<p>
+Naturally not...
+</p>
+
+<p>
+Now the type system of TypeScript is in the way, because <code>bind</code> is a
+bit of a wild card in terms of types and it makes the type check
+complain (to solve that I would need to define the type explicitly...
+a bit ugly).
+</p>
+
+<p>
+So I ended up settling for:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-typescript">const someFn = someArgument =&gt;
+  (!!this.someData ?
+    this.service.doSomething(someArgument) :
+    this.service.doSomethingElse(someArgument));
+</pre>
+</div>
+
+<p>
+This works because ES6 anonymous functions keep scope intact.
+</p>
+
+<p>
+Hopefully this functional pill of TypeScript will save you some head
+scratching.
+</p>
+
+</div>
+</div>
     <div>
-      <div class="post">
-        <h1>Tag: functional</h1>
-        <ul class="org-ul">
-          <li><a href="/blog/2020/10/15/typescript-functions-and-this">TypeScript, functions and this</a></li>
-          <li><a href="/blog/2019/08/06/fold-the-recursive-function">Fold the recursive function</a></li>
-          <li><a href="/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli">Functional abstractions in JavaScript: fishing fmaps with Kleisli</a></li>
-        </ul>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-10-15</span>
+        <span title="last modification date" class="post-info">2020-10-15</span>
+        <span title="tags" class="post-info"><a href="/tags/typescript/">typescript</a>, <a href="/tags/functional/">functional</a></span>
+        <span title="author" class="post-info">Andrea</span>
       </div>
-    </div>
-    <div>
+      <section>
+        <h1>Comments</h1>
+      </section>
       <script src="//code.jquery.com/jquery-latest.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
       <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -60,5 +144,6 @@
         </p>
       </div>
     </div>
+
   </body>
 </html>
