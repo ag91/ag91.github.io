@@ -1,0 +1,62 @@
+#+TITLE:       TypeScript, functions and this
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-10-15 Thu
+#+URI:         /blog/%y/%m/%d/typescript-functions-and-this
+#+KEYWORDS:    typescript, functional
+#+TAGS:        typescript, functional
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How TypeScript treats the this keyword for the function scope
+
+This week I just had a challenging moment and I want to share my
+little TypeScript learning with you (probably you know about =this=
+already -a pun lol-, but who knows).
+
+I had this piece of code
+
+#+begin_src typescript
+const someFn = !!this.someData ?
+    this.service.doSomething :
+    this.service.doSomethingElse;
+#+end_src    
+
+
+with which I wanted to trigger the right function according to the
+presence of =someData=.
+
+Funny thing: if you used =someFn(someArgument)= it would fail with
+=this is undefined=.
+
+This error happens because the =this.service= scope disappears as soon
+as you call the function.
+
+So I thought: =.bind(this.service)= to the rescue! 
+
+#+begin_src typescript
+const someFn = (!!this.someData ?
+    this.service.doSomething :
+    this.service.doSomethingElse).bind(this.service);
+#+end_src
+
+
+Naturally not...
+
+Now the type system of TypeScript is in the way, because =bind= is a
+bit of a wild card in terms of types and it makes the type check
+complain (to solve that I would need to define the type explicitly...
+a bit ugly).
+
+So I ended up settling for:
+
+#+begin_src typescript
+const someFn = someArgument =>
+  (!!this.someData ?
+    this.service.doSomething(someArgument) :
+    this.service.doSomethingElse(someArgument));
+#+end_src
+
+This works because ES6 anonymous functions keep scope intact.
+
+Hopefully this functional pill of TypeScript will save you some head
+scratching.
