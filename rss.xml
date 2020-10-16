@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 15 Oct 2020 23:18:04 CEST</pubDate>
-    <lastBuildDate>Thu, 15 Oct 2020 23:18:04 CEST</lastBuildDate>
+    <pubDate>Fri, 16 Oct 2020 20:49:56 CEST</pubDate>
+    <lastBuildDate>Fri, 16 Oct 2020 20:49:56 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>My Emacs setup for Scala development</title>
+      <link>http://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development</link>
+      <description><![CDATA[How I setup my Emacs to develop Scala code]]></description>
+      <pubDate>2020-10-16</pubDate>
+      <guid>http://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development</guid>
+    </item>
+    <item>
       <title>TypeScript, functions and this</title>
       <link>http://ag91.github.io/blog/2020/10/15/typescript-functions-and-this</link>
-      <description><![CDATA[How TypeScript treats the this keyword for the function scope]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-10-15</pubDate>
       <guid>http://ag91.github.io/blog/2020/10/15/typescript-functions-and-this</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-09-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/12/org-mode-links-for-emacs-slack</guid>
-    </item>
-    <item>
-      <title>Slow Growth, Insomnia and Curing Symptoms</title>
-      <link>http://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-09-12</pubDate>
-      <guid>http://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms</guid>
     </item>
   </channel>
 </rss>

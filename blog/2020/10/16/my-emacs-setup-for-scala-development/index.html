@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>My Emacs setup for Scala development - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How I setup my Emacs to develop Scala code" />
+    <meta name="keywords" content="scala, emacs, ensime" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>My Emacs setup for Scala development</h1>
+<div id="outline-container-org1398433" class="outline-2">
+<h2 id="org1398433">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org1398433">
+<p>
+At the moment the best tools for your Scala development on Emacs are
+sbt-mode, metals, ob-amm, and scala-mode!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc66271e" class="outline-2">
+<h2 id="orgc66271e">The problem</h2>
+<div class="outline-text-2" id="text-orgc66271e">
+<p>
+You do not use IntelliJ?!? I heard that question so many times that I
+enjoy the sound of it. Emacs for me is better. I started with Emacs by
+writing OCaml and I soon started working on Scala. At the time
+scala-mode was enough: we were just writing prototypes.
+</p>
+
+<p>
+When I landed in a working environment where projects need multiple
+submodules, custom sbt executable loading certificates and other weird
+things... well I could feel the pressure.
+</p>
+
+<p>
+A couple of years ago I was using the cool <a href="https://github.com/ensime/ensime-emacs">Ensime</a> (I even developed my
+<a href="https://github.com/ag91/EasyOrgEnsime">little scripts</a> to use it for literate programming!), and I am really
+thankful for its development.
+</p>
+
+<p>
+Now I would like to share the setup I built little by little for
+having a good Emacs environment.
+</p>
+
+<p>
+A disclaimer: I do not use a debugger. My mind and printlns are enough
+(yours are too IMHO).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4a3ddab" class="outline-2">
+<h2 id="org4a3ddab">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org4a3ddab">
+<p>
+Code navigation and completion is traumatic in Scala. There are
+moments where you have to complete to know what the variable at point
+has to offer. Sometimes having that auto-completion feature feels to
+me like I do not know what I am doing: ideally when I am writing a
+function I should know input and outputs clearly enough to know what I
+am operating on. Still is still a life changing feature. Same for easy
+compilation and test run.
+</p>
+
+<p>
+So let's get to the configuration I use!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org97ee28f" class="outline-2">
+<h2 id="org97ee28f">And there is a solution</h2>
+<div class="outline-text-2" id="text-org97ee28f">
+<p>
+First, syntax coloring is just too nice:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(use-package scala-mode
+  :mode "\\.s\\(cala\\|bt\\)$"
+  :config
+    (load-file "~/.emacs.d/lisp/ob-scala.el"))
+</pre>
+</div>
+
+<p>
+This <code>use-package</code> clause activates when the file ends for ".scala" or
+".sbt".
+</p>
+
+<p>
+Did you note the <code>ob-scala</code> load statement? Well I like literate
+programming so we need to be able to run scala Org Mode source blocks.
+It does not come by default (anymore) so I load the old <code>ob-scala</code>:
+you can find the code in the Appendix.
+</p>
+
+<p>
+If you like literal programming with Org Mode too, add this as well:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(org-babel-do-load-languages
+'org-babel-load-languages
+'(; likely other languages here
+  (scala . t)))
+</pre>
+</div>
+
+<p>
+Now if you need to test libraries available online this is practically
+insufficient. Sometimes I want just to download a dependency and see
+how it works. A tool that sweetens this kind of exploration is
+<a href="http://ammonite.io/">Ammonite</a>. And Emacs has some modes for it too:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(use-package ob-ammonite
+  :ensure-system-package (amm . "sudo sh -c '(echo \"#!/usr/bin/env sh\" &amp;&amp; curl -L https://github.com/lihaoyi/Ammonite/releases/download/2.0.4/2.13-2.0.4) &gt; /usr/local/bin/amm &amp;&amp; chmod +x /usr/local/bin/amm' &amp;&amp; amm")
+  :defer 1
+  :config
+  (use-package ammonite-term-repl)
+  (setq ammonite-term-repl-auto-detect-predef-file nil)
+  (setq ammonite-term-repl-program-args '("--no-remote-logging" "--no-default-predef" "--no-home-predef"))
+  (defun my/substitute-sbt-deps-with-ammonite ()
+    "Substitute sbt-style dependencies with ammonite ones."
+    (interactive)
+    (apply 'narrow-to-region (if (region-active-p) (my/cons-cell-to-list (region-bounds)) `(,(point-min) ,(point-max))))
+    (goto-char (point-min))
+    (let ((regex "\"\\(.+?\\)\"[ ]+%\\{1,2\\}[ ]+\"\\(.+?\\)\"[ ]+%\\{1,2\\}[ ]+\"\\(.+?\\)\"")
+          (res))
+      (while (re-search-forward regex nil t)
+        (let* ((e (point))
+               (b (search-backward "\"" nil nil 6))
+               (s (buffer-substring-no-properties b e))
+               (s-without-percent (apply 'concat (split-string s "%")))
+               (s-without-quotes (remove-if (lambda (x) (eq x ?" ;"
+                                                            ))
+                                            s-without-percent))
+               (s-as-list (split-string s-without-quotes)))
+                    (delete-region b e)
+          (goto-char b)
+          (insert (format "import $ivy.`%s::%s:%s`" (first s-as-list) (second s-as-list) (third s-as-list)))
+          )
+        )
+      res)
+    (widen)))
+</pre>
+</div>
+
+<p>
+Note that the <code>:ensure-system-package</code> clause will download Ammonite
+automatically for me if not available on the system.
+</p>
+
+<p>
+Essentially <a href="https://github.com/zwild/ob-ammonite">ob-ammonite</a> will make available <code>amm</code> Org Mode source
+blocks, in which you can easily download dependencies with the special
+import syntax <code>import $ivy ...</code>. 
+</p>
+
+<p>
+Since a lot of dependencies I need to test come in the <code>sbt</code> format
+(the Scala major build tool), I also made a function that translates
+from <code>sbt</code> syntax to Ammonite syntax. Just copy the typical
+<code>"org.scalaz" %% "scalaz-core" % "7.3.0-SNAPSHOT"</code>, move your pointer
+on it and do <code>M-x my/substitute-sbt-deps-with-ammonite</code>: you will have
+the dependency substituted and ready to be used in your Ammonite block
+or REPL. 
+</p>
+
+<p>
+Yes, because you can also just launch a Scala REPL with
+<a href="https://github.com/zwild/ammonite-term-repl">ammonite-term-repl</a>! Very useful to test ideas on the fly.
+</p>
+
+<p>
+Speaking of <code>sbt</code>, this is how I integrate the build tool for
+compiling, running and testing my project:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :custom
+   (sbt:default-command "testQuick")
+  :config
+  ;; WORKAROUND: https://github.com/ensime/emacs-sbt-mode/issues/31
+  ;; allows using SPACE when in the minibuffer
+  (substitute-key-definition
+   'minibuffer-complete-word
+   'self-insert-command
+   minibuffer-local-completion-map))
+</pre>
+</div>
+
+<p>
+Note that I use most often the <code>sbt testQuick</code> command which runs just
+the most relevant Scala tests, so I made that my default command.
+</p>
+
+<p>
+The rest of my configuration is taken from <a href="https://scalameta.org/metals/docs/editors/emacs.html">https://scalameta.org/metals/docs/editors/emacs.html</a>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package lsp-mode
+  ;; Optional - enable lsp-mode automatically in scala files
+  :hook (scala-mode . lsp)
+  :config (setq lsp-prefer-flymake nil))
+
+;; Add company-lsp backend for metals
+(use-package company-lsp) ; you need company mode as well for this
+
+(use-package lsp-metals)
+
+(use-package lsp-ui) ;; this is necessary to get info about compilation
+</pre>
+</div>
+
+<p>
+This makes Emacs feel like a Scala IDE with auto-completion (of
+imports!), type annotations, and various other nice features the
+scalameta community is working on (they are amazing people by the way,
+and I found it fun to contribute to <a href="https://github.com/scalacenter/scalafix">Scalafix</a> sometimes ago).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7aa0f60" class="outline-2">
+<h2 id="org7aa0f60">Conclusion</h2>
+<div class="outline-text-2" id="text-org7aa0f60">
+<p>
+If you are a Scala developer, no more excuses: load all of this in
+your configuration and start coding! If not, Scala is a curious
+language worth a try (in particular if you are a Java developer :).
+</p>
+
+<p>
+Happy hacking!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org906d822" class="outline-2">
+<h2 id="org906d822">Appendix</h2>
+<div class="outline-text-2" id="text-org906d822">
+<p>
+This is the old mode (suggested by @hb9 on GitHub:
+<a href="https://github.com/hvesalai/emacs-scala-mode/issues/148#issuecomment-393521131">https://github.com/hvesalai/emacs-scala-mode/issues/148#issuecomment-393521131</a>):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">;;; ob-scala.el --- org-babel functions for Scala evaluation
+
+;; Copyright (C) 2012  Free Software Foundation, Inc.
+
+;; Author: Andrzej Lichnerowicz
+;; Keywords: literate programming, reproducible research
+;; Homepage: http://orgmode.org
+
+;; This file is part of GNU Emacs.
+
+;; GNU Emacs is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; GNU Emacs is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+
+;;; Commentary:
+;; Currently only supports the external execution.  No session support yet.
+
+;;; Requirements:
+;; - Scala language :: http://www.scala-lang.org/
+;; - Scala major mode :: Can be installed from Scala sources
+;;  https://github.com/scala/scala-dist/blob/master/tool-support/src/emacs/scala-mode.el
+
+;;; Code:
+(require 'ob)
+(require 'ob-ref)
+(require 'ob-comint)
+(require 'ob-eval)
+(eval-when-compile (require 'cl))
+
+(defvar org-babel-tangle-lang-exts) ;; Autoloaded
+(add-to-list 'org-babel-tangle-lang-exts '("scala" . "scala"))
+(defvar org-babel-default-header-args:scala '())
+(defvar org-babel-scala-command "scala"
+  "Name of the command to use for executing Scala code.")
+
+(defun org-babel-execute:scala (body params)
+  "Execute a block of Scala code with org-babel.  This function is
+called by `org-babel-execute-src-block'"
+  (message "executing Scala source code block")
+  (let* ((processed-params (org-babel-process-params params))
+         (session (org-babel-scala-initiate-session (nth 0 processed-params)))
+         (vars (nth 1 processed-params))
+         (result-params (nth 2 processed-params))
+         (result-type (cdr (assoc :result-type params)))
+         (full-body (org-babel-expand-body:generic
+                     body params))
+         (result (org-babel-scala-evaluate
+                  session full-body result-type result-params)))
+
+    (org-babel-reassemble-table
+     result
+     (org-babel-pick-name
+      (cdr (assoc :colname-names params)) (cdr (assoc :colnames params)))
+     (org-babel-pick-name
+      (cdr (assoc :rowname-names params)) (cdr (assoc :rownames params))))))
+
+
+(defun org-babel-scala-table-or-string (results)
+  "Convert RESULTS into an appropriate elisp value.
+If RESULTS look like a table, then convert them into an
+Emacs-lisp table, otherwise return the results as a string."
+  (org-babel-script-escape results))
+
+
+(defvar org-babel-scala-wrapper-method
+
+"var str_result :String = null;
+
+Console.withOut(new java.io.OutputStream() {def write(b: Int){
+}}) {
+  str_result = {
+%s
+  }.toString
+}
+
+print(str_result)
+")
+
+
+(defun org-babel-scala-evaluate
+  (session body &amp;optional result-type result-params)
+  "Evaluate BODY in external Scala process.
+If RESULT-TYPE equals 'output then return standard output as a string.
+If RESULT-TYPE equals 'value then return the value of the last statement
+in BODY as elisp."
+  (when session (error "Sessions are not (yet) supported for Scala"))
+  (case result-type
+    (output
+     (let ((src-file (org-babel-temp-file "scala-")))
+       (progn (with-temp-file src-file (insert body))
+              (org-babel-eval
+               (concat org-babel-scala-command " " src-file) ""))))
+    (value
+     (let* ((src-file (org-babel-temp-file "scala-"))
+            (wrapper (format org-babel-scala-wrapper-method body)))
+       (with-temp-file src-file (insert wrapper))
+       ((lambda (raw)
+          (if (member "code" result-params)
+              raw
+            (org-babel-scala-table-or-string raw)))
+        (org-babel-eval
+         (concat org-babel-scala-command " " src-file) ""))))))
+
+
+(defun org-babel-prep-session:scala (session params)
+  "Prepare SESSION according to the header arguments specified in PARAMS."
+  (error "Sessions are not (yet) supported for Scala"))
+
+(defun org-babel-scala-initiate-session (&amp;optional session)
+  "If there is not a current inferior-process-buffer in SESSION
+then create.  Return the initialized session.  Sessions are not
+supported in Scala."
+  nil)
+
+(provide 'ob-scala)
+
+
+
+;;; ob-scala.el ends here
+</pre>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-10-16</span>
+        <span title="last modification date" class="post-info">2020-10-16</span>
+        <span title="tags" class="post-info"><a href="/tags/scala/">scala</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/ensime/">ensime</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
