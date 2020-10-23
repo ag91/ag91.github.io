@@ -1,0 +1,143 @@
+#+TITLE:       Run a single ScalaTest case with Emacs and sbt-mode
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-10-23 Fri
+#+URI:         /blog/%y/%m/%d/run-a-single-scalatest-case-with-emacs-and-sbt-mode
+#+KEYWORDS:    scala, sbt, emacs
+#+TAGS:        scala, sbt, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Extend your Emacs to not waste time on sbt running all tests
+* Too long; didn't read
+
+Run a [[https://www.scalatest.org/][ScalaTest]] test suite or the test a point with sbt-mode by
+loading the Elisp in this file.
+
+* The problem
+
+I was writing up about my [[https://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development/][Scala setup for Emacs]] and I remembered one
+feature of IntelliJ that I am somewhat missing: you can run a single
+suite of tests or a test at point with one click.
+
+While I am working I need to check if tests still pass after I change
+something, so I mostly use sbt's =testQuick= to run only the tests
+affected by my work. Sometimes though =testQuick= runs a lot of unit
+tests that I do not really care about at the moment, and slows my
+feedback loop.
+
+* It is a problem indeed
+
+A few people are interested in running this feature from the sbt command line:
+https://stackoverflow.com/questions/11159953/scalatest-in-sbt-is-there-a-way-to-run-a-single-test-without-tags
+Hopefully some of these are Emacs users!
+Aaand, who said Emacs cannot have this as well?!?
+
+* And there is a solution
+
+So I decided to apply some Elisp magic. (By the way, I am astonished:
+I wrote the following code on my ereader before sleeping and when I
+coded it down worked immediately!)
+
+The plan of battle: we need to feed the special command mentioned in
+[[https://stackoverflow.com/questions/11159953/scalatest-in-sbt-is-there-a-way-to-run-a-single-test-without-tags][the StackOverflow answer]] to our =sbt=command= function provided by
+=sbt-mode=. We will start easy by running a whole test suite and then
+we will refine by running a single test case, because they are both
+useful features.
+
+Let's start from the little function that returns the command string:
+
+#+begin_src elisp :noeval
+(ert-deftest sbt/get-testonly-file_filename_testOnlyFile ()
+  (should
+   (string= (sbt/get-testonly-file "testSpec") "testOnly *testSpec")))
+
+(defun sbt/get-testonly-file (&optional file)
+  "Return FILE formatted in a sbt testOnly command."
+  (--> (or file (file-name-base))
+       (format "testOnly *%s" it)))
+#+end_src
+
+Since we are speaking of tests, let's show a bit of test driven
+development with [[http://www.gnu.org/software/emacs/manual/html_node/ert/index.html][ERT]].
+
+Given that, running a test suite is just applying =sbt-command= to the
+string:
+
+#+begin_src elisp :noeval
+(defun sbt/run-test-file (&optional file)
+  (interactive)
+  (sbt-command (sbt/get-testonly-file file)))
+#+end_src
+
+Now that we are warmed up, let's deal with a single test case. First
+we need the test case name:
+
+#+begin_src elisp :noeval
+(defun sbt/get-testcase-name ()
+  "Get Scala test case nearby point."
+  (save-excursion
+    (let* ((line (thing-at-point 'line t))
+           (on-testcase-p (and (s-contains? "\"" line)
+                               (s-contains? "{\n" line)))
+           (get-testcase-name (lambda (l)
+                                (--> l
+                                     (s-split "\"" it)
+                                     reverse
+                                     second))))
+      (if on-testcase-p
+          (funcall get-testcase-name line)
+        (progn
+          (search-backward "{\n")
+          (funcall get-testcase-name (thing-at-point 'line t)))))))
+#+end_src
+
+The above =on-testcase-p= represents my effort of finding a pattern in
+[[https://www.scalatest.org/user_guide/selecting_a_style][the (too many) styles to run a ScalaTest suite]]: if it contains a quote
+and an opening curly bracket with a newspace, I say this line is
+stating a test name.
+
+And =get-testcase-name= is a concise way to get the name. Indeed, we
+want the contents of the last string before the curly bracket. For
+example in:
+
+#+begin_src scala :noeval
+"The Hello object" should "say hello" in {
+    Hello.greeting shouldEqual "hello"
+  }
+#+end_src
+
+We need "say hello", so the last string from the opening curly
+bracket. Also, knowing myself, I want to get the test name even if I
+am in the body of the test. For this reason we got a =if= in the code.
+
+Finally again just some plumbing with =sbt=command=:
+
+#+begin_src elisp :noeval
+(defun sbt/run-testcase-at-point ()
+  "Run Scala test case at point."
+  (interactive)
+  (--> (sbt/get-testonly-file)
+       (format "%s -- -z \"%s\"" it (sbt/get-testcase-name))
+       sbt-command))
+#+end_src
+
+Done! I recommend to bind these functions to some comfortable
+keybindings like this:
+
+#+begin_src elisp :noeval
+(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :bind (:map scala-mode-map
+              ("C-c s c" . sbt-command)
+              ("C-c s t" . sbt/run-testcase-at-point)
+              ("C-c s T" . sbt/run-test-file)))
+#+end_src
+
+* Conclusion
+
+You see? Emacs can do it! And you can do it too: just load those
+snippets in your configuration and run only the Scala tests you need.
+Feel free to get in touch if you are a Scala developer using Emacs and
+have good tricks to share!
+
+Happy hacking!
