@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 16 Oct 2020 20:49:56 CEST</pubDate>
-    <lastBuildDate>Fri, 16 Oct 2020 20:49:56 CEST</lastBuildDate>
+    <pubDate>Fri, 23 Oct 2020 18:31:13 CEST</pubDate>
+    <lastBuildDate>Fri, 23 Oct 2020 18:31:13 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Run a single ScalaTest case with Emacs and sbt-mode</title>
+      <link>http://ag91.github.io/blog/2020/10/23/run-a-single-scalatest-case-with-emacs-and-sbt-mode</link>
+      <description><![CDATA[Extend your Emacs to not waste time on sbt running all tests]]></description>
+      <pubDate>2020-10-23</pubDate>
+      <guid>http://ag91.github.io/blog/2020/10/23/run-a-single-scalatest-case-with-emacs-and-sbt-mode</guid>
+    </item>
+    <item>
       <title>My Emacs setup for Scala development</title>
       <link>http://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development</link>
-      <description><![CDATA[How I setup my Emacs to develop Scala code]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-10-16</pubDate>
       <guid>http://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-09-18</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/18/emacs-slack-and-my-peaceful-modeline</guid>
-    </item>
-    <item>
-      <title>Org mode links for Emacs Slack</title>
-      <link>http://ag91.github.io/blog/2020/09/12/org-mode-links-for-emacs-slack</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-09-12</pubDate>
-      <guid>http://ag91.github.io/blog/2020/09/12/org-mode-links-for-emacs-slack</guid>
     </item>
   </channel>
 </rss>

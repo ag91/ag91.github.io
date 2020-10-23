@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Run a single ScalaTest case with Emacs and sbt-mode - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Extend your Emacs to not waste time on sbt running all tests" />
+    <meta name="keywords" content="scala, sbt, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Run a single ScalaTest case with Emacs and sbt-mode</h1>
+<div id="outline-container-orgdc58529" class="outline-2">
+<h2 id="orgdc58529">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgdc58529">
+<p>
+Run a <a href="https://www.scalatest.org/">ScalaTest</a> test suite or the test a point with sbt-mode by
+loading the Elisp in this file.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4f4e1f9" class="outline-2">
+<h2 id="org4f4e1f9">The problem</h2>
+<div class="outline-text-2" id="text-org4f4e1f9">
+<p>
+I was writing up about my <a href="https://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development/">Scala setup for Emacs</a> and I remembered one
+feature of IntelliJ that I am somewhat missing: you can run a single
+suite of tests or a test at point with one click.
+</p>
+
+<p>
+While I am working I need to check if tests still pass after I change
+something, so I mostly use sbt's <code>testQuick</code> to run only the tests
+affected by my work. Sometimes though <code>testQuick</code> runs a lot of unit
+tests that I do not really care about at the moment, and slows my
+feedback loop.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3f3db2f" class="outline-2">
+<h2 id="org3f3db2f">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org3f3db2f">
+<p>
+A few people are interested in running this feature from the sbt command line:
+<a href="https://stackoverflow.com/questions/11159953/scalatest-in-sbt-is-there-a-way-to-run-a-single-test-without-tags">https://stackoverflow.com/questions/11159953/scalatest-in-sbt-is-there-a-way-to-run-a-single-test-without-tags</a>
+Hopefully some of these are Emacs users!
+Aaand, who said Emacs cannot have this as well?!?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc534804" class="outline-2">
+<h2 id="orgc534804">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgc534804">
+<p>
+So I decided to apply some Elisp magic. (By the way, I am astonished:
+I wrote the following code on my ereader before sleeping and when I
+coded it down worked immediately!)
+</p>
+
+<p>
+The plan of battle: we need to feed the special command mentioned in
+<a href="https://stackoverflow.com/questions/11159953/scalatest-in-sbt-is-there-a-way-to-run-a-single-test-without-tags">the StackOverflow answer</a> to our <code>sbt=command</code> function provided by
+<code>sbt-mode</code>. We will start easy by running a whole test suite and then
+we will refine by running a single test case, because they are both
+useful features.
+</p>
+
+<p>
+Let's start from the little function that returns the command string:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(ert-deftest sbt/get-testonly-file_filename_testOnlyFile ()
+  (should
+   (string= (sbt/get-testonly-file "testSpec") "testOnly *testSpec")))
+
+(defun sbt/get-testonly-file (&amp;optional file)
+  "Return FILE formatted in a sbt testOnly command."
+  (--&gt; (or file (file-name-base))
+       (format "testOnly *%s" it)))
+</pre>
+</div>
+
+<p>
+Since we are speaking of tests, let's show a bit of test driven
+development with <a href="http://www.gnu.org/software/emacs/manual/html_node/ert/index.html">ERT</a>.
+</p>
+
+<p>
+Given that, running a test suite is just applying <code>sbt-command</code> to the
+string:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun sbt/run-test-file (&amp;optional file)
+  (interactive)
+  (sbt-command (sbt/get-testonly-file file)))
+</pre>
+</div>
+
+<p>
+Now that we are warmed up, let's deal with a single test case. First
+we need the test case name:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun sbt/get-testcase-name ()
+  "Get Scala test case nearby point."
+  (save-excursion
+    (let* ((line (thing-at-point 'line t))
+           (on-testcase-p (and (s-contains? "\"" line)
+                               (s-contains? "{\n" line)))
+           (get-testcase-name (lambda (l)
+                                (--&gt; l
+                                     (s-split "\"" it)
+                                     reverse
+                                     second))))
+      (if on-testcase-p
+          (funcall get-testcase-name line)
+        (progn
+          (search-backward "{\n")
+          (funcall get-testcase-name (thing-at-point 'line t)))))))
+</pre>
+</div>
+
+<p>
+The above <code>on-testcase-p</code> represents my effort of finding a pattern in
+<a href="https://www.scalatest.org/user_guide/selecting_a_style">the (too many) styles to run a ScalaTest suite</a>: if it contains a quote
+and an opening curly bracket with a newspace, I say this line is
+stating a test name.
+</p>
+
+<p>
+And <code>get-testcase-name</code> is a concise way to get the name. Indeed, we
+want the contents of the last string before the curly bracket. For
+example in:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">"The Hello object" should "say hello" in {
+    Hello.greeting shouldEqual "hello"
+  }
+</pre>
+</div>
+
+<p>
+We need "say hello", so the last string from the opening curly
+bracket. Also, knowing myself, I want to get the test name even if I
+am in the body of the test. For this reason we got a <code>if</code> in the code.
+</p>
+
+<p>
+Finally again just some plumbing with <code>sbt=command</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun sbt/run-testcase-at-point ()
+  "Run Scala test case at point."
+  (interactive)
+  (--&gt; (sbt/get-testonly-file)
+       (format "%s -- -z \"%s\"" it (sbt/get-testcase-name))
+       sbt-command))
+</pre>
+</div>
+
+<p>
+Done! I recommend to bind these functions to some comfortable
+keybindings like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package sbt-mode
+  :commands sbt-start sbt-command
+  :bind (:map scala-mode-map
+              ("C-c s c" . sbt-command)
+              ("C-c s t" . sbt/run-testcase-at-point)
+              ("C-c s T" . sbt/run-test-file)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf0dbdbf" class="outline-2">
+<h2 id="orgf0dbdbf">Conclusion</h2>
+<div class="outline-text-2" id="text-orgf0dbdbf">
+<p>
+You see? Emacs can do it! And you can do it too: just load those
+snippets in your configuration and run only the Scala tests you need.
+Feel free to get in touch if you are a Scala developer using Emacs and
+have good tricks to share!
+</p>
+
+<p>
+Happy hacking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-10-23</span>
+        <span title="last modification date" class="post-info">2020-10-23</span>
+        <span title="tags" class="post-info"><a href="/tags/scala/">scala</a>, <a href="/tags/sbt/">sbt</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 26.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
