@@ -141,3 +141,12 @@ Feel free to get in touch if you are a Scala developer using Emacs and
 have good tricks to share!
 
 Happy hacking!
+
+* Update 2020-10-25
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 13:17]
+:END:
+Thanks to [[https://github.com/VlachJosef][@VlachJosef]] I discovered that =sbt-mode= already has these
+features in a little extras library:
+https://github.com/hvesalai/emacs-sbt-mode/blob/master/sbt-mode-hydra.el#L464-L490.
+Note that library requires =hydra=: I do not use it  so I will keep my hack :)
