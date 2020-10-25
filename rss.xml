@@ -4,23 +4,23 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 23 Oct 2020 22:04:14 CEST</pubDate>
-    <lastBuildDate>Fri, 23 Oct 2020 22:04:14 CEST</lastBuildDate>
+    <pubDate>Sun, 25 Oct 2020 13:21:14 CET</pubDate>
+    <lastBuildDate>Sun, 25 Oct 2020 13:21:14 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Challenge problems effectively: how to know when to stop doing it alone and ask for help</title>
-      <link>http://ag91.github.io/blog/2020/10/23/challenge-problems-effectively-how-to-know-when-to-stop-doing-it-alone-and-ask-for-help</link>
-      <description><![CDATA[Challenge problems effectively]]></description>
-      <pubDate>2020-10-23</pubDate>
-      <guid>http://ag91.github.io/blog/2020/10/23/challenge-problems-effectively-how-to-know-when-to-stop-doing-it-alone-and-ask-for-help</guid>
-    </item>
-    <item>
       <title>Run a single ScalaTest case with Emacs and sbt-mode</title>
       <link>http://ag91.github.io/blog/2020/10/23/run-a-single-scalatest-case-with-emacs-and-sbt-mode</link>
+      <description><![CDATA[Extend your Emacs to not waste time on sbt running all tests]]></description>
+      <pubDate>2020-10-25</pubDate>
+      <guid>http://ag91.github.io/blog/2020/10/23/run-a-single-scalatest-case-with-emacs-and-sbt-mode</guid>
+    </item>
+    <item>
+      <title>Challenge problems effectively: how to know when to stop doing it alone and ask for help</title>
+      <link>http://ag91.github.io/blog/2020/10/23/challenge-problems-effectively-how-to-know-when-to-stop-doing-it-alone-and-ask-for-help</link>
       <description><![CDATA[]]></description>
       <pubDate>2020-10-23</pubDate>
-      <guid>http://ag91.github.io/blog/2020/10/23/run-a-single-scalatest-case-with-emacs-and-sbt-mode</guid>
+      <guid>http://ag91.github.io/blog/2020/10/23/challenge-problems-effectively-how-to-know-when-to-stop-doing-it-alone-and-ask-for-help</guid>
     </item>
     <item>
       <title>My Emacs setup for Scala development</title>

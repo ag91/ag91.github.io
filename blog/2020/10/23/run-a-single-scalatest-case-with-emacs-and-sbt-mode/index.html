@@ -31,9 +31,9 @@
 <div>
 <div class="post">
 <h1>Run a single ScalaTest case with Emacs and sbt-mode</h1>
-<div id="outline-container-orgdc58529" class="outline-2">
-<h2 id="orgdc58529">Too long; didn't read</h2>
-<div class="outline-text-2" id="text-orgdc58529">
+<div id="outline-container-org23fa80f" class="outline-2">
+<h2 id="org23fa80f">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org23fa80f">
 <p>
 Run a <a href="https://www.scalatest.org/">ScalaTest</a> test suite or the test a point with sbt-mode by
 loading the Elisp in this file.
@@ -41,9 +41,9 @@ loading the Elisp in this file.
 </div>
 </div>
 
-<div id="outline-container-org4f4e1f9" class="outline-2">
-<h2 id="org4f4e1f9">The problem</h2>
-<div class="outline-text-2" id="text-org4f4e1f9">
+<div id="outline-container-org0ab69f0" class="outline-2">
+<h2 id="org0ab69f0">The problem</h2>
+<div class="outline-text-2" id="text-org0ab69f0">
 <p>
 I was writing up about my <a href="https://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development/">Scala setup for Emacs</a> and I remembered one
 feature of IntelliJ that I am somewhat missing: you can run a single
@@ -60,9 +60,9 @@ feedback loop.
 </div>
 </div>
 
-<div id="outline-container-org3f3db2f" class="outline-2">
-<h2 id="org3f3db2f">It is a problem indeed</h2>
-<div class="outline-text-2" id="text-org3f3db2f">
+<div id="outline-container-orgd5c0d21" class="outline-2">
+<h2 id="orgd5c0d21">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgd5c0d21">
 <p>
 A few people are interested in running this feature from the sbt command line:
 <a href="https://stackoverflow.com/questions/11159953/scalatest-in-sbt-is-there-a-way-to-run-a-single-test-without-tags">https://stackoverflow.com/questions/11159953/scalatest-in-sbt-is-there-a-way-to-run-a-single-test-without-tags</a>
@@ -72,9 +72,9 @@ Aaand, who said Emacs cannot have this as well?!?
 </div>
 </div>
 
-<div id="outline-container-orgc534804" class="outline-2">
-<h2 id="orgc534804">And there is a solution</h2>
-<div class="outline-text-2" id="text-orgc534804">
+<div id="outline-container-org665a0a3" class="outline-2">
+<h2 id="org665a0a3">And there is a solution</h2>
+<div class="outline-text-2" id="text-org665a0a3">
 <p>
 So I decided to apply some Elisp magic. (By the way, I am astonished:
 I wrote the following code on my ereader before sleeping and when I
@@ -204,9 +204,9 @@ keybindings like this:
 </div>
 </div>
 
-<div id="outline-container-orgf0dbdbf" class="outline-2">
-<h2 id="orgf0dbdbf">Conclusion</h2>
-<div class="outline-text-2" id="text-orgf0dbdbf">
+<div id="outline-container-org3f66bc9" class="outline-2">
+<h2 id="org3f66bc9">Conclusion</h2>
+<div class="outline-text-2" id="text-org3f66bc9">
 <p>
 You see? Emacs can do it! And you can do it too: just load those
 snippets in your configuration and run only the Scala tests you need.
@@ -220,12 +220,24 @@ Happy hacking!
 </div>
 </div>
 
+<div id="outline-container-orge8d3077" class="outline-2">
+<h2 id="orge8d3077">Update 2020-10-25</h2>
+<div class="outline-text-2" id="text-orge8d3077">
+<p>
+Thanks to <a href="https://github.com/VlachJosef">@VlachJosef</a> I discovered that <code>sbt-mode</code> already has these
+features in a little extras library:
+<a href="https://github.com/hvesalai/emacs-sbt-mode/blob/master/sbt-mode-hydra.el#L464-L490">https://github.com/hvesalai/emacs-sbt-mode/blob/master/sbt-mode-hydra.el#L464-L490</a>.
+Note that library requires <code>hydra</code>: I do not use it  so I will keep my hack :)
+</p>
+</div>
+</div>
+
 </div>
 </div>
     <div>
       <div class="post-meta">
         <span title="post date" class="post-info">2020-10-23</span>
-        <span title="last modification date" class="post-info">2020-10-23</span>
+        <span title="last modification date" class="post-info">2020-10-25</span>
         <span title="tags" class="post-info"><a href="/tags/scala/">scala</a>, <a href="/tags/sbt/">sbt</a>, <a href="/tags/emacs/">emacs</a></span>
         <span title="author" class="post-info">Andrea</span>
       </div>
