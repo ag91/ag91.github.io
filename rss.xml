@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 03 Nov 2020 22:27:26 CET</pubDate>
-    <lastBuildDate>Tue, 03 Nov 2020 22:27:26 CET</lastBuildDate>
+    <pubDate>Tue, 03 Nov 2020 22:38:18 CET</pubDate>
+    <lastBuildDate>Tue, 03 Nov 2020 22:38:18 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Org crypt and tangling source blocks</title>
+      <link>http://ag91.github.io/blog/2020/10/30/org-crypt-and-tangling-source-blocks</link>
+      <description><![CDATA[How to patch Org crypt to work well with tangling]]></description>
+      <pubDate>2020-11-03</pubDate>
+      <guid>http://ag91.github.io/blog/2020/10/30/org-crypt-and-tangling-source-blocks</guid>
+    </item>
+    <item>
       <title>Run a single ScalaTest case with Emacs and sbt-mode</title>
       <link>http://ag91.github.io/blog/2020/10/23/run-a-single-scalatest-case-with-emacs-and-sbt-mode</link>
-      <description><![CDATA[Extend your Emacs to not waste time on sbt running all tests]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-10-25</pubDate>
       <guid>http://ag91.github.io/blog/2020/10/23/run-a-single-scalatest-case-with-emacs-and-sbt-mode</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-09-24</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda</guid>
-    </item>
-    <item>
-      <title>The Poor Org-User Spaced Repetition</title>
-      <link>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-09-23</pubDate>
-      <guid>http://ag91.github.io/blog/2020/09/04/the-poor-org-user-spaced-repetition</guid>
     </item>
   </channel>
 </rss>

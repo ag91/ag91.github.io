@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Org crypt and tangling source blocks - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to patch Org crypt to work well with tangling" />
+    <meta name="keywords" content="emacs, org-mode, org-crypt" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Org crypt and tangling source blocks</h1>
+
+<div id="outline-container-org24cf230" class="outline-2">
+<h2 id="org24cf230">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org24cf230">
+<p>
+<a href="https://orgmode.org/manual/Org-Crypt.html">Org crypt</a> makes <a href="https://orgmode.org/manual/Extracting-Source-Code.html">Org Mode tangling</a> fail: you can fix this problem by
+setting some hooks (the code is a the bottom).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgeaa9e72" class="outline-2">
+<h2 id="orgeaa9e72">The problem</h2>
+<div class="outline-text-2" id="text-orgeaa9e72">
+<p>
+I like coding in a literate programming style when possible. Some good
+examples of this practice are:
+<a href="http://howardism.org/Technical/Emacs/literate-devops.html">http://howardism.org/Technical/Emacs/literate-devops.html</a>,
+<a href="https://kitchingroup.cheme.cmu.edu/blog/2014/03/27/Literate-programming-in-python-with-org-mode-and-noweb/">https://kitchingroup.cheme.cmu.edu/blog/2014/03/27/Literate-programming-in-python-with-org-mode-and-noweb/</a>,
+and <a href="https://github.com/limist/literate-programming-examples">https://github.com/limist/literate-programming-examples</a>.
+</p>
+
+<p>
+I do literate programming more often when <a href="https://ag91.github.io/blog/2020/10/23/challenge-problems-effectively-how-to-know-when-to-stop-doing-it-alone-and-ask-for-help/">I have to deal with hard
+problems</a>, or ones that require significant creativity.
+</p>
+
+<p>
+Org Mode is an amazing tool for that because it offers tangling: this
+lets you collect all the text tagged as source code and compose it in
+the file you want to produce. This is useful because you can then
+narrate your mental process, test each part of your code, and then
+extract it in the source code file you need.
+</p>
+
+<p>
+Sometimes I want to do this coding sessions in private Org mode
+headings. By private I mean that these blocks need to be readable just
+by me, and Org crypt is an amazing solution for that. Org crypt lets
+you add a special tag (<code>:crypt:</code> by default) to only some Org headings
+and these will be encrypted anytime you save the Org mode file.
+</p>
+
+<p>
+Little issue: when you try to tangle a block within a heading that
+needs encryption, it fails!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf382cd7" class="outline-2">
+<h2 id="orgf382cd7">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgf382cd7">
+<p>
+This is bad because it fails weirdly: if you use Org crypt and have
+the following Org mode heading
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* TODO some heading :crypt:
+
+#+begin_src elisp :tangle /tmp/somefile.el
+(message "hi")
+#+end_src
+</pre>
+</div>
+
+<p>
+and try to tangle the block then you will see that then entry is
+encrypted and the tangling has failed with something like "No source
+block at point".
+</p>
+
+<p>
+I browsed to check for a solution, but I could not find much!
+Apparently I am the only one that does literate programming in
+headings to encrypt.. oops!
+</p>
+
+<p>
+Now it is a matter of principle though: Org is easy to extend, so I
+should be able to find a away!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbfedf8c" class="outline-2">
+<h2 id="orgbfedf8c">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgbfedf8c">
+<p>
+Org crypt takes the content of a heading and substitute the body with
+encrypted text. You can decrypt a single heading with the <code>org-reveal</code>
+command. Org crypt encrypts all entries that have a special tag any
+time you save the buffer.
+</p>
+
+<p>
+Main discovery: running <code>org-babel-tangle</code> saves the file! This
+triggers the encryption of the heading. When <code>org-babel-tangle</code> looks
+for the source block at point, it fails because now there is only
+encrypted text.
+</p>
+
+<p>
+Let's look at the beginning <code>org-babel-tangle</code> function for a moment:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun org-babel-tangle (&amp;optional arg target-file lang-re)
+...
+  (run-hooks 'org-babel-pre-tangle-hook)
+  ;; Possibly Restrict the buffer to the current code block
+  (save-restriction
+    (save-excursion
+</pre>
+</div>
+
+<p>
+The use of <code>save-excursion</code> seems to save the file. Did you notice
+<code>(run-hooks 'org-babel-pre-tangle-hook)</code>? That is our way out! Running
+hooks before and after a command is an amazing Elisp practice because
+makes user's customization easy.
+</p>
+
+<p>
+What we want to achieve is to sneakily decrypt the heading before
+<code>org-babel-tangle</code> misses the source block.
+</p>
+
+<p>
+So in code this looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ag/reveal-and-move-back ()
+    (org-reveal)
+    (goto-char ag/old-point)
+    (setq ag/old-point nil))
+</pre>
+</div>
+
+<p>
+That means: first decrypt the entry and then move to where the source
+block was.
+</p>
+
+<p>
+Now the trick is to run this action after Emacs saves the file but
+only in the context of tangling. In code this looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ag/org-reveal-after-save-on ()
+    (setq ag/old-point (point))
+    (add-hook 'after-save-hook 'ag/reveal-and-move-back))
+</pre>
+</div>
+
+<p>
+As you can see when we activate our decrypting on the fly, we also
+want to save the current position so that we can return to it after
+decryption.
+</p>
+
+<p>
+And let's then run this only for <code>org-tangle</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(add-hook 'org-babel-pre-tangle-hook 'ag/org-reveal-after-save-on)
+</pre>
+</div>
+
+<p>
+In this way, anytime we tangle a source block our function will
+activate and on save it will do its magic.
+</p>
+
+<p>
+Naturally we want to remove all of this setup after tangling is
+finished, otherwise every time we save any buffer we would do
+unnecessary (and messy) work:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ag/org-reveal-after-save-off ()
+    (remove-hook 'after-save-hook 'ag/reveal-and-move-back))
+
+(add-hook 'org-babel-post-tangle-hook 'ag/org-reveal-after-save-off)
+</pre>
+</div>
+
+<p>
+Again appreciate with me how nice Org Babel developers are: they also
+created a <code>org-babel-post-tangle-hook</code> for running an action after
+completing the tangling.
+</p>
+
+<p>
+With this setup our private tangling is working as expected again
+(well, a lit of flickering of encrypted text, but well...)!
+</p>
+
+<p>
+Overall the solution looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ag/reveal-and-move-back ()
+  (org-reveal)
+  (goto-char ag/old-point))
+(defun ag/org-reveal-after-save-on ()
+  (setq ag/old-point (point))
+  (add-hook 'after-save-hook 'ag/reveal-and-move-back))
+(defun ag/org-reveal-after-save-off ()
+  (remove-hook 'after-save-hook 'ag/reveal-and-move-back))
+(add-hook 'org-babel-pre-tangle-hook 'ag/org-reveal-after-save-on)
+(add-hook 'org-babel-post-tangle-hook 'ag/org-reveal-after-save-off)
+</pre>
+</div>
+
+<p>
+Simple and compact!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdd53a6b" class="outline-2">
+<h2 id="orgdd53a6b">Conclusion</h2>
+<div class="outline-text-2" id="text-orgdd53a6b">
+<p>
+So if you are a Org crypt user and a literate programmer, just copy
+the code and have fun tangling blocks from private headings!
+</p>
+
+<p>
+Happy hacking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-10-30</span>
+        <span title="last modification date" class="post-info">2020-11-03</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/org-mode/">org-mode</a>, <a href="/tags/org-crypt/">org-crypt</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
