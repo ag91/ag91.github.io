@@ -1,0 +1,175 @@
+#+TITLE:       Org crypt and tangling source blocks
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-10-30 Fri
+#+URI:         /blog/%y/%m/%d/org-crypt-and-tangling-source-blocks
+#+KEYWORDS:    emacs, org-mode, org-crypt
+#+TAGS:        emacs, org-mode, org-crypt
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to patch Org crypt to work well with tangling
+
+* Too long; didn't read
+
+[[https://orgmode.org/manual/Org-Crypt.html][Org crypt]] makes [[https://orgmode.org/manual/Extracting-Source-Code.html][Org Mode tangling]] fail: you can fix this problem by
+setting some hooks (the code is a the bottom).
+
+* The problem
+:PROPERTIES:
+:ID:       52e13dea-ad9a-4e16-9120-62204e69161f
+:END:
+
+I like coding in a literate programming style when possible. Some good
+examples of this practice are:
+http://howardism.org/Technical/Emacs/literate-devops.html,
+https://kitchingroup.cheme.cmu.edu/blog/2014/03/27/Literate-programming-in-python-with-org-mode-and-noweb/,
+and https://github.com/limist/literate-programming-examples.
+
+I do literate programming more often when [[https://ag91.github.io/blog/2020/10/23/challenge-problems-effectively-how-to-know-when-to-stop-doing-it-alone-and-ask-for-help/][I have to deal with hard
+problems]], or ones that require significant creativity.
+
+Org Mode is an amazing tool for that because it offers tangling: this
+lets you collect all the text tagged as source code and compose it in
+the file you want to produce. This is useful because you can then
+narrate your mental process, test each part of your code, and then
+extract it in the source code file you need.
+
+Sometimes I want to do this coding sessions in private Org mode
+headings. By private I mean that these blocks need to be readable just
+by me, and Org crypt is an amazing solution for that. Org crypt lets
+you add a special tag (=:crypt:= by default) to only some Org headings
+and these will be encrypted anytime you save the Org mode file.
+
+Little issue: when you try to tangle a block within a heading that
+needs encryption, it fails!
+
+* It is a problem indeed
+
+This is bad because it fails weirdly: if you use Org crypt and have
+the following Org mode heading
+
+#+begin_src org
+,* TODO some heading :crypt:
+
+,#+begin_src elisp :tangle /tmp/somefile.el
+(message "hi")
+,#+end_src
+#+end_src
+
+and try to tangle the block then you will see that then entry is
+encrypted and the tangling has failed with something like "No source
+block at point".
+
+I browsed to check for a solution, but I could not find much!
+Apparently I am the only one that does literate programming in
+headings to encrypt.. oops!
+
+Now it is a matter of principle though: Org is easy to extend, so I
+should be able to find a away!
+
+* And there is a solution
+
+Org crypt takes the content of a heading and substitute the body with
+encrypted text. You can decrypt a single heading with the =org-reveal=
+command. Org crypt encrypts all entries that have a special tag any
+time you save the buffer.
+
+Main discovery: running =org-babel-tangle= saves the file! This
+triggers the encryption of the heading. When =org-babel-tangle= looks
+for the source block at point, it fails because now there is only
+encrypted text.
+
+Let's look at the beginning =org-babel-tangle= function for a moment:
+
+#+begin_src elisp :noeval 
+(defun org-babel-tangle (&optional arg target-file lang-re)
+...
+  (run-hooks 'org-babel-pre-tangle-hook)
+  ;; Possibly Restrict the buffer to the current code block
+  (save-restriction
+    (save-excursion
+#+end_src
+
+The use of =save-excursion= seems to save the file. Did you notice
+=(run-hooks 'org-babel-pre-tangle-hook)=? That is our way out! Running
+hooks before and after a command is an amazing Elisp practice because
+makes user's customization easy.
+
+What we want to achieve is to sneakily decrypt the heading before
+=org-babel-tangle= misses the source block.
+
+So in code this looks like:
+
+#+begin_src elisp :noeval
+(defun ag/reveal-and-move-back ()
+    (org-reveal)
+    (goto-char ag/old-point)
+    (setq ag/old-point nil))
+#+end_src
+
+That means: first decrypt the entry and then move to where the source
+block was.
+
+Now the trick is to run this action after Emacs saves the file but
+only in the context of tangling. In code this looks like:
+
+#+begin_src elisp :noeval
+(defun ag/org-reveal-after-save-on ()
+    (setq ag/old-point (point))
+    (add-hook 'after-save-hook 'ag/reveal-and-move-back))
+#+end_src
+
+As you can see when we activate our decrypting on the fly, we also
+want to save the current position so that we can return to it after
+decryption.
+
+And let's then run this only for =org-tangle=:
+
+#+begin_src elisp :noeval
+(add-hook 'org-babel-pre-tangle-hook 'ag/org-reveal-after-save-on)
+#+end_src
+
+In this way, anytime we tangle a source block our function will
+activate and on save it will do its magic.
+
+Naturally we want to remove all of this setup after tangling is
+finished, otherwise every time we save any buffer we would do
+unnecessary (and messy) work:
+
+#+begin_src elisp :noeval
+(defun ag/org-reveal-after-save-off ()
+    (remove-hook 'after-save-hook 'ag/reveal-and-move-back))
+
+(add-hook 'org-babel-post-tangle-hook 'ag/org-reveal-after-save-off)
+#+end_src
+
+Again appreciate with me how nice Org Babel developers are: they also
+created a =org-babel-post-tangle-hook= for running an action after
+completing the tangling.
+
+With this setup our private tangling is working as expected again
+(well, a lit of flickering of encrypted text, but well...)!
+
+Overall the solution looks like:
+
+#+begin_src elisp :noeval
+(defun ag/reveal-and-move-back ()
+  (org-reveal)
+  (goto-char ag/old-point))
+(defun ag/org-reveal-after-save-on ()
+  (setq ag/old-point (point))
+  (add-hook 'after-save-hook 'ag/reveal-and-move-back))
+(defun ag/org-reveal-after-save-off ()
+  (remove-hook 'after-save-hook 'ag/reveal-and-move-back))
+(add-hook 'org-babel-pre-tangle-hook 'ag/org-reveal-after-save-on)
+(add-hook 'org-babel-post-tangle-hook 'ag/org-reveal-after-save-off)
+#+end_src
+
+Simple and compact!
+
+* Conclusion
+
+So if you are a Org crypt user and a literate programmer, just copy
+the code and have fun tangling blocks from private headings!
+
+Happy hacking!
