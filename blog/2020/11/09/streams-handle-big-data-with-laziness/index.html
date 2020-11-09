@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Streams: handle big data with laziness - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to handle big data lazily" />
+    <meta name="keywords" content="scala, functional-programming, learning, design" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Streams: handle big data with laziness</h1>
+<div id="outline-container-orgd2c461e" class="outline-2">
+<h2 id="orgd2c461e">TL;DR</h2>
+<div class="outline-text-2" id="text-orgd2c461e">
+<p>
+Lazy data structures are a great tool to deal with big quantities of
+data (think Gigabytes or more). Here I show the basics of streams
+through Scala and then I do a short dive into how the Akka community
+implements streams.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org349a03c" class="outline-2">
+<h2 id="org349a03c">The Problem</h2>
+<div class="outline-text-2" id="text-org349a03c">
+<p>
+It will happen at some point in your hacking career to face a quantity
+of data that your computer cannot fit in its memory. Imagine of a
+terabyte-long CSV file that contains data about interesting events
+happened today: what if you want to find only the ones nearby your
+location?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org43603d0" class="outline-2">
+<h2 id="org43603d0">The theory</h2>
+<div class="outline-text-2" id="text-org43603d0">
+<p>
+The complexity of this problem hides in the fact that you cannot just
+load the data in memory.
+</p>
+
+<p>
+Programming languages usually offer something called "iterator" in
+their standard libraries to deal with this kind of problem. Iterators
+provide a function called <code>next</code> to get the next element in a
+sequential collection. This interface abstracts over a lot of use
+cases: for example you can call <code>next</code> on a string and it will return
+the next character or you could call next on a google search and it
+would return you the next bunch of links related to your query.
+</p>
+
+<p>
+This approach works because you load in memory just the current
+element and use the iterator to access the next. The iterator will
+fail when you reached the end of the data.
+</p>
+
+<p>
+Another approach is to use a description of the data. This means that
+instead of taking a csv file and try to load it, I want to just say:
+this data structure represents a file, I need to apply some operations
+to it, apply them at the last possible moment and, to save effort,
+only to the parts I actually need.
+</p>
+
+<p>
+Functional programmers call postponing evaluation "lazy evaluation".
+Think of lazy evaluation as the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">val normalEvaluation = "someResult"
+val lazyEvaluation = () =&gt; "someResult"
+</pre>
+</div>
+
+<pre class="example">
+Loading...
+Welcome to the Ammonite Repl 2.0.4 (Scala 2.13.1 Java 11.0.9)
+@ {
+   val normalEvaluation = "someResult"
+  val lazyEvaluation = () =&gt; "someResult"
+   } 
+normalEvaluation: String = "someResult"
+lazyEvaluation: () =&gt; String = ammonite.$sess.cmd0$$$Lambda$1363/0x0000000840794840@546ccad7
+</pre>
+
+
+<p>
+You can see that <code>lazyEvaluation</code> requires you to run it later to get the result, like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">lazyEvaluation()
+</pre>
+</div>
+
+<pre class="example">
+res1: String = "someResult"
+</pre>
+
+
+<p>
+This is so important that Scala provides this as a feature of the
+language:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">lazy val lazyEvaluation = "someResult"
+</pre>
+</div>
+
+<pre class="example">
+lazyEvaluation: String = &lt;lazy&gt;
+</pre>
+
+
+<p>
+With this concept we have all we need to describe computation over
+data structures that are not concrete yet:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">val lazyEvaluation = () =&gt; "someResult"
+val someLazyEvaluationOverTheDescription = () =&gt; lazyEvaluation().toUpperCase
+</pre>
+</div>
+
+<pre class="example">
+lazyEvaluation: () =&gt; String = ammonite.$sess.cmd3$$$Lambda$1403/0x00000008407b4840@29852487
+someLazyEvaluationOverTheDescription: () =&gt; String = ammonite.$sess.cmd3$$$Lambda$1404/0x00000008407b4c40@26ae880a
+</pre>
+
+
+<p>
+As you can see above, <code>someLazyEvaluationOverTheDescription</code> does not
+make the value concrete because there was no function application yet.
+Essentially, I have changed the description of a computation.
+</p>
+
+<p>
+You will believe me if I say that this same concept applies to data
+structures (i.e., our huge-big-dataish csv file).
+</p>
+
+<p>
+A data structure that uses this concept in Scala is <code>Stream</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">println("\nList evaluation")
+1.to(3).toList.map(i =&gt; {println(i); i}).map(_ * 5).map(println) 
+println("\nStream evaluation")
+1.to(3).toStream.map(i =&gt; {println(i); i}).map(_ * 5).map(println)
+</pre>
+</div>
+
+<pre class="example" id="orgb810f17">
+List evaluation
+1
+2
+3
+5
+10
+15
+
+Stream evaluation
+1
+5
+2
+10
+3
+15
+res4_1: List[Unit] = List((), (), ())
+res4_3: Stream[Unit] = Stream((), (), ())
+</pre>
+
+<p>
+Can you spot the difference? Look at the order of the output above.
+One is looping the list twice and the other it is looping it only
+once. <code>Stream</code> acts lazily! The side effect of this laziness is that
+while calling <code>map</code> twice on a list requires two loops, the <code>Stream</code>
+lazy behaviour allows you to merge the <code>map</code> in a single loop! The
+functional community calls this <a href="https://donsbot.wordpress.com/2010/02/26/fusion-makes-functional-programming-fun/">"fusion"</a>.
+</p>
+
+<p>
+I forced the evaluation of the <code>Stream</code> because I called <code>println</code>
+calls to show you the difference: if I did not do that, the <code>map</code>
+would not have been run at all.
+</p>
+
+<p>
+By avoiding unnecessary work, the laziness of this data structure lets
+you handle as much data as you like.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org596f4b5" class="outline-2">
+<h2 id="org596f4b5">A solution with Akka Streams</h2>
+<div class="outline-text-2" id="text-org596f4b5">
+<p>
+The Akka community offers a variant of the <code>Stream</code> laziness mechanism
+based on the <a href="https://en.wikipedia.org/wiki/Actor_model">actor model</a>. Let's skip the details and let me show you
+how to load the csv file with that (you can still do the same with the
+basic Scala's <code>Stream</code>, but in next session I will show how Akka gives
+you more control on the flow of big amount of data).
+</p>
+
+<p>
+First a comma-separated csv file:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-csv">Username,Identifier,First name,Last name
+booker12,9012,Rachel,Booker
+grey07,2070,Laura,Grey
+johnson81,4081,Craig,Johnson
+jenkins46,9346,Mary,Jenkins
+smith79,5079,Jamie Smith
+</pre>
+</div>
+
+<p>
+Then the code we need to have an Akka <code>Stream</code> take care of our csv:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">import $ivy.`com.typesafe.akka::akka-stream:2.6.9`
+
+
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream._
+import akka.stream.scaladsl._
+import akka.util.ByteString
+import java.nio.file.Paths
+
+implicit val actorSystem = ActorSystem()
+import actorSystem.dispatcher
+implicit val flowMaterializer = ActorMaterializer()
+
+FileIO.fromPath(Paths.get("test.csv"))
+  .via(Framing.delimiter(ByteString("\n"), 256, true).map(_.utf8String))
+  .runForeach(println)
+</pre>
+</div>
+
+<pre class="example" id="orgf3d1435">
+import $ivy.$                                     
+
+
+
+import akka.actor.ActorSystem
+
+import akka.stream.ActorMaterializer
+
+import akka.stream._
+
+import akka.stream.scaladsl._
+
+import akka.util.ByteString
+
+import java.nio.file.Paths
+
+
+actorSystem: ActorSystem = akka://default
+import actorSystem.dispatcher
+
+flowMaterializer: ActorMaterializer = PhasedFusingActorMaterializer(
+  akka://default,
+  ActorMaterializerSettings(4,16,akka.actor.default-dispatcher,&lt;function1&gt;,StreamSubscriptionTimeoutSettings(CancelTermination,5000 milliseconds),false,1000,1000,false,true,IoSettings(16384)),
+  Attributes(
+    List(
+      InputBuffer(4, 16),
+      CancellationStrategy(PropagateFailure),
+      akka.stream.Attributes$NestedMaterializationCancellationPolicy@1f6f0fe2,
+      Dispatcher("akka.actor.default-dispatcher"),
+      SupervisionStrategy(&lt;function1&gt;),
+      DebugLogging(false),
+      StreamSubscriptionTimeout(5000 milliseconds, CancelTermination),
+      OutputBurstLimit(1000),
+      FuzzingMode(false),
+      MaxFixedBufferSize(1000000000),
+      SyncProcessingLimit(1000)
+    )
+  ),
+  akka.dispatch.Dispatchers@22604c7e,
+  Actor[akka://default/system/Materializers/StreamSupervisor-1#1884070223],
+  false,
+  akka.stream.impl.SeqActorNameImpl@4d8f2cfd
+)
+res5_10: concurrent.Future[akka.Done] = Future(&lt;not completed&gt;)
+[ERROR] [11/09/2020 22:36:05.515] [default-akka.actor.default-blocking-io-dispatcher-8] [akka://default/system/Materializers/StreamSupervisor-1/flow-0-1-fileSource] Error during preStart in [FileSource(test.csv, 8192)]: test.csv
+java.nio.file.NoSuchFileException: test.csv
+	at akka.stream.impl.io.FileSource$$anon$2.preStart(IOSources.scala:68)
+	at akka.stream.impl.fusing.GraphInterpreter.init(GraphInterpreter.scala:306)
+	at akka.stream.impl.fusing.GraphInterpreterShell.init(ActorGraphInterpreter.scala:594)
+	at akka.stream.impl.fusing.ActorGraphInterpreter.tryInit(ActorGraphInterpreter.scala:702)
+	at akka.stream.impl.fusing.ActorGraphInterpreter.preStart(ActorGraphInterpreter.scala:751)
+	at akka.actor.Actor.aroundPreStart(Actor.scala:548)
+	at akka.actor.Actor.aroundPreStart$(Actor.scala:548)
+	at akka.stream.impl.fusing.ActorGraphInterpreter.aroundPreStart(ActorGraphInterpreter.scala:691)
+	at akka.actor.ActorCell.create(ActorCell.scala:641)
+	at akka.actor.ActorCell.invokeAll$1(ActorCell.scala:513)
+	at akka.actor.ActorCell.systemInvoke(ActorCell.scala:535)
+	at akka.dispatch.Mailbox.processAllSystemMessages(Mailbox.scala:295)
+	at akka.dispatch.Mailbox.run(Mailbox.scala:230)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
+	at java.base/java.lang.Thread.run(Thread.java:834)
+</pre>
+
+<p>
+Again using <code>runForeach</code> I force evaluation of the stream. Until that
+point nothing has happened: everything is just a description of a
+computation over data.
+</p>
+
+<p>
+By playing around with this basic example you are already well
+equipped for handling huge data.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5313e6e" class="outline-2">
+<h2 id="org5313e6e">A bit more of Akka Streams</h2>
+<div class="outline-text-2" id="text-org5313e6e">
+<p>
+In the Akka's code I showed in the previous section there are three
+concepts I missed to explain:
+</p>
+
+<ol class="org-ol">
+<li><code>FileIO.fromPath</code> is a <code>Source</code> of data</li>
+<li><code>Framing.delimiter(ByteString("\n"), 256, true).map(_.utf8String)</code>
+is a <code>Flow</code> applied to a <code>Source</code> (i.e., a data transformation that produces a new <code>Source</code>)</li>
+<li><code>.runForeach(println)</code> is a <code>Sink</code> and materializer of the <code>Stream</code>
+(i.e., it consumes the <code>Source</code> and makes concrete the description of the computation).</li>
+</ol>
+
+<p>
+Essentially Akka divides a <code>Stream</code> into a <code>Source</code> and a <code>Sink</code>, also
+known as producer and consumer. A good reason for this is the
+processing speed of sources and sinks: when you are handling a lot of
+data, there will always be a bottleneck. If the <code>Source</code> is the
+bottleneck, the <code>Sink</code> will have to wait on the <code>Source</code> to serve more
+data; if the <code>Sink</code> is the bottleneck, we risk to break it by
+overflowing it of data; finally if our <code>Flow</code> is the bottleneck we
+will have both the <code>Sink</code> waiting and the <code>Source</code> overflowing our
+<code>Flow</code>. Luckily, Akka takes care of this for us because it protects
+these fundamental parts of its <code>Stream</code> with its backpressure feature.
+It basically has an mechanism to signal <code>Source</code> and <code>Flow</code> to slow
+down when <code>Flow</code> and <code>Sink</code> respectively cannot cope with the
+pressure.
+</p>
+
+<p>
+Let's see a final code example about this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">import $ivy.`com.typesafe.akka::akka-stream:2.6.9`
+
+
+import akka.actor.ActorSystem
+import akka.stream.ActorMaterializer
+import akka.stream._
+import akka.stream.scaladsl._
+import akka.util.ByteString
+import java.nio.file.Paths
+import scala.util.Random
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
+implicit val actorSystem = ActorSystem()
+import actorSystem.dispatcher
+implicit val flowMaterializer = ActorMaterializer()
+
+val source = Source(1.to(100).map(Random.nextString(_)))
+val sink = Sink.foreach[String](println(_))
+val nullSink = Sink.ignore
+def graph(src: Source[String, Any], snk: Sink[String,scala.concurrent.Future[akka.Done]]) = src.toMat(snk)(Keep.right)
+
+val slowSource = Source(1.to(100).map(x =&gt; {Thread.sleep(100); Random.nextString(x)}))
+
+val slowSink = Sink.foreach[String](x =&gt; Thread.sleep(100))
+
+def time[R](block: =&gt; R): R = {
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    println("Elapsed time: " + (t1 - t0) + "ns, ie, " + ((t1 - t0) / 1000000000) + "s")
+    result
+}
+
+time {Await.result(graph(source, nullSink).run(), 100.seconds)}
+
+time {Await.result(graph(slowSource, nullSink).run(), 100.seconds)}
+
+time {Await.result(graph(source, slowSink).run(), 100.seconds)}
+
+time {Await.result(graph(slowSource, slowSink).run(), 100.seconds)}
+</pre>
+</div>
+
+<p>
+In the above I use the function <code>graph</code> to create a <code>Stream</code>, or
+really in Akka terms a <code>Graph</code>, that describes a computation.
+</p>
+
+<p>
+Then I run this function with different sources and sinks to
+demonstrate that the backpressure mechanism takes care of fast sources
+and sinks for me, making sure that I do not overflow the sink.
+</p>
+
+<p>
+Feel free to run this scripts in Ammonite to see how safe Akka keeps
+you while you play around with streams.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org60b113f" class="outline-2">
+<h2 id="org60b113f">Conclusion</h2>
+<div class="outline-text-2" id="text-org60b113f">
+<p>
+So to summarize: learn laziness! Through the concept of delaying
+evaluation, you can operate on descriptions of computation (skipping
+worthless work!!). A side effect of this are lazy data structures, and
+so streams. Once you get the basics right, working with Akka is
+simple. Akka Streams are just streams specialized at serving big data
+most common use cases.
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-11-09</span>
+        <span title="last modification date" class="post-info">2020-11-09</span>
+        <span title="tags" class="post-info"><a href="/tags/scala/">scala</a>, <a href="/tags/functional-programming/">functional-programming</a>, <a href="/tags/learning/">learning</a>, <a href="/tags/design/">design</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
