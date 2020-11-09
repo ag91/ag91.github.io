@@ -31,9 +31,9 @@
 <div>
 <div class="post">
 <h1>Streams: handle big data with laziness</h1>
-<div id="outline-container-orgdecbc97" class="outline-2">
-<h2 id="orgdecbc97">TL;DR</h2>
-<div class="outline-text-2" id="text-orgdecbc97">
+<div id="outline-container-orga7a16bd" class="outline-2">
+<h2 id="orga7a16bd">TL;DR</h2>
+<div class="outline-text-2" id="text-orga7a16bd">
 <p>
 Lazy data structures are a great tool to deal with big quantities of
 data (think Gigabytes or more). Here I show the basics of streams
@@ -43,9 +43,9 @@ implements streams.
 </div>
 </div>
 
-<div id="outline-container-org8509fcd" class="outline-2">
-<h2 id="org8509fcd">The Problem</h2>
-<div class="outline-text-2" id="text-org8509fcd">
+<div id="outline-container-orgc4b7384" class="outline-2">
+<h2 id="orgc4b7384">The Problem</h2>
+<div class="outline-text-2" id="text-orgc4b7384">
 <p>
 It will happen at some point in your hacking career to face a quantity
 of data that your computer cannot fit in its memory. Imagine of a
@@ -56,9 +56,9 @@ location?
 </div>
 </div>
 
-<div id="outline-container-orge304f7b" class="outline-2">
-<h2 id="orge304f7b">The theory</h2>
-<div class="outline-text-2" id="text-orge304f7b">
+<div id="outline-container-orgd9ca3e7" class="outline-2">
+<h2 id="orgd9ca3e7">The theory</h2>
+<div class="outline-text-2" id="text-orgd9ca3e7">
 <p>
 The complexity of this problem hides in the fact that you cannot just
 load the data in memory.
@@ -101,7 +101,7 @@ val lazyEvaluation = () =&gt; "someResult"
 
 <pre class="example">
 normalEvaluation: String = "someResult"
-lazyEvaluation: () =&gt; String = ammonite.$sess.cmd6$$$Lambda$2224/0x0000000840a17040@3d7b3b18
+lazyEvaluation: () =&gt; String = ammonite.$sess.cmd15$$$Lambda$2276/0x0000000840a3b040@13e76a91
 </pre>
 
 
@@ -115,7 +115,7 @@ You can see that <code>lazyEvaluation</code> requires you to run it later to get
 </div>
 
 <pre class="example">
-res7: String = "someResult"
+res16: String = "someResult"
 </pre>
 
 
@@ -146,8 +146,8 @@ val someLazyEvaluationOverTheDescription = () =&gt; lazyEvaluation().toUpperCase
 </div>
 
 <pre class="example">
-lazyEvaluation: () =&gt; String = ammonite.$sess.cmd9$$$Lambda$2233/0x0000000840a1ac40@746f8520
-someLazyEvaluationOverTheDescription: () =&gt; String = ammonite.$sess.cmd9$$$Lambda$2234/0x0000000840a1f840@38a52072
+lazyEvaluation: () =&gt; String = ammonite.$sess.cmd18$$$Lambda$2285/0x0000000840a3ec40@1a0b51e7
+someLazyEvaluationOverTheDescription: () =&gt; String = ammonite.$sess.cmd18$$$Lambda$2286/0x0000000840a3f840@c197f46
 </pre>
 
 
@@ -174,7 +174,7 @@ println("\nStream evaluation")
 </pre>
 </div>
 
-<pre class="example" id="org29c5248">
+<pre class="example" id="org5e7451a">
 List evaluation
 1
 2
@@ -190,8 +190,8 @@ Stream evaluation
 10
 3
 15
-res10_1: List[Unit] = List((), (), ())
-res10_3: Stream[Unit] = Stream((), (), ())
+res19_1: List[Unit] = List((), (), ())
+res19_3: Stream[Unit] = Stream((), (), ())
 </pre>
 
 <p>
@@ -216,9 +216,9 @@ you handle as much data as you like.
 </div>
 </div>
 
-<div id="outline-container-org744069c" class="outline-2">
-<h2 id="org744069c">A solution with Akka Streams</h2>
-<div class="outline-text-2" id="text-org744069c">
+<div id="outline-container-orgf80e7de" class="outline-2">
+<h2 id="orgf80e7de">A solution with Akka Streams</h2>
+<div class="outline-text-2" id="text-orgf80e7de">
 <p>
 The Akka community offers a variant of the <code>Stream</code> laziness mechanism
 based on the <a href="https://en.wikipedia.org/wiki/Actor_model">actor model</a>. Let's skip the details and let me show you
@@ -266,26 +266,7 @@ FileIO.fromPath(Paths.get("test.csv"))
 </pre>
 </div>
 
-<pre class="example" id="org20d5123">
-[ERROR] [11/09/2020 22:39:29.929] [default-akka.actor.default-blocking-io-dispatcher-9] [akka://default/system/Materializers/StreamSupervisor-3/flow-0-1-fileSource] Error during preStart in [FileSource(test.csv, 8192)]: test.csv
-java.nio.file.NoSuchFileException: test.csv
-	at akka.stream.impl.io.FileSource$$anon$2.preStart(IOSources.scala:68)
-	at akka.stream.impl.fusing.GraphInterpreter.init(GraphInterpreter.scala:306)
-	at akka.stream.impl.fusing.GraphInterpreterShell.init(ActorGraphInterpreter.scala:594)
-	at akka.stream.impl.fusing.ActorGraphInterpreter.tryInit(ActorGraphInterpreter.scala:702)
-	at akka.stream.impl.fusing.ActorGraphInterpreter.preStart(ActorGraphInterpreter.scala:751)
-	at akka.actor.Actor.aroundPreStart(Actor.scala:548)
-	at akka.actor.Actor.aroundPreStart$(Actor.scala:548)
-	at akka.stream.impl.fusing.ActorGraphInterpreter.aroundPreStart(ActorGraphInterpreter.scala:691)
-	at akka.actor.ActorCell.create(ActorCell.scala:641)
-	at akka.actor.ActorCell.invokeAll$1(ActorCell.scala:513)
-	at akka.actor.ActorCell.systemInvoke(ActorCell.scala:535)
-	at akka.dispatch.Mailbox.processAllSystemMessages(Mailbox.scala:295)
-	at akka.dispatch.Mailbox.run(Mailbox.scala:230)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1128)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
-	at java.base/java.lang.Thread.run(Thread.java:834)
-
+<pre class="example" id="org5c44ace">
 import $ivy.$                                     
 
 
@@ -313,7 +294,7 @@ flowMaterializer: ActorMaterializer = PhasedFusingActorMaterializer(
     List(
       InputBuffer(4, 16),
       CancellationStrategy(PropagateFailure),
-      akka.stream.Attributes$NestedMaterializationCancellationPolicy@1f6f0fe2,
+      akka.stream.Attributes$NestedMaterializationCancellationPolicy@33602729,
       Dispatcher("akka.actor.default-dispatcher"),
       SupervisionStrategy(&lt;function1&gt;),
       DebugLogging(false),
@@ -324,12 +305,19 @@ flowMaterializer: ActorMaterializer = PhasedFusingActorMaterializer(
       SyncProcessingLimit(1000)
     )
   ),
-  akka.dispatch.Dispatchers@5c21b22e,
-  Actor[akka://default/system/Materializers/StreamSupervisor-3#-893033540],
+  akka.dispatch.Dispatchers@1e686da2,
+  Actor[akka://default/system/Materializers/StreamSupervisor-3#-1429691641],
   false,
-  akka.stream.impl.SeqActorNameImpl@184e5c44
+  akka.stream.impl.SeqActorNameImpl@3ce17e4
 )
-res11_10: concurrent.Future[akka.Done] = Future(Failure(java.nio.file.NoSuchFileException: test.csv))
+res15_10: concurrent.Future[akka.Done] = Future(&lt;not completed&gt;)
+
+Username,Identifier,First name,Last name
+booker12,9012,Rachel,Booker
+grey07,2070,Laura,Grey
+johnson81,4081,Craig,Johnson
+jenkins46,9346,Mary,Jenkins
+smith79,5079,Jamie Smith
 </pre>
 
 <p>
@@ -345,9 +333,9 @@ equipped for handling huge data.
 </div>
 </div>
 
-<div id="outline-container-org6fd3a09" class="outline-2">
-<h2 id="org6fd3a09">A bit more of Akka Streams</h2>
-<div class="outline-text-2" id="text-org6fd3a09">
+<div id="outline-container-org713be66" class="outline-2">
+<h2 id="org713be66">A bit more of Akka Streams</h2>
+<div class="outline-text-2" id="text-org713be66">
 <p>
 In the Akka's code I showed in the previous section there are three
 concepts I missed to explain:
@@ -444,9 +432,9 @@ you while you play around with streams.
 </div>
 </div>
 
-<div id="outline-container-org21ec17a" class="outline-2">
-<h2 id="org21ec17a">Conclusion</h2>
-<div class="outline-text-2" id="text-org21ec17a">
+<div id="outline-container-orgc6cc6b0" class="outline-2">
+<h2 id="orgc6cc6b0">Conclusion</h2>
+<div class="outline-text-2" id="text-orgc6cc6b0">
 <p>
 So to summarize: learn laziness! Through the concept of delaying
 evaluation, you can operate on descriptions of computation (skipping
