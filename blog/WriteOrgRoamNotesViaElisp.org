@@ -1,0 +1,150 @@
+#+TITLE:       Write org-roam notes via Elisp
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-11-12 Thu
+#+URI:         /blog/%y/%m/%d/write-org-roam-notes-via-elisp
+#+KEYWORDS:    org-roam, org-mode, elisp
+#+TAGS:        org-roam, org-mode, elisp
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to create org-roam notes via elisp
+
+* Too long; didn't read
+
+Sometimes you may want to generate org-roam notes without typing a
+word. You can see the snippet that lets you make notes
+programmatically at the bottom.
+
+* The problem
+
+I like to use [[https://github.com/org-roam/org-roam][org-roam]] to keep my notes organized and easy to search.
+I also keep my TODOs separated from my notes. If tasks are actions I
+plan to make, then notes are pieces of knowledge that may be useful to
+me in the future.
+
+Sometimes it happens thought that a task has some useful knowledge I
+want to create a note for. In this case I take the contents of the
+task, and adapt it to a new note. This happens a bit too often though:
+could I make that easier for myself?
+
+* It is a problem indeed
+
+Last weekend I also had the opportunity to chat with some other Org
+Mode power-users to get ready to the awesome [[https://emacsconf.org/2020/][EmacsConf]]! By the way,
+thanks to [[https://karl-voit.at/about/][Karl]] to help organizing the conference and I am looking
+forward to see [[https://emacsconf.org/2020/schedule/09][Reiner's Org workflow]] and how [[https://emacsconf.org/2020/schedule/11][Aldric extends Emacs for
+GTD]].
+
+And just Aldric told me he plans to integrate org-roam as part of his
+GTD workflow: I hope this can help him achieve that!
+
+* And there is a solution
+
+The plan is to take a org heading, take its content and store it in a
+new Org Mode file with the org-roam name pattern and structure.
+
+Let's start from the file path:
+
+#+begin_src elisp :noeval
+(defun my/make-filepath (title now &optional zone)
+  "Make filename from note TITLE and NOW time (assumed in the current time ZONE)."
+  (concat
+   org-roam-directory
+   (format-time-string "%Y%m%d%H%M%S_" now (or zone (current-time-zone)))
+   (org-roam--title-to-slug title)
+   ".org"))
+#+end_src
+
+This creates a file path looking like
+="<org-roam-directory>/20201112211548_some_title.org"=. If you are
+unfamiliar with Elisp, you may miss that I am misusing org-roam's
+code: the double hyphens in =org-roam--title-to-slug= mean that this
+is a private function that the maintainer may change at his
+discretion. So far it kept working fine though.
+
+Next let's make a org-roam note file:
+
+#+begin_src elisp :noeval
+(defun my/insert-org-roam-file (file-path title &optional links sources text quote)
+  "Insert org roam file in FILE-PATH with TITLE, LINKS, SOURCES, TEXT, QUOTE."
+  (with-temp-file file-path
+    (insert
+     "#+TITLE: " title "\n"
+     "\n"
+     "- tags :: " (--reduce (concat acc ", " it) links) "\n"
+     (if sources (concat "- source :: " (--reduce (concat acc ", " it) sources) "\n") "")
+     "\n"
+     (if text text "")
+     "\n"
+     "\n"
+     (if quote
+         (concat "#+begin_src text \n"
+     quote "\n"
+     "#+end_src")
+       ""))))
+#+end_src
+
+The above function is rather customized to my template of org-roam.
+Maybe it works for you too though, because it matches the original
+template org-roam came up with. if not, you just need to edit slightly
+the strings. The function requires just a path and a title for
+creating the file. You can also pass extra parameters to fill up extra
+content.
+
+Finally let's put things together to convert an Org Mode heading into
+a org-roam file:
+
+#+begin_src elisp :noeval
+(defun my/convert-task-to-org-note ()
+  "Convert a task in a `org-roam' note."
+  (interactive)
+  (let* ((heading (org-get-heading t t t t))
+         (body (org-get-entry))
+         (link (format "[[id:%s][%s]]" (org-id-get-create) heading))
+         (filepath (on/make-filepath heading (current-time))))
+    (on/insert-org-roam-file
+     filepath
+     heading
+     nil
+     (list link)
+     (format "* Note stored from tasks\n%s" body)
+     nil)
+    (find-file filepath)))
+#+end_src
+
+Just run this on a heading and it will create automatically an
+org-roam note with the title of the task and its contents within a new
+heading.
+
+For example running it on the next heading of this blog post I get out
+the following note:
+
+#+begin_src org :noeval
+,#+TITLE: Conclusion
+
+- tags :: , 
+- source :: [[id:eee79a8c-2090-4583-ba93-a9693cf5dbe3][Conclusion]]
+
+,* Note stored from tasks :crypt:
+
+So, take this code and try it out! You will be able to quickly store
+your efforts and new knowledge as org-roam notes. Those are easy to
+search and useful for later.
+
+Happy note taking!
+#+end_src
+
+Note that the above function adds also a reference to the original
+task. I use org-id for links because are more reliable than Org Mode's
+default.
+
+* Conclusion
+:PROPERTIES:
+:ID:       eee79a8c-2090-4583-ba93-a9693cf5dbe3
+:END:
+
+So, take this code and try it out! You will be able to quickly store
+your efforts and new knowledge as org-roam notes. Those are easy to
+search and useful for later.
+
+Happy note taking!
