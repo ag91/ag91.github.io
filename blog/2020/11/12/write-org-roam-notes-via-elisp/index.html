@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Write org-roam notes via Elisp - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to create org-roam notes via elisp" />
+    <meta name="keywords" content="org-roam, org-mode, elisp" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Write org-roam notes via Elisp</h1>
+
+<div id="outline-container-org4311268" class="outline-2">
+<h2 id="org4311268">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org4311268">
+<p>
+Sometimes you may want to generate org-roam notes without typing a
+word. You can see the snippet that lets you make notes
+programmatically at the bottom.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org78cb4d2" class="outline-2">
+<h2 id="org78cb4d2">The problem</h2>
+<div class="outline-text-2" id="text-org78cb4d2">
+<p>
+I like to use <a href="https://github.com/org-roam/org-roam">org-roam</a> to keep my notes organized and easy to search.
+I also keep my TODOs separated from my notes. If tasks are actions I
+plan to make, then notes are pieces of knowledge that may be useful to
+me in the future.
+</p>
+
+<p>
+Sometimes it happens thought that a task has some useful knowledge I
+want to create a note for. In this case I take the contents of the
+task, and adapt it to a new note. This happens a bit too often though:
+could I make that easier for myself?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfd02737" class="outline-2">
+<h2 id="orgfd02737">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgfd02737">
+<p>
+Last weekend I also had the opportunity to chat with some other Org
+Mode power-users to get ready to the awesome <a href="https://emacsconf.org/2020/">EmacsConf</a>! By the way,
+thanks to <a href="https://karl-voit.at/about/">Karl</a> to help organizing the conference and I am looking
+forward to see <a href="https://emacsconf.org/2020/schedule/09">Reiner's Org workflow</a> and how <a href="https://emacsconf.org/2020/schedule/11">Aldric extends Emacs for
+GTD</a>.
+</p>
+
+<p>
+And just Aldric told me he plans to integrate org-roam as part of his
+GTD workflow: I hope this can help him achieve that!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org50864fb" class="outline-2">
+<h2 id="org50864fb">And there is a solution</h2>
+<div class="outline-text-2" id="text-org50864fb">
+<p>
+The plan is to take a org heading, take its content and store it in a
+new Org Mode file with the org-roam name pattern and structure.
+</p>
+
+<p>
+Let's start from the file path:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/make-filepath (title now &amp;optional zone)
+  "Make filename from note TITLE and NOW time (assumed in the current time ZONE)."
+  (concat
+   org-roam-directory
+   (format-time-string "%Y%m%d%H%M%S_" now (or zone (current-time-zone)))
+   (org-roam--title-to-slug title)
+   ".org"))
+</pre>
+</div>
+
+<p>
+This creates a file path looking like
+<code>"&lt;org-roam-directory&gt;/20201112211548_some_title.org"</code>. If you are
+unfamiliar with Elisp, you may miss that I am misusing org-roam's
+code: the double hyphens in <code>org-roam--title-to-slug</code> mean that this
+is a private function that the maintainer may change at his
+discretion. So far it kept working fine though.
+</p>
+
+<p>
+Next let's make a org-roam note file:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/insert-org-roam-file (file-path title &amp;optional links sources text quote)
+  "Insert org roam file in FILE-PATH with TITLE, LINKS, SOURCES, TEXT, QUOTE."
+  (with-temp-file file-path
+    (insert
+     "#+TITLE: " title "\n"
+     "\n"
+     "- tags :: " (--reduce (concat acc ", " it) links) "\n"
+     (if sources (concat "- source :: " (--reduce (concat acc ", " it) sources) "\n") "")
+     "\n"
+     (if text text "")
+     "\n"
+     "\n"
+     (if quote
+         (concat "#+begin_src text \n"
+     quote "\n"
+     "#+end_src")
+       ""))))
+</pre>
+</div>
+
+<p>
+The above function is rather customized to my template of org-roam.
+Maybe it works for you too though, because it matches the original
+template org-roam came up with. if not, you just need to edit slightly
+the strings. The function requires just a path and a title for
+creating the file. You can also pass extra parameters to fill up extra
+content.
+</p>
+
+<p>
+Finally let's put things together to convert an Org Mode heading into
+a org-roam file:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/convert-task-to-org-note ()
+  "Convert a task in a `org-roam' note."
+  (interactive)
+  (let* ((heading (org-get-heading t t t t))
+         (body (org-get-entry))
+         (link (format "[[id:%s][%s]]" (org-id-get-create) heading))
+         (filepath (on/make-filepath heading (current-time))))
+    (on/insert-org-roam-file
+     filepath
+     heading
+     nil
+     (list link)
+     (format "* Note stored from tasks\n%s" body)
+     nil)
+    (find-file filepath)))
+</pre>
+</div>
+
+<p>
+Just run this on a heading and it will create automatically an
+org-roam note with the title of the task and its contents within a new
+heading.
+</p>
+
+<p>
+For example running it on the next heading of this blog post I get out
+the following note:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">#+TITLE: Conclusion
+
+- tags :: , 
+- source :: [[id:eee79a8c-2090-4583-ba93-a9693cf5dbe3][Conclusion]]
+
+* Note stored from tasks :crypt:
+
+So, take this code and try it out! You will be able to quickly store
+your efforts and new knowledge as org-roam notes. Those are easy to
+search and useful for later.
+
+Happy note taking!
+</pre>
+</div>
+
+<p>
+Note that the above function adds also a reference to the original
+task. I use org-id for links because are more reliable than Org Mode's
+default.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org49b0a0f" class="outline-2">
+<h2 id="org49b0a0f">Conclusion</h2>
+<div class="outline-text-2" id="text-org49b0a0f">
+<p>
+So, take this code and try it out! You will be able to quickly store
+your efforts and new knowledge as org-roam notes. Those are easy to
+search and useful for later.
+</p>
+
+<p>
+Happy note taking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-11-12</span>
+        <span title="last modification date" class="post-info">2020-11-12</span>
+        <span title="tags" class="post-info"><a href="/tags/org-roam/">org-roam</a>, <a href="/tags/org-mode/">org-mode</a>, <a href="/tags/elisp/">elisp</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 09 Nov 2020 22:44:01 CET</pubDate>
-    <lastBuildDate>Mon, 09 Nov 2020 22:44:01 CET</lastBuildDate>
+    <pubDate>Thu, 12 Nov 2020 22:20:25 CET</pubDate>
+    <lastBuildDate>Thu, 12 Nov 2020 22:20:25 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Write org-roam notes via Elisp</title>
+      <link>http://ag91.github.io/blog/2020/11/12/write-org-roam-notes-via-elisp</link>
+      <description><![CDATA[How to create org-roam notes via elisp]]></description>
+      <pubDate>2020-11-12</pubDate>
+      <guid>http://ag91.github.io/blog/2020/11/12/write-org-roam-notes-via-elisp</guid>
+    </item>
+    <item>
       <title>Streams: handle big data with laziness</title>
       <link>http://ag91.github.io/blog/2020/11/09/streams-handle-big-data-with-laziness</link>
-      <description><![CDATA[How to handle big data lazily]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-11-09</pubDate>
       <guid>http://ag91.github.io/blog/2020/11/09/streams-handle-big-data-with-laziness</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-09-27</pubDate>
       <guid>http://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning</guid>
-    </item>
-    <item>
-      <title>Org Agenda and Your Future, or how to keep score of your long term goals with Org Mode</title>
-      <link>http://ag91.github.io/blog/2020/09/27/org-agenda-and-your-future-or-how-to-keep-score-of-your-long-term-goals-with-org-mode</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-09-27</pubDate>
-      <guid>http://ag91.github.io/blog/2020/09/27/org-agenda-and-your-future-or-how-to-keep-score-of-your-long-term-goals-with-org-mode</guid>
     </item>
   </channel>
 </rss>
