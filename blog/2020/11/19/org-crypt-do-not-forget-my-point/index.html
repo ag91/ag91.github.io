@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Org crypt do not forget my point! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to restore your position in a heading automatically after encrypting and decrypting it" />
+    <meta name="keywords" content="org-crypt, org-mode, elisp" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Org crypt do not forget my point!</h1>
+
+<div id="outline-container-orge73759a" class="outline-2">
+<h2 id="orge73759a">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orge73759a">
+<p>
+When you encrypt and decrypt an Org Mode heading with Org crypt you
+lose the position of your cursor. In this blog I show you how to
+restore it automatically, so that you can feel free to save your
+buffer at will.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge9b2292" class="outline-2">
+<h2 id="orge9b2292">The problem</h2>
+<div class="outline-text-2" id="text-orge9b2292">
+<p>
+A lot of my headings are encrypted because I like to keep my sensitive
+information private. I use Org crypt because its encryption has the
+side effect of making the file smaller and also it leaves the file in
+plain text so that I can check changes with my version control system.
+</p>
+
+<p>
+Org crypt is a great mode overall, and those problems I had with it I
+could fix easily (see <a href="https://ag91.github.io/blog/2020/08/28/org-crypt-and-logbook-how-they-can-work-together-for-a-secure-agenda/">here</a> and <a href="https://ag91.github.io/blog/2020/10/30/org-crypt-and-tangling-source-blocks/">here</a> for example). Now something I kept
+doing was to recover my position after saving a file. Org crypt comes
+with the function <code>org-crypt-use-before-save-magic</code>; it sets
+encryption of all your headings (tagged with <code>:crypt:</code>) after you save
+an Org Mode file. That is smart, but after encryption you lose the
+point! If your heading is long enough, that means you have to search
+where you were. That is boring enough to make me wish to act!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3e3bbd6" class="outline-2">
+<h2 id="org3e3bbd6">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org3e3bbd6">
+<p>
+The real bad part is how your brain reacts to this kind of boredom.
+Mine slowly made me save my files less often! Result: I have lost some
+useful contents (because I crashed Emacs opening a big JSON file
+without using <a href="https://www.emacswiki.org/emacs/VLF">vlf</a>)!
+</p>
+
+<p>
+That really bored me enough to act!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org522757f" class="outline-2">
+<h2 id="org522757f">And there is a solution</h2>
+<div class="outline-text-2" id="text-org522757f">
+<p>
+<a href="https://ag91.github.io/blog/2020/10/30/org-crypt-and-tangling-source-blocks/">In a previous blog</a> I already implemented a way to store the position
+after encrypting and decrypting a heading. That previous experience
+lead me to design a solution for my problem:
+</p>
+
+<ol class="org-ol">
+<li>save the point for each heading that I encrypt</li>
+
+<li>restore the position when if I reveal the encrypted heading.</li>
+</ol>
+
+
+<p>
+Let's start from storage:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq my/org-last-positions nil)
+
+(defun my/store-last-org-position ()
+  "Store point  for current heading."
+  (when (org-get-heading)
+    (setq my/org-last-positions (cons (list (org-id-get-create) (point)) my/org-last-positions))))
+</pre>
+</div>
+
+<p>
+So <code>my/org-last-positions</code> is our accumulator of heading positions. I
+use <code>org-id</code> as a way to identify headings because it works
+particularly well for finding archived entries. So in this code
+<code>org-id</code> is the way I identify a heading. Also notice that the code
+runs only if we are in a Org heading (<code>org-get-heading</code> will return
+nothing otherwise and will make the <code>when</code> body miss execution).
+</p>
+
+<p>
+The result of calling this function on a heading is like <code>(setq
+my/store-last-heading (list ("someId" (point))))</code>.
+</p>
+
+<p>
+Once we have a collection of stored positions we need to use them:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/pop-last-org-position ()
+  "Go to old point for current heading."
+  (when (org-get-heading)
+    (let* ((org-id (org-id-get-create))
+           (pair (--find (string= org-id (car it)) my/org-last-positions)))
+      (when pair
+        (goto-char (cadr pair))
+        (setq my/org-last-positions (--remove (string= org-id (car it)) my/org-last-positions))))))
+</pre>
+</div>
+
+<p>
+Again this only works if we are in a heading and, given we <code>--find</code>
+the stored position, it moves to that and pops that position from our
+accumulator.
+</p>
+
+<p>
+With this two elements we are about done. We just need to call them at
+the right moment.
+</p>
+
+<p>
+First, we need to call <code>my/store-last-org-position</code> just before we
+encrypt an entry. We can copy <code>org-crypt-use-before-save-magic</code> for
+that: let's use the <code>before-save-hook</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(remove-hook 'before-save-hook 'org-encrypt-entries)
+(defun my/wrapper-org-encrypt-entries ()
+  (my/store-last-org-position)
+  (org-encrypt-entries))
+(add-hook 'before-save-hook 'my/wrapper-org-encrypt-entries)
+</pre>
+</div>
+
+<p>
+You can see that I prefer to cleanup that hook from
+<code>org-encrypt-entries</code> because we have to ensure that we catch the
+position just before the entry gets encrypted. I then enforce that by
+running the store function before encryption in
+<code>my/wrapper-org-encrypt-entries</code>.
+</p>
+
+<p>
+Similarly we want to use that position when we revealing a heading:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(remove-hook 'org-reveal-start-hook 'org-decrypt-entry)
+(defun my/wrapper-org-decrypt-entry ()
+  (org-decrypt-entry)
+  (my/pop-last-org-position)
+  (recenter-top-bottom))
+(add-hook 'org-reveal-start-hook 'my/wrapper-org-decrypt-entry)
+</pre>
+</div>
+
+<p>
+The hook this time is <code>org-reveal-start-hook</code> a function from Org Mode
+that opens up a folded heading. Org crypt again adds its decryption
+function to this hook and we again have to enforce that decryption
+happens before us trying to restore the old position. I also like to
+recenter the screen in that case, so I use <code>(recenter-top-bottom)</code> but
+that is up to your tastes.
+</p>
+
+<p>
+And that is all!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc929d8a" class="outline-2">
+<h2 id="orgc929d8a">Conclusion</h2>
+<div class="outline-text-2" id="text-orgc929d8a">
+<p>
+Org crypt users: you will like this! Just load the code above and
+enjoy the time saving!
+</p>
+
+<p>
+Happy decrypting!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-11-19</span>
+        <span title="last modification date" class="post-info">2020-11-19</span>
+        <span title="tags" class="post-info"><a href="/tags/org-crypt/">org-crypt</a>, <a href="/tags/org-mode/">org-mode</a>, <a href="/tags/elisp/">elisp</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

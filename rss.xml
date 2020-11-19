@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 12 Nov 2020 22:20:25 CET</pubDate>
-    <lastBuildDate>Thu, 12 Nov 2020 22:20:25 CET</lastBuildDate>
+    <pubDate>Thu, 19 Nov 2020 22:04:42 CET</pubDate>
+    <lastBuildDate>Thu, 19 Nov 2020 22:04:42 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Org crypt do not forget my point!</title>
+      <link>http://ag91.github.io/blog/2020/11/19/org-crypt-do-not-forget-my-point</link>
+      <description><![CDATA[How to restore your position in a heading automatically after encrypting and decrypting it]]></description>
+      <pubDate>2020-11-19</pubDate>
+      <guid>http://ag91.github.io/blog/2020/11/19/org-crypt-do-not-forget-my-point</guid>
+    </item>
+    <item>
       <title>Write org-roam notes via Elisp</title>
       <link>http://ag91.github.io/blog/2020/11/12/write-org-roam-notes-via-elisp</link>
-      <description><![CDATA[How to create org-roam notes via elisp]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-11-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/11/12/write-org-roam-notes-via-elisp</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-10-04</pubDate>
       <guid>http://ag91.github.io/blog/2020/10/04/engine-mode-or-how-to-shorten-your-time-to-browser</guid>
-    </item>
-    <item>
-      <title>Life is short. But not short enough to skip planning</title>
-      <link>http://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-09-27</pubDate>
-      <guid>http://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning</guid>
     </item>
   </channel>
 </rss>
