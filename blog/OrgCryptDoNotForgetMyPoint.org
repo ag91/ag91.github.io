@@ -1,0 +1,148 @@
+#+TITLE:       Org crypt do not forget my point!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-11-19 Thu
+#+URI:         /blog/%y/%m/%d/org-crypt-do-not-forget-my-point
+#+KEYWORDS:    org-crypt, org-mode, elisp
+#+TAGS:        org-crypt, org-mode, elisp
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to restore your position in a heading automatically after encrypting and decrypting it
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       22c1625b-f195-4ea2-8c3d-4b76bf9d0fc2
+:END:
+
+When you encrypt and decrypt an Org Mode heading with Org crypt you
+lose the position of your cursor. In this blog I show you how to
+restore it automatically, so that you can feel free to save your
+buffer at will.
+
+* The problem
+:PROPERTIES:
+:ID:       358f9435-e944-4d46-a294-ae434407ce5a
+:END:
+
+A lot of my headings are encrypted because I like to keep my sensitive
+information private. I use Org crypt because its encryption has the
+side effect of making the file smaller and also it leaves the file in
+plain text so that I can check changes with my version control system.
+
+Org crypt is a great mode overall, and those problems I had with it I
+could fix easily (see [[https://ag91.github.io/blog/2020/08/28/org-crypt-and-logbook-how-they-can-work-together-for-a-secure-agenda/][here]] and [[https://ag91.github.io/blog/2020/10/30/org-crypt-and-tangling-source-blocks/][here]] for example). Now something I kept
+doing was to recover my position after saving a file. Org crypt comes
+with the function =org-crypt-use-before-save-magic=; it sets
+encryption of all your headings (tagged with =:crypt:=) after you save
+an Org Mode file. That is smart, but after encryption you lose the
+point! If your heading is long enough, that means you have to search
+where you were. That is boring enough to make me wish to act!
+
+* It is a problem indeed
+
+The real bad part is how your brain reacts to this kind of boredom.
+Mine slowly made me save my files less often! Result: I have lost some
+useful contents (because I crashed Emacs opening a big JSON file
+without using [[https://www.emacswiki.org/emacs/VLF][vlf]])!
+
+That really bored me enough to act!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       485e6483-eafe-4ef6-ab16-41016b2dab4f
+:END:
+
+[[https://ag91.github.io/blog/2020/10/30/org-crypt-and-tangling-source-blocks/][In a previous blog]] I already implemented a way to store the position
+after encrypting and decrypting a heading. That previous experience
+lead me to design a solution for my problem:
+
+1. save the point for each heading that I encrypt
+
+2. restore the position when if I reveal the encrypted heading.
+
+
+Let's start from storage:
+
+#+begin_src elisp :noeval
+(setq my/org-last-positions nil)
+
+(defun my/store-last-org-position ()
+  "Store point  for current heading."
+  (when (org-get-heading)
+    (setq my/org-last-positions (cons (list (org-id-get-create) (point)) my/org-last-positions))))
+#+end_src
+
+So =my/org-last-positions= is our accumulator of heading positions. I
+use =org-id= as a way to identify headings because it works
+particularly well for finding archived entries. So in this code
+=org-id= is the way I identify a heading. Also notice that the code
+runs only if we are in a Org heading (=org-get-heading= will return
+nothing otherwise and will make the =when= body miss execution).
+
+The result of calling this function on a heading is like =(setq
+my/store-last-heading (list ("someId" (point))))=.
+
+Once we have a collection of stored positions we need to use them:
+
+#+begin_src elisp :noeval
+(defun my/pop-last-org-position ()
+  "Go to old point for current heading."
+  (when (org-get-heading)
+    (let* ((org-id (org-id-get-create))
+           (pair (--find (string= org-id (car it)) my/org-last-positions)))
+      (when pair
+        (goto-char (cadr pair))
+        (setq my/org-last-positions (--remove (string= org-id (car it)) my/org-last-positions))))))
+#+end_src
+
+Again this only works if we are in a heading and, given we =--find=
+the stored position, it moves to that and pops that position from our
+accumulator.
+
+With this two elements we are about done. We just need to call them at
+the right moment.
+
+First, we need to call =my/store-last-org-position= just before we
+encrypt an entry. We can copy =org-crypt-use-before-save-magic= for
+that: let's use the =before-save-hook=:
+
+#+begin_src elisp :noeval
+(remove-hook 'before-save-hook 'org-encrypt-entries)
+(defun my/wrapper-org-encrypt-entries ()
+  (my/store-last-org-position)
+  (org-encrypt-entries))
+(add-hook 'before-save-hook 'my/wrapper-org-encrypt-entries)
+#+end_src
+
+You can see that I prefer to cleanup that hook from
+=org-encrypt-entries= because we have to ensure that we catch the
+position just before the entry gets encrypted. I then enforce that by
+running the store function before encryption in
+=my/wrapper-org-encrypt-entries=.
+
+Similarly we want to use that position when we revealing a heading:
+
+#+begin_src elisp :noeval
+(remove-hook 'org-reveal-start-hook 'org-decrypt-entry)
+(defun my/wrapper-org-decrypt-entry ()
+  (org-decrypt-entry)
+  (my/pop-last-org-position)
+  (recenter-top-bottom))
+(add-hook 'org-reveal-start-hook 'my/wrapper-org-decrypt-entry)
+#+end_src
+
+The hook this time is =org-reveal-start-hook= a function from Org Mode
+that opens up a folded heading. Org crypt again adds its decryption
+function to this hook and we again have to enforce that decryption
+happens before us trying to restore the old position. I also like to
+recenter the screen in that case, so I use =(recenter-top-bottom)= but
+that is up to your tastes.
+
+And that is all!
+
+* Conclusion
+
+Org crypt users: you will like this! Just load the code above and
+enjoy the time saving!
+
+Happy decrypting!
