@@ -1,0 +1,150 @@
+#+TITLE:       How fast are your queries? Make PostgreSQL work transparently with pg_stat_statements
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-11-27 Fri
+#+URI:         /blog/%y/%m/%d/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements
+#+KEYWORDS:    sql, learning, monitoring
+#+TAGS:        sql, learning, monitoring
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Find out where your PostgreSQL spends its time
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       85c31116-ad0d-4c7f-83a9-a547a833334f
+:END:
+
+Analyze Postgres actions by enabling the shared library
+[[https://www.postgresql.org/docs/current/pgstatstatements.html][pg_stat_statements]]: it will give useful statistics about your queries!
+
+* The problem
+
+I recently wrote about [[https://ag91.github.io/blog/2020/11/09/streams-handle-big-data-with-laziness/][streams]] and how effective they are at
+manipulating big amounts of data. A typical flow is to take the data
+from a source, filter it and then store it in some sink. The storage
+part involves a database and in many cases this is a relational
+database. One famous implementation of these is [[https://www.postgresql.org/][PostgreSQL]].
+
+Generally speaking, when you integrate a component in your
+application, you need to monitor that it works as you expect. When
+manipulating data as streams, your bottlenecks are likely the source
+or the sink, which may both be relational database under your control!
+
+The reason we care about this is our user life: any time we shave
+off some second of computation, we end up saving minutes if not hours
+of our user's time (according to how adopted is our software).
+
+So what do you do if your stream/application computes quickly up to your
+PostgreSQL storage?
+
+* It is a problem indeed
+
+Databases are omnipresent. Often you work with them through frameworks
+like Ruby on Rails, which facilitate you in storing data. Even if you
+write bare SQL yourself, it is advantageous for you to monitor how
+your database is behaving under the hood.
+
+Oftentimes shaving off seconds of computation is just an index away:
+ah, if only you knew which query was slow!
+
+* And there is a solution
+
+PostgreSQL comes with a useful extension library for collecting
+statistics about queries: [[https://www.postgresql.org/docs/current/pgstatstatements.html][pg_stat_statements]]. This is an extension
+that you have to load while running =psql=, the PostgreSQL command
+line client.
+
+You can do that in the database configuration file or inline with the
+command:
+
+#+begin_src sh :noeval
+psql -c shared_preload_libraries='pg_stat_statements' ...
+#+end_src
+
+The reason why you cannot set that afterwards is because the database
+gets instrumented to collect statistics. That is also the reason why
+it is disabled by default: instrumenting the database causes an
+overhead on each query, making your database slower than optimal.
+
+Once you are running the SQL REPL, you can create the table that
+collects statistics:
+
+#+begin_src sql :noeval
+create extension pg_stat_statements;
+#+end_src
+
+At this point you should do some queries.
+
+Ideally, you will run a performance test of the application that
+relies on the database to mimic normal usage of your software. In that
+way, you can pinpoint the queries that consume most of your
++application+ user's time.
+
+After you run your test, just query your statistics table like so:
+
+#+begin_src sql :noeval
+select substring(query, 1, 100) as query,calls,total_time,max_time,mean_time,rows FROM pg_stat_statements ORDER BY calls DESC;
+#+end_src
+
+I order the statistics by the number of calls a query experienced
+during my test. Ordering by =total_time= makes a lot of sense too, if
+you want to do it differently. Note I also truncate the query text to
+100 characters to keep it readable, just remove the =SUBSTRING= if you
+want the raw query.
+
+An example of output of the query above is this:
+
+#+begin_src org :noeval
+| query      | calls |       total_time | max_time |            mean_time | rows |
+|------------+-------+------------------+----------+----------------------+------|
+| BEGIN      | 13604 | 6.81200000000054 |    0.023 | 0.000500735077918257 |    0 |
+| COMMIT     | 13604 | 7.23400000000058 |    0.032 | 0.000531755366068805 |    0 |
+| someQuery1 |  6678 | 367.142000000007 |    0.398 |   0.0549778376759509 | 6678 |
+| someQuery2 |  6000 | 85.3680000000014 |    0.232 |             0.014228 | 6000 |
+| someQuery3 |  4284 | 174.814999999998 |    0.247 |   0.0408064892623715 | 4284 |
+| someQuery4 |  2098 | 6.47599999999978 |     0.04 |  0.00308674928503337 |    0 |
+| someQuery5 |  2098 | 6.98699999999979 |    0.026 |  0.00333031458531935 |    0 |
+| someQuery6 |  1882 |          639.127 |    2.367 |    0.339599893730074 | 1882 |
+| someQuery7 |   899 |          560.159 |    2.225 |    0.623091212458286 |  920 |
+| someQuery8 |   882 | 9.41099999999997 |    0.147 |   0.0106700680272109 |  882 |
+#+end_src
+
+You may notice in the above that the problematic queries seem to be
+=someQuery6= , =someQuery7=, =someQuery1=, =someQuery3= because they
+take longer (their =total_time=) than anything else. All of these
+looked reasonable queries to write, naturally. Monitoring rescued me!
+
+If you need to rerun a test, I would clean the statistics table to
+have a clear result for my analysis. You can do it like this:
+
+#+begin_src sql :noeval
+select pg_stat_statements_reset();
+#+end_src
+
+
+Furthermore, another trick for you! If you want to know the algorithm
+PostgreSQL is going to use for your query you can run [[https://www.postgresql.org/docs/9.1/sql-explain.html][explain]]. For
+example, say you have a query like this:
+
+#+begin_src sql :noeval
+select id, content from testtable;
+#+end_src
+
+If you run =explain= on it you get the query plan:
+
+#+begin_src sql :noeval :exports both
+explain select id, content from testtable;
+#+end_src
+
+#+RESULTS:
+| QUERY PLAN                                                   |
+|--------------------------------------------------------------|
+| Seq Scan on testtable  (cost=0.00..22.70 rows=1270 width=36) |
+
+* Conclusion
+
+So start your PostgreSQL with a small option, run a performance test
+and see if you can find on what your preferred database spends its
+time. Every second you save makes somebody happy!
+
+Happy monitoring!
