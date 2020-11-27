@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>How fast are your queries? Make PostgreSQL work transparently with pg_stat_statements - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Find out where your PostgreSQL spends its time" />
+    <meta name="keywords" content="sql, learning, monitoring" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>How fast are your queries? Make PostgreSQL work transparently with pg_stat_statements</h1>
+
+<div id="outline-container-org866208f" class="outline-2">
+<h2 id="org866208f">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org866208f">
+<p>
+Analyze Postgres actions by enabling the shared library
+<a href="https://www.postgresql.org/docs/current/pgstatstatements.html">pg_stat_statements</a>: it will give useful statistics about your queries!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3c05b6d" class="outline-2">
+<h2 id="org3c05b6d">The problem</h2>
+<div class="outline-text-2" id="text-org3c05b6d">
+<p>
+I recently wrote about <a href="https://ag91.github.io/blog/2020/11/09/streams-handle-big-data-with-laziness/">streams</a> and how effective they are at
+manipulating big amounts of data. A typical flow is to take the data
+from a source, filter it and then store it in some sink. The storage
+part involves a database and in many cases this is a relational
+database. One famous implementation of these is <a href="https://www.postgresql.org/">PostgreSQL</a>.
+</p>
+
+<p>
+Generally speaking, when you integrate a component in your
+application, you need to monitor that it works as you expect. When
+manipulating data as streams, your bottlenecks are likely the source
+or the sink, which may both be relational database under your control!
+</p>
+
+<p>
+The reason we care about this is our user life: any time we shave
+off some second of computation, we end up saving minutes if not hours
+of our user's time (according to how adopted is our software).
+</p>
+
+<p>
+So what do you do if your stream/application computes quickly up to your
+PostgreSQL storage?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcd23cf0" class="outline-2">
+<h2 id="orgcd23cf0">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgcd23cf0">
+<p>
+Databases are omnipresent. Often you work with them through frameworks
+like Ruby on Rails, which facilitate you in storing data. Even if you
+write bare SQL yourself, it is advantageous for you to monitor how
+your database is behaving under the hood.
+</p>
+
+<p>
+Oftentimes shaving off seconds of computation is just an index away:
+ah, if only you knew which query was slow!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org84889b2" class="outline-2">
+<h2 id="org84889b2">And there is a solution</h2>
+<div class="outline-text-2" id="text-org84889b2">
+<p>
+PostgreSQL comes with a useful extension library for collecting
+statistics about queries: <a href="https://www.postgresql.org/docs/current/pgstatstatements.html">pg_stat_statements</a>. This is an extension
+that you have to load while running <code>psql</code>, the PostgreSQL command
+line client.
+</p>
+
+<p>
+You can do that in the database configuration file or inline with the
+command:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">psql -c shared_preload_libraries='pg_stat_statements' ...
+</pre>
+</div>
+
+<p>
+The reason why you cannot set that afterwards is because the database
+gets instrumented to collect statistics. That is also the reason why
+it is disabled by default: instrumenting the database causes an
+overhead on each query, making your database slower than optimal.
+</p>
+
+<p>
+Once you are running the SQL REPL, you can create the table that
+collects statistics:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql">create extension pg_stat_statements;
+</pre>
+</div>
+
+<p>
+At this point you should do some queries.
+</p>
+
+<p>
+Ideally, you will run a performance test of the application that
+relies on the database to mimic normal usage of your software. In that
+way, you can pinpoint the queries that consume most of your
+<del>application</del> user's time.
+</p>
+
+<p>
+After you run your test, just query your statistics table like so:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql">select substring(query, 1, 100) as query,calls,total_time,max_time,mean_time,rows FROM pg_stat_statements ORDER BY calls DESC;
+</pre>
+</div>
+
+<p>
+I order the statistics by the number of calls a query experienced
+during my test. Ordering by <code>total_time</code> makes a lot of sense too, if
+you want to do it differently. Note I also truncate the query text to
+100 characters to keep it readable, just remove the <code>SUBSTRING</code> if you
+want the raw query.
+</p>
+
+<p>
+An example of output of the query above is this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">| query      | calls |       total_time | max_time |            mean_time | rows |
+|------------+-------+------------------+----------+----------------------+------|
+| BEGIN      | 13604 | 6.81200000000054 |    0.023 | 0.000500735077918257 |    0 |
+| COMMIT     | 13604 | 7.23400000000058 |    0.032 | 0.000531755366068805 |    0 |
+| someQuery1 |  6678 | 367.142000000007 |    0.398 |   0.0549778376759509 | 6678 |
+| someQuery2 |  6000 | 85.3680000000014 |    0.232 |             0.014228 | 6000 |
+| someQuery3 |  4284 | 174.814999999998 |    0.247 |   0.0408064892623715 | 4284 |
+| someQuery4 |  2098 | 6.47599999999978 |     0.04 |  0.00308674928503337 |    0 |
+| someQuery5 |  2098 | 6.98699999999979 |    0.026 |  0.00333031458531935 |    0 |
+| someQuery6 |  1882 |          639.127 |    2.367 |    0.339599893730074 | 1882 |
+| someQuery7 |   899 |          560.159 |    2.225 |    0.623091212458286 |  920 |
+| someQuery8 |   882 | 9.41099999999997 |    0.147 |   0.0106700680272109 |  882 |
+</pre>
+</div>
+
+<p>
+You may notice in the above that the problematic queries seem to be
+<code>someQuery6</code> , <code>someQuery7</code>, <code>someQuery1</code>, <code>someQuery3</code> because they
+take longer (their <code>total_time</code>) than anything else. All of these
+looked reasonable queries to write, naturally. Monitoring rescued me!
+</p>
+
+<p>
+If you need to rerun a test, I would clean the statistics table to
+have a clear result for my analysis. You can do it like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql">select pg_stat_statements_reset();
+</pre>
+</div>
+
+
+<p>
+Furthermore, another trick for you! If you want to know the algorithm
+PostgreSQL is going to use for your query you can run <a href="https://www.postgresql.org/docs/9.1/sql-explain.html">explain</a>. For
+example, say you have a query like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql">select id, content from testtable;
+</pre>
+</div>
+
+<p>
+If you run <code>explain</code> on it you get the query plan:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sql">explain select id, content from testtable;
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">QUERY PLAN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Seq Scan on testtable  (cost=0.00..22.70 rows=1270 width=36)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="outline-container-org78c6985" class="outline-2">
+<h2 id="org78c6985">Conclusion</h2>
+<div class="outline-text-2" id="text-org78c6985">
+<p>
+So start your PostgreSQL with a small option, run a performance test
+and see if you can find on what your preferred database spends its
+time. Every second you save makes somebody happy!
+</p>
+
+<p>
+Happy monitoring!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-11-27</span>
+        <span title="last modification date" class="post-info">2020-11-27</span>
+        <span title="tags" class="post-info"><a href="/tags/sql/">sql</a>, <a href="/tags/learning/">learning</a>, <a href="/tags/monitoring/">monitoring</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

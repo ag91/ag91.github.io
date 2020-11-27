@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 19 Nov 2020 22:04:42 CET</pubDate>
-    <lastBuildDate>Thu, 19 Nov 2020 22:04:42 CET</lastBuildDate>
+    <pubDate>Fri, 27 Nov 2020 21:02:21 CET</pubDate>
+    <lastBuildDate>Fri, 27 Nov 2020 21:02:21 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>How fast are your queries? Make PostgreSQL work transparently with pg_stat_statements</title>
+      <link>http://ag91.github.io/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements</link>
+      <description><![CDATA[Find out where your PostgreSQL spends its time]]></description>
+      <pubDate>2020-11-27</pubDate>
+      <guid>http://ag91.github.io/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements</guid>
+    </item>
+    <item>
       <title>Org crypt do not forget my point!</title>
       <link>http://ag91.github.io/blog/2020/11/19/org-crypt-do-not-forget-my-point</link>
-      <description><![CDATA[How to restore your position in a heading automatically after encrypting and decrypting it]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-11-19</pubDate>
       <guid>http://ag91.github.io/blog/2020/11/19/org-crypt-do-not-forget-my-point</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-10-09</pubDate>
       <guid>http://ag91.github.io/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)</guid>
-    </item>
-    <item>
-      <title>Engine-mode, or how to shorten your time-to-browser</title>
-      <link>http://ag91.github.io/blog/2020/10/04/engine-mode-or-how-to-shorten-your-time-to-browser</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-10-04</pubDate>
-      <guid>http://ag91.github.io/blog/2020/10/04/engine-mode-or-how-to-shorten-your-time-to-browser</guid>
     </item>
   </channel>
 </rss>
