@@ -48,6 +48,9 @@ Oftentimes shaving off seconds of computation is just an index away:
 ah, if only you knew which query was slow!
 
 * And there is a solution
+:PROPERTIES:
+:ID:       879f057f-ac2b-4715-a909-a89e78e4c75d
+:END:
 
 PostgreSQL comes with a useful extension library for collecting
 statistics about queries: [[https://www.postgresql.org/docs/current/pgstatstatements.html][pg_stat_statements]]. This is an extension
@@ -94,7 +97,6 @@ want the raw query.
 
 An example of output of the query above is this:
 
-#+begin_src org :noeval
 | query      | calls |       total_time | max_time |            mean_time | rows |
 |------------+-------+------------------+----------+----------------------+------|
 | BEGIN      | 13604 | 6.81200000000054 |    0.023 | 0.000500735077918257 |    0 |
@@ -107,7 +109,6 @@ An example of output of the query above is this:
 | someQuery6 |  1882 |          639.127 |    2.367 |    0.339599893730074 | 1882 |
 | someQuery7 |   899 |          560.159 |    2.225 |    0.623091212458286 |  920 |
 | someQuery8 |   882 | 9.41099999999997 |    0.147 |   0.0106700680272109 |  882 |
-#+end_src
 
 You may notice in the above that the problematic queries seem to be
 =someQuery6= , =someQuery7=, =someQuery1=, =someQuery3= because they
