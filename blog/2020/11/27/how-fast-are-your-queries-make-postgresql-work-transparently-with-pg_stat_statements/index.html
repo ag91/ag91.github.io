@@ -32,9 +32,9 @@
 <div class="post">
 <h1>How fast are your queries? Make PostgreSQL work transparently with pg_stat_statements</h1>
 
-<div id="outline-container-org866208f" class="outline-2">
-<h2 id="org866208f">Too long; didn't read</h2>
-<div class="outline-text-2" id="text-org866208f">
+<div id="outline-container-orgc73bbd5" class="outline-2">
+<h2 id="orgc73bbd5">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgc73bbd5">
 <p>
 Analyze Postgres actions by enabling the shared library
 <a href="https://www.postgresql.org/docs/current/pgstatstatements.html">pg_stat_statements</a>: it will give useful statistics about your queries!
@@ -42,9 +42,9 @@ Analyze Postgres actions by enabling the shared library
 </div>
 </div>
 
-<div id="outline-container-org3c05b6d" class="outline-2">
-<h2 id="org3c05b6d">The problem</h2>
-<div class="outline-text-2" id="text-org3c05b6d">
+<div id="outline-container-org2546685" class="outline-2">
+<h2 id="org2546685">The problem</h2>
+<div class="outline-text-2" id="text-org2546685">
 <p>
 I recently wrote about <a href="https://ag91.github.io/blog/2020/11/09/streams-handle-big-data-with-laziness/">streams</a> and how effective they are at
 manipulating big amounts of data. A typical flow is to take the data
@@ -73,9 +73,9 @@ PostgreSQL storage?
 </div>
 </div>
 
-<div id="outline-container-orgcd23cf0" class="outline-2">
-<h2 id="orgcd23cf0">It is a problem indeed</h2>
-<div class="outline-text-2" id="text-orgcd23cf0">
+<div id="outline-container-org18109bc" class="outline-2">
+<h2 id="org18109bc">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org18109bc">
 <p>
 Databases are omnipresent. Often you work with them through frameworks
 like Ruby on Rails, which facilitate you in storing data. Even if you
@@ -90,9 +90,9 @@ ah, if only you knew which query was slow!
 </div>
 </div>
 
-<div id="outline-container-org84889b2" class="outline-2">
-<h2 id="org84889b2">And there is a solution</h2>
-<div class="outline-text-2" id="text-org84889b2">
+<div id="outline-container-org6284ae3" class="outline-2">
+<h2 id="org6284ae3">And there is a solution</h2>
+<div class="outline-text-2" id="text-org6284ae3">
 <p>
 PostgreSQL comes with a useful extension library for collecting
 statistics about queries: <a href="https://www.postgresql.org/docs/current/pgstatstatements.html">pg_stat_statements</a>. This is an extension
@@ -159,21 +159,124 @@ want the raw query.
 An example of output of the query above is this:
 </p>
 
-<div class="org-src-container">
-<pre class="src src-org">| query      | calls |       total_time | max_time |            mean_time | rows |
-|------------+-------+------------------+----------+----------------------+------|
-| BEGIN      | 13604 | 6.81200000000054 |    0.023 | 0.000500735077918257 |    0 |
-| COMMIT     | 13604 | 7.23400000000058 |    0.032 | 0.000531755366068805 |    0 |
-| someQuery1 |  6678 | 367.142000000007 |    0.398 |   0.0549778376759509 | 6678 |
-| someQuery2 |  6000 | 85.3680000000014 |    0.232 |             0.014228 | 6000 |
-| someQuery3 |  4284 | 174.814999999998 |    0.247 |   0.0408064892623715 | 4284 |
-| someQuery4 |  2098 | 6.47599999999978 |     0.04 |  0.00308674928503337 |    0 |
-| someQuery5 |  2098 | 6.98699999999979 |    0.026 |  0.00333031458531935 |    0 |
-| someQuery6 |  1882 |          639.127 |    2.367 |    0.339599893730074 | 1882 |
-| someQuery7 |   899 |          560.159 |    2.225 |    0.623091212458286 |  920 |
-| someQuery8 |   882 | 9.41099999999997 |    0.147 |   0.0106700680272109 |  882 |
-</pre>
-</div>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">query</th>
+<th scope="col" class="org-right">calls</th>
+<th scope="col" class="org-right">total_time</th>
+<th scope="col" class="org-right">max_time</th>
+<th scope="col" class="org-right">mean_time</th>
+<th scope="col" class="org-right">rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">BEGIN</td>
+<td class="org-right">13604</td>
+<td class="org-right">6.81200000000054</td>
+<td class="org-right">0.023</td>
+<td class="org-right">0.000500735077918257</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">COMMIT</td>
+<td class="org-right">13604</td>
+<td class="org-right">7.23400000000058</td>
+<td class="org-right">0.032</td>
+<td class="org-right">0.000531755366068805</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">someQuery1</td>
+<td class="org-right">6678</td>
+<td class="org-right">367.142000000007</td>
+<td class="org-right">0.398</td>
+<td class="org-right">0.0549778376759509</td>
+<td class="org-right">6678</td>
+</tr>
+
+<tr>
+<td class="org-left">someQuery2</td>
+<td class="org-right">6000</td>
+<td class="org-right">85.3680000000014</td>
+<td class="org-right">0.232</td>
+<td class="org-right">0.014228</td>
+<td class="org-right">6000</td>
+</tr>
+
+<tr>
+<td class="org-left">someQuery3</td>
+<td class="org-right">4284</td>
+<td class="org-right">174.814999999998</td>
+<td class="org-right">0.247</td>
+<td class="org-right">0.0408064892623715</td>
+<td class="org-right">4284</td>
+</tr>
+
+<tr>
+<td class="org-left">someQuery4</td>
+<td class="org-right">2098</td>
+<td class="org-right">6.47599999999978</td>
+<td class="org-right">0.04</td>
+<td class="org-right">0.00308674928503337</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">someQuery5</td>
+<td class="org-right">2098</td>
+<td class="org-right">6.98699999999979</td>
+<td class="org-right">0.026</td>
+<td class="org-right">0.00333031458531935</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-left">someQuery6</td>
+<td class="org-right">1882</td>
+<td class="org-right">639.127</td>
+<td class="org-right">2.367</td>
+<td class="org-right">0.339599893730074</td>
+<td class="org-right">1882</td>
+</tr>
+
+<tr>
+<td class="org-left">someQuery7</td>
+<td class="org-right">899</td>
+<td class="org-right">560.159</td>
+<td class="org-right">2.225</td>
+<td class="org-right">0.623091212458286</td>
+<td class="org-right">920</td>
+</tr>
+
+<tr>
+<td class="org-left">someQuery8</td>
+<td class="org-right">882</td>
+<td class="org-right">9.41099999999997</td>
+<td class="org-right">0.147</td>
+<td class="org-right">0.0106700680272109</td>
+<td class="org-right">882</td>
+</tr>
+</tbody>
+</table>
 
 <p>
 You may notice in the above that the problematic queries seem to be
@@ -233,9 +336,9 @@ If you run <code>explain</code> on it you get the query plan:
 </div>
 </div>
 
-<div id="outline-container-org78c6985" class="outline-2">
-<h2 id="org78c6985">Conclusion</h2>
-<div class="outline-text-2" id="text-org78c6985">
+<div id="outline-container-orge35fdca" class="outline-2">
+<h2 id="orge35fdca">Conclusion</h2>
+<div class="outline-text-2" id="text-orge35fdca">
 <p>
 So start your PostgreSQL with a small option, run a performance test
 and see if you can find on what your preferred database spends its
@@ -253,7 +356,7 @@ Happy monitoring!
     <div>
       <div class="post-meta">
         <span title="post date" class="post-info">2020-11-27</span>
-        <span title="last modification date" class="post-info">2020-11-27</span>
+        <span title="last modification date" class="post-info">2020-11-28</span>
         <span title="tags" class="post-info"><a href="/tags/sql/">sql</a>, <a href="/tags/learning/">learning</a>, <a href="/tags/monitoring/">monitoring</a></span>
         <span title="author" class="post-info">Andrea</span>
       </div>

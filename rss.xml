@@ -4,15 +4,15 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 27 Nov 2020 21:02:21 CET</pubDate>
-    <lastBuildDate>Fri, 27 Nov 2020 21:02:21 CET</lastBuildDate>
+    <pubDate>Sat, 28 Nov 2020 11:14:58 CET</pubDate>
+    <lastBuildDate>Sat, 28 Nov 2020 11:14:58 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
       <title>How fast are your queries? Make PostgreSQL work transparently with pg_stat_statements</title>
       <link>http://ag91.github.io/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements</link>
       <description><![CDATA[Find out where your PostgreSQL spends its time]]></description>
-      <pubDate>2020-11-27</pubDate>
+      <pubDate>2020-11-28</pubDate>
       <guid>http://ag91.github.io/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements</guid>
     </item>
     <item>
