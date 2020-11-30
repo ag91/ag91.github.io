@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>EmacsConf2020: Lead your future with Org - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="My Org Mode presentation at EmacsConf2020" />
+    <meta name="keywords" content="org-mode, org-crypt, org-roam" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>EmacsConf2020: Lead your future with Org</h1>
+
+
+<div id="outline-container-org3e6bb99" class="outline-2">
+<h2 id="org3e6bb99">Lead your future with Org</h2>
+<div class="outline-text-2" id="text-org3e6bb99">
+<p>
+This is the presentation I gave at EmacsConf2020 about how lead my future with Org Mode.
+The abstract:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">Title: Lead your future with Org
+
+
+Preferred format: Standard talk (or even Lighting talk by only giving
+references to the modes I plan to show)
+
+Abstract:
+
+The world is full of possibilities. A person life is rather short
+though, and one can easily end up carry on without focus.
+
+In this short talk I want to share how Org mode empowers me into
+organizing and monitoring my tasks to make sure I am working towards
+achieving my vision.
+
+The emphasis of the talk is on defining a direction, monitoring the
+progress towards your planned destination, and keeping a trail of your
+actions to review and set up a healthy feedback loop.
+
+Tools for the job that I will (at least) mention: Org files, Org
+agenda, Org archive, org-ql, and Org-roam.
+
+</pre>
+</div>
+
+<p>
+In the following presentation you can find a source block that lets
+you setup an Emacs instance ready for testing this file out. I suggest
+to copy <a href="https://github.com/ag91/ag91.github.io/blob/source/blog/LeadYourFutureWithOrg.org">the source Org file for this blog</a> as <code>/tmp/test.org</code>, and run
+the block to try things out.
+</p>
+</div>
+
+<div id="outline-container-org18ed10f" class="outline-3">
+<h3 id="org18ed10f">Who am I</h3>
+<div class="outline-text-3" id="text-org18ed10f">
+<p>
+I am Andrea.
+</p>
+
+<p>
+I work as a Scala software engineer somewhere in the middle of The Netherlands.
+</p>
+
+<p>
+I inherited my passion for Emacs from my Ph.D. supervisor and I got in synergy with it.
+</p>
+
+<p>
+Find more about me at: <a href="https://ag91.github.io">https://ag91.github.io</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5a8141b" class="outline-3">
+<h3 id="org5a8141b">Why I needed a vision</h3>
+<div class="outline-text-3" id="text-org5a8141b">
+<ul class="org-ul">
+<li>Too many interests</li>
+<li>Too little time</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org4765702" class="outline-3">
+<h3 id="org4765702">The need to act</h3>
+<div class="outline-text-3" id="text-org4765702">
+<ul class="org-ul">
+<li>Even when you have a vision you need goals to get there</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org485fd5a" class="outline-3">
+<h3 id="org485fd5a">How I keep track of my vision progress with Org Agenda</h3>
+<div class="outline-text-3" id="text-org485fd5a">
+<p>
+Running example vision: <b>I want to bring joy to people</b>, <b>I want to live in synergy with the planet</b>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(require 'package)
+(eval-and-compile
+  (setq
+   package-archives
+   '(("melpa-stable" . "https://stable.melpa.org/packages/")
+     ("melpa" . "https://melpa.org/packages/")
+     ("marmalade"   . "https://marmalade-repo.org/packages/")
+     ("org"         . "https://orgmode.org/elpa/")
+     ("gnu"         . "https://elpa.gnu.org/packages/"))))
+(package-initialize)
+
+ ;;; Bootstrap use-package
+;; Install use-package if it's not already installed.
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(setq use-package-always-ensure 't)
+(require 'use-package)
+(require 'diminish)
+(require 'bind-key)
+;; extra for talk
+(write-region "#+TITLE: I want to bring joy to people\n#+CATEGORY: Bring joy to people" nil "/tmp/BringJoy.org")
+(write-region "#+TITLE: I want to live in synergy with the planet\n#+CATEGORY: Synergy with planet" nil "/tmp/SynergyWithPlanet.org")
+(setq org-capture-templates
+      (list
+       '("b" "Joy task"
+         entry
+         (file "/tmp/BringJoy.org")
+         "* TODO %^{Short description} :%(completing-read \"Choose tag\" (list \"0yr\" \"5yr\" \"10yr\" \"20yr\")):\n  SCHEDULED:%t\n\n %?"
+         :empty-lines 2)
+       '("s" "Synergy task"
+         entry
+         (file "/tmp/SynergyWithPlanet.org")
+         "* TODO %^{Short description} :%(completing-read \"Choose tag\" (list \"0yr\" \"5yr\" \"10yr\" \"20yr\")):\n  SCHEDULED:%t\n\n %?"
+         :empty-lines 2)))
+(defun my/org-agenda-sort-longterm-tags (el1 el2)
+  "Prioritize agenda items EL1 and EL2 that contains tags in the form :[0-9]yr: relatively to the number of years."
+  (let* ((regex ":\\([0-9]+\\)yr:")
+         (years-el1 (progn
+                      ;; this can fail because the regex is not found or there is no tag for :Xyr:, so I am handling with the zeros
+                      (if (string-match regex el1)
+                          (string-to-number (or (match-string 1 el1) "0"))
+                        0)))
+         (years-el2 (progn
+                      (if (string-match regex el2)
+                          (string-to-number (or (match-string 1 el2) "0"))
+                        0))
+                    ))
+    ;; TODO I am sure there is a cleaner way to implement this comparison...
+    (if (&gt; years-el1 years-el2)
+        1
+      (if (&gt; years-el2 years-el1)
+          -1
+        nil))))
+
+(setq org-agenda-cmp-user-defined 'my/org-agenda-sort-longterm-tags)
+
+(setq org-agenda-sorting-strategy
+      '((agenda habit-down time-up user-defined-down priority-down category-keep)
+        (todo priority-down category-keep)
+        (tags priority-down category-keep)
+        (search category-keep)))
+(setq org-agenda-files '("/tmp/BringJoy.org" "/tmp/SynergyWithPlanet.org"))
+(global-set-key (kbd "C-c o a")  'org-agenda)
+(global-set-key (kbd "C-c o c")  'org-capture)
+(use-package org-ql
+  :ensure t)
+
+(defun my/get-stats-tasks (todo-tag from &amp;optional tag to files category)
+  "Get stats for tasks of last week with TODO-TAG TAG FROM optionally define TO date and source FILES to use."
+  (let ((tasks
+         (org-ql-query
+           :from (or files (org-agenda-files))
+           :where
+           `(and (todo ,todo-tag)
+                 (if ,tag (tags ,tag) t)
+                 (if ,category (category ,category) t)
+                 (ts :from ,from :to ,(or to 'today))))))
+    `((tasks . ,(length tasks))
+      (tasks-per-day . ,(/ (length tasks) (abs from))))))
+
+(use-package org-roam
+  :diminish
+  :pin melpa-stable
+  ;; :hook (org-mode . org-roam-mode)
+  :custom
+  (org-roam-link-file-path-type 'noabbrev)
+  (org-roam-update-db-idle-seconds 30)
+  (org-roam-rename-file-on-title-change nil)
+  (org-roam-db-location "/tmp/org-roam.db")
+  (org-roam-directory "/tmp/notes/")
+  (org-roam-index-file "/tmp/index.org")
+  (org-roam-capture-templates
+   (list '("d" "default" plain (function org-roam--capture-get-point)
+           "- tags :: %?"
+           :file-name "%&lt;%Y%m%d%H%M%S&gt;-${slug}"
+           :head "#+TITLE: ${title}\n\n"
+           :unnarrowed t
+           :immediate-finish t)))
+  :bind (("C-c n i" . org-roam-insert)
+         ("C-c n l" . org-roam)
+         ("C-c n f" . org-roam-find-file)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n j" . org-roam-jump-to-index)) 
+  :config
+  (use-package emacsql-sqlite)
+  (require 'org-roam-protocol))
+
+(use-package org-crypt
+  :ensure nil
+  :after org
+  :custom
+  (org-crypt-disable-auto-save 't)
+  (org-tags-exclude-from-inheritance (list "crypt"))
+  (org-crypt-key "8197AC77B80C848FA0C99EDA2E4FA6504167C2AC")
+  :config 
+  (defun my/with-catching-all-drawers (fn)
+    (let ((org-property-drawer-re
+           (concat "^[ 	]*:[A-Z]*:[ 	]*\n"
+                   "[^*]*"
+                   "[ \t]*:END:[ \t]*$")))
+      (funcall fn)))
+
+  (advice-add
+   'org-encrypt-entry :around
+   'my/with-catching-all-drawers)
+
+  (advice-add
+   'org-decrypt-entry :around
+   'my/with-catching-all-drawers)
+
+  (org-crypt-use-before-save-magic))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-sh">emacs -Q -l /tmp/running-example.el /tmp/test.org
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org8685dc9" class="outline-4">
+<h4 id="org8685dc9">Categorize tasks according to vision</h4>
+<div class="outline-text-4" id="text-org8685dc9">
+<ul class="org-ul">
+<li>Create files with category</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq org-agenda-files "/tmp/BringJoy.org" "/tmp/SynergyWithPlanet.org")
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-org">#+TITLE: I want to bring joy to people
+#+CATEGORY: Bring joy to people
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-org">#+TITLE: I want to live in synergy with the planet
+#+CATEGORY: Synergy with planet
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb4eba3a" class="outline-4">
+<h4 id="orgb4eba3a">Use tags to prioritize</h4>
+<div class="outline-text-4" id="text-orgb4eba3a">
+<ul class="org-ul">
+<li>Make 5yr, 10yr and 20yr tags to know how effective a task is</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org7395004" class="outline-4">
+<h4 id="org7395004">Exploit Org Capture</h4>
+<div class="outline-text-4" id="text-org7395004">
+<ul class="org-ul">
+<li>Make a template for each category and estimate effectiveness on the fly</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq org-capture-templates
+      (list
+       ("b" "Joy task"
+        entry
+        (file "/tmp/BringJoy.org")
+        "* TODO %^{Short description} :%(completing-read \"Choose tag\" (list \"0yr\" \"5yr\" \"10yr\" \"20yr\")):\n  SCHEDULED:%t\n\n %?"
+        :empty-lines 2)
+       ("s" "Synergy task"
+        entry
+        (file "/tmp/SynergyWithPlanet.org")
+        "* TODO %^{Short description} :%(completing-read \"Choose tag\" (list \"0yr\" \"5yr\" \"10yr\" \"20yr\")):\n  SCHEDULED:%t\n\n %?"
+        :empty-lines 2)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf31f3d3" class="outline-4">
+<h4 id="orgf31f3d3">Adapt agenda</h4>
+<div class="outline-text-4" id="text-orgf31f3d3">
+<ul class="org-ul">
+<li>Order your agenda by tags priority</li>
+</ul>
+
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/org-agenda-sort-longterm-tags (el1 el2)
+  "Prioritize agenda items EL1 and EL2 that contains tags in the form :[0-9]yr: relatively to the number of years."
+  (let* ((regex ":\\([0-9]+\\)yr:")
+         (years-el1 (progn
+                      ;; this can fail because the regex is not found or there is no tag for :Xyr:, so I am handling with the zeros
+                      (if (string-match regex el1)
+                          (string-to-number (or (match-string 1 el1) "0"))
+                        0)))
+         (years-el2 (progn
+                      (if (string-match regex el2)
+                          (string-to-number (or (match-string 1 el2) "0"))
+                        0))
+                    ))
+    ;; TODO I am sure there is a cleaner way to implement this comparison...
+    (if (&gt; years-el1 years-el2)
+        1
+      (if (&gt; years-el2 years-el1)
+          -1
+        nil))))
+
+(setq org-agenda-cmp-user-defined 'my/org-agenda-sort-longterm-tags)
+
+(setq org-agenda-sorting-strategy
+      '((agenda habit-down time-up user-defined-down priority-down category-keep)
+        (todo priority-down category-keep)
+        (tags priority-down category-keep)
+        (search category-keep)))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgbb4f0d1" class="outline-3">
+<h3 id="orgbb4f0d1">How I retrospect weekly on my progress with org-ql</h3>
+<div class="outline-text-3" id="text-orgbb4f0d1">
+<ul class="org-ul">
+<li>Review how much progress you have done</li>
+<li>And celebrate progress!</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package org-ql
+  :ensure t)
+
+(defun my/get-stats-tasks (todo-tag from &amp;optional tag to files category)
+  "Get stats for tasks of last week with TODO-TAG TAG FROM optionally define TO date and source FILES to use."
+  (let ((tasks
+         (org-ql-query
+           :from (or files (org-agenda-files))
+           :where
+           `(and (todo ,todo-tag)
+                 (if ,tag (tags ,tag) t)
+                 (if ,category (category ,category) t)
+                 (ts :from ,from :to ,(or to 'today))))))
+    `((tasks . ,(length tasks))
+      (tasks-per-day . ,(/ (length tasks) (abs from))))))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(let ((files (org-agenda-files)))
+  (--&gt;
+   (my/get-stats-tasks "DONE" -31 nil  nil files)
+   (s-concat 
+    "\n"
+    (format "Tasks marked DONE last month (today is: %s): %s\n" (current-time-string) it)
+    (format "    Tasks done last month (%s) with category\n\n" (current-time-string))
+    (format "    Bring joy to people  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Bring joy to people"))
+    (format "    Synergy with planet  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Synergy with planet"))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9825569" class="outline-3">
+<h3 id="org9825569">How I form ideas with Org Roam</h3>
+<div class="outline-text-3" id="text-org9825569">
+<ul class="org-ul">
+<li>Explore ideas and link relevant information for review</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package org-roam
+  :diminish
+  :pin melpa-stable
+  ;; :hook (org-mode . org-roam-mode)
+  :custom
+  (org-roam-link-file-path-type 'noabbrev)
+  (org-roam-update-db-idle-seconds 30)
+  (org-roam-rename-file-on-title-change nil)
+  (org-roam-db-location "/tmp/org-roam.db")
+  (org-roam-directory "/tmp/notes/")
+  (org-roam-index-file "/tmp/index.org")
+  (org-roam-capture-templates
+   (list '("d" "default" plain (function org-roam--capture-get-point)
+           "- tags :: %?"
+           :file-name "%&lt;%Y%m%d%H%M%S&gt;-${slug}"
+           :head "#+TITLE: ${title}\n\n"
+           :unnarrowed t
+           :immediate-finish t)))
+  :bind (("C-c n i" . org-roam-insert)
+         ("C-c n l" . org-roam)
+         ("C-c n f" . org-roam-find-file)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n j" . org-roam-jump-to-index)) 
+  :config
+  (use-package emacsql-sqlite)
+  (require 'org-roam-protocol))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaae6a2e" class="outline-3">
+<h3 id="orgaae6a2e">Keep things private with Org Crypt</h3>
+<div class="outline-text-3" id="text-orgaae6a2e">
+<ul class="org-ul">
+<li>Keep heading contents readable only by you</li>
+</ul>
+
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package org-crypt
+  :ensure nil
+  :after org
+  :custom
+  (org-crypt-disable-auto-save 't)
+  (org-tags-exclude-from-inheritance (list "crypt"))
+  (org-crypt-key "8197AC77B80C848FA0C99EDA2E4FA6504167C2AC")
+  :config 
+   (defun my/with-catching-all-drawers (fn)
+     (let ((org-property-drawer-re
+            (concat "^[ 	]*:[A-Z]*:[ 	]*\n"
+                    "[^*]*"
+                    "[ \t]*:END:[ \t]*$")))
+       (funcall fn)))
+
+   (advice-add
+    'org-encrypt-entry :around
+    'my/with-catching-all-drawers)
+
+   (advice-add
+    'org-decrypt-entry :around
+    'my/with-catching-all-drawers)
+
+   (org-crypt-use-before-save-magic))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-11-30</span>
+        <span title="last modification date" class="post-info">2020-11-30</span>
+        <span title="tags" class="post-info"><a href="/tags/org-mode/">org-mode</a>, <a href="/tags/org-crypt/">org-crypt</a>, <a href="/tags/org-roam/">org-roam</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
