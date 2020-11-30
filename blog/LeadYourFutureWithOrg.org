@@ -46,7 +46,7 @@ agenda, Org archive, org-ql, and Org-roam.
 
 In the following presentation you can find a source block that lets
 you setup an Emacs instance ready for testing this file out. I suggest
-to copy the source Org file for this blog as =/tmp/test.org=, and run
+to copy [[https://github.com/ag91/ag91.github.io/blob/source/blog/LeadYourFutureWithOrg.org][the source Org file for this blog]] as =/tmp/test.org=, and run
 the block to try things out.
 
 ** Who am I
@@ -392,6 +392,7 @@ CLOCK: [2020-10-28 Wed 19:57]--[2020-10-28 Wed 20:22] =>  0:25
 ** Keep things private with Org Crypt
 :PROPERTIES:
 :CREATED:  [2020-10-25 Sun 15:01]
+:ID:       68eae709-7818-45d1-b171-66a7dee41ede
 :END:
 
 - Keep heading contents readable only by you
