@@ -1,0 +1,425 @@
+#+TITLE:       EmacsConf2020: Lead your future with Org
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-11-30 Mon
+#+URI:         /blog/%y/%m/%d/emacsconf2020-lead-your-future-with-org
+#+KEYWORDS:    org-mode, org-crypt, org-roam
+#+TAGS:        org-mode, org-crypt, org-roam
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: My Org Mode presentation at EmacsConf2020
+
+
+* Lead your future with Org
+:PROPERTIES:
+:CREATED:  [2020-10-18 Sun 14:08]
+:ID:       8bba51a1-d686-48c3-abdf-d79da1796db6
+:END:
+
+This is the presentation I gave at EmacsConf2020 about how lead my future with Org Mode.
+The abstract:
+
+#+begin_src text 
+Title: Lead your future with Org
+
+
+Preferred format: Standard talk (or even Lighting talk by only giving
+references to the modes I plan to show)
+
+Abstract:
+
+The world is full of possibilities. A person life is rather short
+though, and one can easily end up carry on without focus.
+
+In this short talk I want to share how Org mode empowers me into
+organizing and monitoring my tasks to make sure I am working towards
+achieving my vision.
+
+The emphasis of the talk is on defining a direction, monitoring the
+progress towards your planned destination, and keeping a trail of your
+actions to review and set up a healthy feedback loop.
+
+Tools for the job that I will (at least) mention: Org files, Org
+agenda, Org archive, org-ql, and Org-roam.
+
+#+end_src
+
+In the following presentation you can find a source block that lets
+you setup an Emacs instance ready for testing this file out. I suggest
+to copy the source Org file for this blog as =/tmp/test.org=, and run
+the block to try things out.
+
+** Who am I
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:31]
+:END:
+
+I am Andrea.
+
+I work as a Scala software engineer somewhere in the middle of The Netherlands.
+
+I inherited my passion for Emacs from my Ph.D. supervisor and I got in synergy with it.
+
+Find more about me at: https://ag91.github.io
+
+** Why I needed a vision
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:32]
+:END:
+
+- Too many interests
+- Too little time
+
+** The need to act
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:39]
+:END:
+
+- Even when you have a vision you need goals to get there
+
+** How I keep track of my vision progress with Org Agenda
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:32]
+:ID:       1e6376e8-cbbe-4eba-a58a-f071b8dce45a
+:END:
+
+Running example vision: *I want to bring joy to people*, *I want to live in synergy with the planet*
+
+#+begin_src elisp :tangle /tmp/running-example.el
+(require 'package)
+(eval-and-compile
+  (setq
+   package-archives
+   '(("melpa-stable" . "https://stable.melpa.org/packages/")
+     ("melpa" . "https://melpa.org/packages/")
+     ("marmalade"   . "https://marmalade-repo.org/packages/")
+     ("org"         . "https://orgmode.org/elpa/")
+     ("gnu"         . "https://elpa.gnu.org/packages/"))))
+(package-initialize)
+
+ ;;; Bootstrap use-package
+;; Install use-package if it's not already installed.
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(setq use-package-always-ensure 't)
+(require 'use-package)
+(require 'diminish)
+(require 'bind-key)
+;; extra for talk
+(write-region "#+TITLE: I want to bring joy to people\n#+CATEGORY: Bring joy to people" nil "/tmp/BringJoy.org")
+(write-region "#+TITLE: I want to live in synergy with the planet\n#+CATEGORY: Synergy with planet" nil "/tmp/SynergyWithPlanet.org")
+(setq org-capture-templates
+      (list
+       '("b" "Joy task"
+         entry
+         (file "/tmp/BringJoy.org")
+         "* TODO %^{Short description} :%(completing-read \"Choose tag\" (list \"0yr\" \"5yr\" \"10yr\" \"20yr\")):\n  SCHEDULED:%t\n\n %?"
+         :empty-lines 2)
+       '("s" "Synergy task"
+         entry
+         (file "/tmp/SynergyWithPlanet.org")
+         "* TODO %^{Short description} :%(completing-read \"Choose tag\" (list \"0yr\" \"5yr\" \"10yr\" \"20yr\")):\n  SCHEDULED:%t\n\n %?"
+         :empty-lines 2)))
+(defun my/org-agenda-sort-longterm-tags (el1 el2)
+  "Prioritize agenda items EL1 and EL2 that contains tags in the form :[0-9]yr: relatively to the number of years."
+  (let* ((regex ":\\([0-9]+\\)yr:")
+         (years-el1 (progn
+                      ;; this can fail because the regex is not found or there is no tag for :Xyr:, so I am handling with the zeros
+                      (if (string-match regex el1)
+                          (string-to-number (or (match-string 1 el1) "0"))
+                        0)))
+         (years-el2 (progn
+                      (if (string-match regex el2)
+                          (string-to-number (or (match-string 1 el2) "0"))
+                        0))
+                    ))
+    ;; TODO I am sure there is a cleaner way to implement this comparison...
+    (if (> years-el1 years-el2)
+        1
+      (if (> years-el2 years-el1)
+          -1
+        nil))))
+
+(setq org-agenda-cmp-user-defined 'my/org-agenda-sort-longterm-tags)
+
+(setq org-agenda-sorting-strategy
+      '((agenda habit-down time-up user-defined-down priority-down category-keep)
+        (todo priority-down category-keep)
+        (tags priority-down category-keep)
+        (search category-keep)))
+(setq org-agenda-files '("/tmp/BringJoy.org" "/tmp/SynergyWithPlanet.org"))
+(global-set-key (kbd "C-c o a")  'org-agenda)
+(global-set-key (kbd "C-c o c")  'org-capture)
+(use-package org-ql
+  :ensure t)
+
+(defun my/get-stats-tasks (todo-tag from &optional tag to files category)
+  "Get stats for tasks of last week with TODO-TAG TAG FROM optionally define TO date and source FILES to use."
+  (let ((tasks
+         (org-ql-query
+           :from (or files (org-agenda-files))
+           :where
+           `(and (todo ,todo-tag)
+                 (if ,tag (tags ,tag) t)
+                 (if ,category (category ,category) t)
+                 (ts :from ,from :to ,(or to 'today))))))
+    `((tasks . ,(length tasks))
+      (tasks-per-day . ,(/ (length tasks) (abs from))))))
+
+(use-package org-roam
+  :diminish
+  :pin melpa-stable
+  ;; :hook (org-mode . org-roam-mode)
+  :custom
+  (org-roam-link-file-path-type 'noabbrev)
+  (org-roam-update-db-idle-seconds 30)
+  (org-roam-rename-file-on-title-change nil)
+  (org-roam-db-location "/tmp/org-roam.db")
+  (org-roam-directory "/tmp/notes/")
+  (org-roam-index-file "/tmp/index.org")
+  (org-roam-capture-templates
+   (list '("d" "default" plain (function org-roam--capture-get-point)
+           "- tags :: %?"
+           :file-name "%<%Y%m%d%H%M%S>-${slug}"
+           :head "#+TITLE: ${title}\n\n"
+           :unnarrowed t
+           :immediate-finish t)))
+  :bind (("C-c n i" . org-roam-insert)
+         ("C-c n l" . org-roam)
+         ("C-c n f" . org-roam-find-file)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n j" . org-roam-jump-to-index)) 
+  :config
+  (use-package emacsql-sqlite)
+  (require 'org-roam-protocol))
+
+(use-package org-crypt
+  :ensure nil
+  :after org
+  :custom
+  (org-crypt-disable-auto-save 't)
+  (org-tags-exclude-from-inheritance (list "crypt"))
+  (org-crypt-key "8197AC77B80C848FA0C99EDA2E4FA6504167C2AC")
+  :config 
+  (defun my/with-catching-all-drawers (fn)
+    (let ((org-property-drawer-re
+           (concat "^[ 	]*:[A-Z]*:[ 	]*\n"
+                   "[^*]*"
+                   "[ \t]*:END:[ \t]*$")))
+      (funcall fn)))
+
+  (advice-add
+   'org-encrypt-entry :around
+   'my/with-catching-all-drawers)
+
+  (advice-add
+   'org-decrypt-entry :around
+   'my/with-catching-all-drawers)
+
+  (org-crypt-use-before-save-magic))
+#+end_src
+
+#+begin_src sh :noeval
+emacs -Q -l /tmp/running-example.el /tmp/test.org
+#+end_src
+
+*** Categorize tasks according to vision
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:43]
+:END:
+
+- Create files with category
+
+#+begin_src elisp
+(setq org-agenda-files "/tmp/BringJoy.org" "/tmp/SynergyWithPlanet.org")
+#+end_src
+
+#+begin_src org :tangle /tmp/BringJoy.org
+,#+TITLE: I want to bring joy to people
+,#+CATEGORY: Bring joy to people
+#+end_src
+
+#+begin_src org :tangle /tmp/SynergyWithPlanet.org
+,#+TITLE: I want to live in synergy with the planet
+,#+CATEGORY: Synergy with planet
+#+end_src
+
+*** Use tags to prioritize
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:43]
+:END:
+
+- Make 5yr, 10yr and 20yr tags to know how effective a task is
+
+*** Exploit Org Capture
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:57]
+:END:
+
+- Make a template for each category and estimate effectiveness on the fly
+
+#+begin_src elisp
+(setq org-capture-templates
+      (list
+       ("b" "Joy task"
+        entry
+        (file "/tmp/BringJoy.org")
+        "* TODO %^{Short description} :%(completing-read \"Choose tag\" (list \"0yr\" \"5yr\" \"10yr\" \"20yr\")):\n  SCHEDULED:%t\n\n %?"
+        :empty-lines 2)
+       ("s" "Synergy task"
+        entry
+        (file "/tmp/SynergyWithPlanet.org")
+        "* TODO %^{Short description} :%(completing-read \"Choose tag\" (list \"0yr\" \"5yr\" \"10yr\" \"20yr\")):\n  SCHEDULED:%t\n\n %?"
+        :empty-lines 2)))
+#+end_src
+
+*** Adapt agenda
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:43]
+:END:
+
+- Order your agenda by tags priority
+
+
+#+begin_src elisp
+(defun my/org-agenda-sort-longterm-tags (el1 el2)
+  "Prioritize agenda items EL1 and EL2 that contains tags in the form :[0-9]yr: relatively to the number of years."
+  (let* ((regex ":\\([0-9]+\\)yr:")
+         (years-el1 (progn
+                      ;; this can fail because the regex is not found or there is no tag for :Xyr:, so I am handling with the zeros
+                      (if (string-match regex el1)
+                          (string-to-number (or (match-string 1 el1) "0"))
+                        0)))
+         (years-el2 (progn
+                      (if (string-match regex el2)
+                          (string-to-number (or (match-string 1 el2) "0"))
+                        0))
+                    ))
+    ;; TODO I am sure there is a cleaner way to implement this comparison...
+    (if (> years-el1 years-el2)
+        1
+      (if (> years-el2 years-el1)
+          -1
+        nil))))
+
+(setq org-agenda-cmp-user-defined 'my/org-agenda-sort-longterm-tags)
+
+(setq org-agenda-sorting-strategy
+      '((agenda habit-down time-up user-defined-down priority-down category-keep)
+        (todo priority-down category-keep)
+        (tags priority-down category-keep)
+        (search category-keep)))
+#+end_src
+
+** How I retrospect weekly on my progress with org-ql
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:44]
+:END:
+:LOGBOOK:
+CLOCK: [2020-10-28 Wed 19:57]--[2020-10-28 Wed 20:22] =>  0:25
+:END:
+
+- Review how much progress you have done
+- And celebrate progress!
+
+#+begin_src elisp
+(use-package org-ql
+  :ensure t)
+
+(defun my/get-stats-tasks (todo-tag from &optional tag to files category)
+  "Get stats for tasks of last week with TODO-TAG TAG FROM optionally define TO date and source FILES to use."
+  (let ((tasks
+         (org-ql-query
+           :from (or files (org-agenda-files))
+           :where
+           `(and (todo ,todo-tag)
+                 (if ,tag (tags ,tag) t)
+                 (if ,category (category ,category) t)
+                 (ts :from ,from :to ,(or to 'today))))))
+    `((tasks . ,(length tasks))
+      (tasks-per-day . ,(/ (length tasks) (abs from))))))
+#+end_src
+
+#+begin_src elisp :results prepend
+(let ((files (org-agenda-files)))
+  (-->
+   (my/get-stats-tasks "DONE" -31 nil  nil files)
+   (s-concat 
+    "\n"
+    (format "Tasks marked DONE last month (today is: %s): %s\n" (current-time-string) it)
+    (format "    Tasks done last month (%s) with category\n\n" (current-time-string))
+    (format "    Bring joy to people  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Bring joy to people"))
+    (format "    Synergy with planet  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Synergy with planet"))))
+#+end_src
+
+** How I form ideas with Org Roam
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 14:45]
+:END:
+
+- Explore ideas and link relevant information for review
+
+#+begin_src elisp
+(use-package org-roam
+  :diminish
+  :pin melpa-stable
+  ;; :hook (org-mode . org-roam-mode)
+  :custom
+  (org-roam-link-file-path-type 'noabbrev)
+  (org-roam-update-db-idle-seconds 30)
+  (org-roam-rename-file-on-title-change nil)
+  (org-roam-db-location "/tmp/org-roam.db")
+  (org-roam-directory "/tmp/notes/")
+  (org-roam-index-file "/tmp/index.org")
+  (org-roam-capture-templates
+   (list '("d" "default" plain (function org-roam--capture-get-point)
+           "- tags :: %?"
+           :file-name "%<%Y%m%d%H%M%S>-${slug}"
+           :head "#+TITLE: ${title}\n\n"
+           :unnarrowed t
+           :immediate-finish t)))
+  :bind (("C-c n i" . org-roam-insert)
+         ("C-c n l" . org-roam)
+         ("C-c n f" . org-roam-find-file)
+         ("C-c n g" . org-roam-graph)
+         ("C-c n j" . org-roam-jump-to-index)) 
+  :config
+  (use-package emacsql-sqlite)
+  (require 'org-roam-protocol))
+#+end_src
+
+** Keep things private with Org Crypt
+:PROPERTIES:
+:CREATED:  [2020-10-25 Sun 15:01]
+:END:
+
+- Keep heading contents readable only by you
+
+
+#+begin_src elisp
+(use-package org-crypt
+  :ensure nil
+  :after org
+  :custom
+  (org-crypt-disable-auto-save 't)
+  (org-tags-exclude-from-inheritance (list "crypt"))
+  (org-crypt-key "8197AC77B80C848FA0C99EDA2E4FA6504167C2AC")
+  :config 
+   (defun my/with-catching-all-drawers (fn)
+     (let ((org-property-drawer-re
+            (concat "^[ 	]*:[A-Z]*:[ 	]*\n"
+                    "[^*]*"
+                    "[ \t]*:END:[ \t]*$")))
+       (funcall fn)))
+
+   (advice-add
+    'org-encrypt-entry :around
+    'my/with-catching-all-drawers)
+
+   (advice-add
+    'org-decrypt-entry :around
+    'my/with-catching-all-drawers)
+
+   (org-crypt-use-before-save-magic))
+#+end_src
