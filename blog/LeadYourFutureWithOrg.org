@@ -16,7 +16,7 @@
 :ID:       8bba51a1-d686-48c3-abdf-d79da1796db6
 :END:
 
-This is the presentation I gave at EmacsConf2020 about how lead my future with Org Mode.
+This is [[https://emacsconf.org/2020/talks/10/][the presentation I gave at EmacsConf2020]] about how lead my future with Org Mode.
 The abstract:
 
 #+begin_src text 
