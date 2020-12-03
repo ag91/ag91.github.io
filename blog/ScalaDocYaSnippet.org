@@ -30,7 +30,7 @@ This is the resulting snippet:
   #+BEGIN_SRC text :tangle /home/andrea/.emacs.d/snippets/scala-mode/docfun
   # -*- coding: utf-8 -*-
   # name: docstring function
-  # contributor: Andrea Giugliano
+  # contributor: Andrea 
   # --
   /**
    ,* $1

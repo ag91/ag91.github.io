@@ -1,6 +1,6 @@
 # -*- coding: utf-8; mode:org; -*-
 #+TITLE:       Going through Lacinia tutorial to get familiar with GraphQL
-#+AUTHOR:      Andrea Giugliano
+#+AUTHOR:      Andrea 
 #+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2018-11-18 Sun
 #+URI:         /blog/%y/%m/%d/going-through-lacinia-tutorial-to-get-familiar-with-graphql

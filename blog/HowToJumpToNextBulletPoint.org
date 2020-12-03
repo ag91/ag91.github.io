@@ -1,6 +1,6 @@
 # -*- coding: utf-8; mode:org; -*-
 #+TITLE:       How to jump to next bullet point in org mode
-#+AUTHOR:      Andrea Giugliano
+#+AUTHOR:      Andrea 
 #+EMAIL:       andrea-dev@hotmail.com.ac.uk
 #+DATE:        2019-07-01 Mon
 #+URI:         /blog/%y/%m/%d/how-to-jump-to-next-bullet-point-in-org-mode

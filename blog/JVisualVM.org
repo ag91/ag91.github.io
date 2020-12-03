@@ -1,6 +1,6 @@
 # -*- coding: utf-8; mode:org; -*-
 #+TITLE:       JVisualVM, or how to observe the state of your Java Virtual Machine
-#+AUTHOR:      Andrea Giugliano
+#+AUTHOR:      Andrea 
 #+EMAIL:       andrea-dev@hotmail.com.ac.uk
 #+DATE:        2019-08-28 Wed
 #+URI:         /blog/%y/%m/%d/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine
