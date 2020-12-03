@@ -1,5 +1,5 @@
 #+TITLE:       Automate boring configuration changes
-#+AUTHOR:      Andrea Giugliano
+#+AUTHOR:      Andrea 
 #+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2019-09-26 Thu
 #+URI:         /blog/%y/%m/%d/automate-boring-configuration-changes
