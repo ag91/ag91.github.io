@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>EmacsConf2020: first steps towards Emacs becoming your code compass! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Announcement of my plans to publish my EmacsConf2020 talk code analyses" />
+    <meta name="keywords" content="code-compass" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>EmacsConf2020: first steps towards Emacs becoming your code compass!</h1>
+
+<div id="outline-container-org9ea9aba" class="outline-2">
+<h2 id="org9ea9aba">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org9ea9aba">
+<p>
+Finally I am releasing the code I presented <a href="https://emacsconf.org/2020/talks/24/">for code analyses at
+EmacsConf2020</a>. I will publish posts and code weekly, and you can find
+everything <a href="https://github.com/ag91/code-compass">here</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8ca6bc9" class="outline-2">
+<h2 id="org8ca6bc9">The problem</h2>
+<div class="outline-text-2" id="text-org8ca6bc9">
+<p>
+Good software comes from understanding what clients want and code that
+down for them effectively. Although the first part requires skill, the
+second part is often less effective than I would like.
+</p>
+
+<p>
+When I want to modify an existing code base, typically I need to
+understand why others designed things in a certain way, refactor that,
+and then add my stuff in. Often this process is difficult because:
+</p>
+
+<ul class="org-ul">
+<li>code design has hidden assumptions</li>
+<li>no documentation</li>
+<li>maybe tests</li>
+<li>nobody around knows anything about that code</li>
+</ul>
+
+<p>
+So between requirement elicitation meetings and careful investigation
+<sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup> to guess what the code is doing...
+<a href="https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning/">decision
+fatigue again</a>, help!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3755c3e" class="outline-2">
+<h2 id="org3755c3e">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org3755c3e">
+<p>
+This is really a pain because sometimes we ourselves make the
+situation worst without realizing in our development effort. Over time
+this accumulating "imperfections" slow us down dramatically, a
+phenomenon known as <a href="https://www.youtube.com/watch?v=pqeJFYwnkjE">tech debt</a>.
+</p>
+
+<p>
+Even worse, there a lot of "we" in a software project: so the more
+everybody rushes for adding their feature, the more the aggregated
+code base becomes cryptic.
+</p>
+
+<p>
+If only I could get some guidance in how to deal with this ever
+increasing complexity!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgea12844" class="outline-2">
+<h2 id="orgea12844">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgea12844">
+<p>
+And luckily there is a way! The secret iiiisssss... in your <code>.git</code>
+directory.
+</p>
+
+<p>
+This year I read <a href="https://pragprog.com/titles/atcrime/your-code-as-a-crime-scene/">Your Code as a Crime Scene</a> by Adam Tornhill (and his
+<a href="https://pragprog.com/titles/atevol/software-design-x-rays/">follow up book</a>), and I got enlightened: Git (or any version control
+system) really is our history keeper. In general we can learn much
+more from history than we actually try to do (e.g., in human history a
+pandemic has often run three contagion waves, the second being the
+toughest...). Learning from history applies to software too!
+</p>
+
+<p>
+What if I can see where my technical debt is accumulating? What if I
+can get an alert when I unconsciously accumulate it? And what if Emacs
+can tell me that while I am coding?!? Just dig and interpret your git
+data with a bit of Elisp :)
+</p>
+
+<p>
+In my recent <a href="https://emacsconf.org/2020/talks/24/">talk at EmacsConf2020</a> I show what I got so far bringing
+Adam's analyses to Emacs.
+</p>
+
+<p>
+My aim is much more ambitious though: I want my preferred <del>OS</del> editor
+to become my compass pointing towards high quality and effective text
+editing! (Note here I say text, not code: I am certain writers can
+benefit of this too. And I will put effort into testing this idea out
+soon!!)
+</p>
+
+<p>
+For now, I am slowly integrating the results of these analyses to
+actively enhance my development.
+</p>
+
+<p>
+Think of Emacs telling me who I can ask for help, or what files I
+should modify after this according to what other did in the past, or
+even warn me if a commit as added too much complexity to the code,
+remembering me to refactor.
+</p>
+
+<p>
+Again I want Emacs to point me towards a more effective way of
+developing <b>without becoming an obstacle</b>.
+</p>
+
+<p>
+I have finally started a repository here:
+<a href="https://github.com/ag91/code-compass">https://github.com/ag91/code-compass</a>. I will extend this with what I
+have developed so far at a (hopefully) weekly pace so that I can
+explain with a blog post what the analysis is about and how I use it.
+</p>
+
+<p>
+Note that I will initially support Git version control only, but I am
+open to PR and contributions. Also I would love to hear feedback and
+ideas to make this more useful for you. I am already investigating
+some suggestions I got during EmacsConf2020 (which was a wonderful and
+chill event, by the way).
+</p>
+
+<p>
+I hope this Emacs extension will be useful to you too!
+</p>
+
+<p>
+Next week: how to find technical debt and design decay at a glance
+with hotspots!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org05c11bc" class="outline-2">
+<h2 id="org05c11bc">Conclusion</h2>
+<div class="outline-text-2" id="text-org05c11bc">
+<p>
+This has been mostly an announcement post, because for now I have only
+defined the dependencies needed for code-compass. So stay tuned for
+next week, in which we will get into one of the core insights you can
+get from your git history.
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">you will become blind if you write code without understanding
+the original -- at least for all the time you will spend in front of
+the screen debugging</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-12-11</span>
+        <span title="last modification date" class="post-info">2020-12-11</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
