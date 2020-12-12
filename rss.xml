@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 11 Dec 2020 21:48:47 CET</pubDate>
-    <lastBuildDate>Fri, 11 Dec 2020 21:48:47 CET</lastBuildDate>
+    <pubDate>Sat, 12 Dec 2020 19:11:32 CET</pubDate>
+    <lastBuildDate>Sat, 12 Dec 2020 19:11:32 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Life is a cycle: why periodic behaviour is good for your health</title>
+      <link>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</link>
+      <description><![CDATA[<TODO: insert your description here>]]></description>
+      <pubDate>2020-12-12</pubDate>
+      <guid>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</guid>
+    </item>
+    <item>
       <title>EmacsConf2020: first steps towards Emacs becoming your code compass!</title>
       <link>http://ag91.github.io/blog/2020/12/11/emacsconf2020-first-steps-towards-emacs-becoming-your-code-compass</link>
-      <description><![CDATA[Announcement of my plans to publish my EmacsConf2020 talk code analyses]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-12-11</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/11/emacsconf2020-first-steps-towards-emacs-becoming-your-code-compass</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-02</pubDate>
       <guid>http://ag91.github.io/blog/2020/11/30/emacsconf2020-lead-your-future-with-org</guid>
-    </item>
-    <item>
-      <title>How fast are your queries? Make PostgreSQL work transparently with pg_stat_statements</title>
-      <link>http://ag91.github.io/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-11-28</pubDate>
-      <guid>http://ag91.github.io/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements</guid>
     </item>
   </channel>
 </rss>
