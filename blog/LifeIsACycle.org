@@ -1,0 +1,129 @@
+#+TITLE:       Life is a cycle: why periodic behaviour is good for your health
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-12-12 Sat
+#+URI:         /blog/%y/%m/%d/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health
+#+KEYWORDS:    learning, growth
+#+TAGS:        learning, growth
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: <TODO: insert your description here>
+
+
+Do you find your life monotonous? Does it seem every day looks similar
+to the one before? Are you somehow striving to break the routine?
+
+Congratulations for having created a monotonous life! You are using
+your energy well and surely you are in a lucky minority on this
+planet.
+
+I have written earlier [[https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning/][about our energy limits and how we can do
+something about it]]. I have recently finished Fritjof Capra's book,
+[[https://goodreads.com/book/show/314114.The_Web_of_Life?from_search=true&amp;from_srp=true&amp;qid=9NHVPDEfsE&amp;rank=1]['The Web of Life',]] and now I see how life itself deals with this
+scarcity issue. In a nutshell, alive systems have a single
+requirement: staying alive.
+
+This requirement translates into keeping out the bad stuff and getting
+in the good stuff. For example, you would avoid eating glass, while
+you would gladly eat a sandwich.
+
+The problem is that sandwiches are scarce in our natural environment.
+So we organized our environment (making shops for example) to provide
+sandwiches between times most people would be hungry. Similarly any
+alive system reorganizes itself to create/exploit a periodicity of
+resources. An extreme example is how bears go into hibernation waiting
+for better times to hunt.
+
+Any periodic behavior in any system is a chance to create a
+sustainable cycle.
+
+Something is sustainable when you can keep doing it indefinitely: rain
+is sustainable, pulling oil/minerals/gas from soil is unsustainable.
+
+You may be a visual person, so
+
+Sustainable:
+
+#+begin_src gnuplot :exports results :file sin.png
+plot sin(x)
+#+end_src
+
+#+RESULTS:
+[[file:sin.png]]
+
+Unsustainable:
+
+#+begin_src gnuplot :exports results :file exp.png
+plot exp(x)
+#+end_src
+
+#+RESULTS:
+[[file:exp.png]]
+
+In general, long-lived alive things go for the sustainable
+alternatives, about-to-be-dead alive things go for the unsustainable
+one.
+
+Let's get back to our monotonous lives. A routine is essentially a
+series of habits that you developed over time. Waking up at a certain
+hour every day, shopping once a week on the weekend, exercising every
+other day are all examples of habits that we can repeat indefinitely.
+These spare us the decision energy to schedule them and the setup
+required to perform them.
+
+Again, this is good and valuable stuff.
+
+Misbehavior can become a routine too. The trick for that is to create
+a good habit that replaces the bad one (I am not claiming that is
+easy, but definitely that is easier with a good strategy: you can do
+it!).
+
+The main point is: be a smart alive system and create sustainable habits!
+
+If you feel your life is monotonous, the solution is NOT to abandon
+what you are doing, but patiently migrate to a better routine over
+time. You can break things suddenly and is likely you will get back to
+where you started because that is what is sustainable for you at the
+moment.
+
+What I like to do for myself is to keep the structure of my day
+similar (meal times, exercise, etc...) and variate the content of my
+activities (reading certain topics, studying and working on things I
+am unfamiliar with, etc...).
+
+I sort of learn from Gustave Flaubert: "Be regular and orderly in your
+life, so that you may be violent and original in your work".
+
+The fundamental trick is to learn how to find rewards in what you
+spend time on, as Mihaly Csikszentmihalyi writes in his book [[https://www.goodreads.com/book/show/66354.Flow?from_search=true&from_srp=true&qid=TwY6AXttjt&rank=1][Flow]]. You
+can find complexity in any banal or boring activity, and challenging
+that complexity makes you expand your horizons. For example, baking
+bread can quickly become a routine, while a continuous refinement of
+your technique of working the dough via quick experiments can become a
+journey overflowing of discoveries that may easily spill in other
+fields you work on.
+
+If building habits is something you struggle with, give a read to [[roam:][Tiny
+Habits]] by B.J. Fogg, because he has some good advice about that. One
+trick that I feel will be particularly useful to you is to use
+negative experiences at your advantage. Sometimes you know what
+behavior you want to adopt, but you miss the right moment to act: use
+negative experiences as a trigger! For example, if after reading this
+post you want to override your
+"finish-dinner-and-get-in-front-of-the-tv" behavior with the
+"finish-dinner-and-finally-learn-to-paint" behavior and then, once
+again, you discover yourself in front of the tv after dinner: just
+when you are up to think something bad about yourself, take the brush
+and start wetting it! Get used to do that, and you will become a
+painter (or anything you want) at a surprising pace.
+
+Negativity, depression and the rest can become your gateway to the
+better version of yourself that you are keeping in a cage, if only you
+deploy them correctly.
+
+In summary, life relies on periodic behavior to live sustainably and
+routine is your ally. If you find your routine unbearable, transform
+it over time and patiently. In forming habits any little win is an
+enormous success over time, so get going already!
+
+Happy periodicity!
