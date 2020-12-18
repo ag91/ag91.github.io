@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 12 Dec 2020 19:11:32 CET</pubDate>
-    <lastBuildDate>Sat, 12 Dec 2020 19:11:32 CET</lastBuildDate>
+    <pubDate>Fri, 18 Dec 2020 17:56:27 CET</pubDate>
+    <lastBuildDate>Fri, 18 Dec 2020 17:56:27 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emacs as your code-compass: finding code hotspots</title>
+      <link>http://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots</link>
+      <description><![CDATA[How to find complexity via hotspots]]></description>
+      <pubDate>2020-12-18</pubDate>
+      <guid>http://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots</guid>
+    </item>
+    <item>
       <title>Life is a cycle: why periodic behaviour is good for your health</title>
       <link>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</link>
-      <description><![CDATA[<TODO: insert your description here>]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-12-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-03</pubDate>
       <guid>http://ag91.github.io/blog/2018/11/18/going-through-lacinia-tutorial-to-get-familiar-with-graphql</guid>
-    </item>
-    <item>
-      <title>EmacsConf2020: Lead your future with Org</title>
-      <link>http://ag91.github.io/blog/2020/11/30/emacsconf2020-lead-your-future-with-org</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-02</pubDate>
-      <guid>http://ag91.github.io/blog/2020/11/30/emacsconf2020-lead-your-future-with-org</guid>
     </item>
   </channel>
 </rss>

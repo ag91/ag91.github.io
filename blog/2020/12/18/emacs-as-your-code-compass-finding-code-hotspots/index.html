@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: finding code hotspots - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to find complexity via hotspots" />
+    <meta name="keywords" content="code-compass, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: finding code hotspots</h1>
+
+<div id="outline-container-org338b5f2" class="outline-2">
+<h2 id="org338b5f2">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org338b5f2">
+<p>
+Hotspots are the best tool to observe your code technical debt and
+smell modules that may contain bugs. In this post I show you how to
+use code-compass to make this analysis and explain how to interpret
+the analysis.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org96d5aae" class="outline-2">
+<h2 id="org96d5aae">The problem</h2>
+<div class="outline-text-2" id="text-org96d5aae">
+<p>
+Say you start your software project. You organize your code in a
+elegant and simple way, and the product is successful. So successful
+that you cannot handle it by yourself. Now you hire some fellow
+developers. You take care of checking all their code to fit your
+standard. The product is even more successful: you hire more
+colleagues. Now you cannot check the code anymore and you must trust
+who you carefully hired. Your input would be much valuable when things
+go wrong, but at this point you may not be aware of it: lack of
+visibility!
+</p>
+
+<p>
+Often you are the one joining and nobody has a complete
+understanding of the original structure of the code and the reasons
+things were done that way. Since change is unavoidable (that is the
+reason why you hire/are hired), well... you start changing the code
+anyway.
+</p>
+
+<p>
+According to how you change an artifact, you make it easier or more
+difficult to change it further. Making it easier typically takes extra
+mental resources and effort.
+</p>
+
+<p>
+Good engineers go for the sustainable option and also try to reduce
+any existing complexity whey they encounter it.
+</p>
+
+<p>
+In my opinion that is a bit reactive and late. Ideally I would like to
+monitor via a high level and always updated view if the code is
+growing badly. In that way I can plan and prioritize my maintenance.
+Furthermore I would like to use the same analysis to evaluate my own
+work, and so make sure I do not make my code more complex with my
+changes.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbe60886" class="outline-2">
+<h2 id="orgbe60886">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgbe60886">
+<p>
+Software complexity relates to quantity of code and frequency of
+change. This means that if I keep frequently adding code to the same
+module, I am making it more difficult for a future reader to
+understand what it does. And if a reader struggles to understand what
+a module does, the reader also missed to find functional problems with
+my code.
+</p>
+
+<p>
+A continuous extension of the same module may also show that I am
+giving too many responsibilities to it.
+</p>
+
+<p>
+If I am not just extending it but rather modifying existing behavior,
+then it is also likely I am adding errors in the flow.
+</p>
+
+<p>
+So even as a engineer worried about the quality of my design and the
+correctness of my features, I would like an overview of where
+complexity is accumulating.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6df4afe" class="outline-2">
+<h2 id="org6df4afe">And there is a solution</h2>
+<div class="outline-text-2" id="text-org6df4afe">
+<p>
+As I anticipated in <a href="https://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health">my previous post</a>, the "hotspot" analysis makes
+complexity easy to discover. Here a picture to get the idea:
+</p>
+
+
+<div id="orgfc47d0e" class="figure">
+<p><img src="/assets/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/hotspots.jpg" alt="hotspots.jpg" />
+</p>
+</div>
+
+<p>
+You will see a diagram with circle within circles. The biggest circle
+represents the repository and the included circles represent packages
+and modules. The empty circles, i.e. the modules, may be a shade of
+red. The redder the more often they have changed. The more they
+changed the more likely they contain quality problems. If these
+circles are also large then they likely have too many responsibilities
+because their code may have to change for different reasons.
+</p>
+
+<p>
+The red circles are "hotspots", because they have suffered the highest
+frequency of change. A healthy codebase tends to have few hotspots and
+the size of its modules similarly small.
+</p>
+
+<p>
+The example above represents the <a href="https://github.com/xmonad/xmonad">XMonad</a> repository (a X window manager
+written in Haskell) and you can see in the bottom right a circle that
+is both red and bigger than other modules. That is the <a href="https://github.com/xmonad/xmonad/blob/master/src/XMonad/Operations.hs">Operations.hs</a>
+file that is about 700 lines and changed about 255 times from the
+beginning of the repository.
+</p>
+
+<p>
+I have no idea of how XMonad works, but with this graph I have already
+a way to help maintainers handle their codebase complexity. Not only
+that, but I can explore the codebase structure without looking at a
+single line of code. Furthermore I can easily see where developers
+have been working lately (by reducing the scope of the analysis to the
+last week or month).
+</p>
+
+<p>
+I found out that this picture is useful to share knowledge about
+software health with business people.
+</p>
+
+<p>
+But let's get into the important bit: how can your Emacs produce that
+for you?
+</p>
+
+<p>
+I assume you <a href="https://ag91.github.io/blog/2020/12/11/emacsconf2020-first-steps-towards-emacs-becoming-your-code-compass/">followed</a> the <a href="https://github.com/ag91/code-compass/blob/main/README.org">installation instructions</a> already and you
+just need to clone the latest version of the repository.
+</p>
+
+<p>
+Next the following video shows how to use the <code>c/show-hotpsots</code>
+command of code-compass:
+</p>
+
+<p>
+<a href="/assets/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/howtoHotspotsAnalysis.mp4">/assets/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/howtoHotspotsAnalysis.mp4</a>
+</p>
+
+<p>
+You may notice that in the video I type "beginning", after selecting
+the root directory of the target repository. In that way I am saying
+to use the full history of the repository for the analysis. You can
+use TAB or your preferred completion system to show other options: in
+general you can set any number N of days or months ago with options
+looking like "Nd" or "Nm", for example to show the analysis of last
+week I would have typed "7d".
+</p>
+
+<p>
+If you want to test this out in a fresh Emacs, you can save the
+following snippet in <code>/tmp/code-compass-minimal-setup.el</code> (always
+assuming you got external dependencies like Docker, code-maat, cloc,
+etc...):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(require 'package)
+(eval-and-compile
+  (setq
+   package-archives
+   '(("melpa-stable" . "https://stable.melpa.org/packages/")
+     ("melpa" . "https://melpa.org/packages/")
+     ("marmalade"   . "https://marmalade-repo.org/packages/")
+     ("org"         . "https://orgmode.org/elpa/")
+     ("gnu"         . "https://elpa.gnu.org/packages/"))))
+(package-initialize)
+
+ ;;; Bootstrap use-package
+;; Install use-package if it's not already installed.
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+(setq use-package-always-ensure 't)
+(require 'use-package)
+(require 'diminish)
+(require 'bind-key)
+(use-package async)
+(use-package dash)
+(use-package f)
+(use-package s)
+(use-package simple-httpd)
+</pre>
+</div>
+
+<p>
+At this point open a terminal in the code-compass repository and run:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">emacs -Q -l /tmp/code-compass-minimal-setup.el -l code-compass.el
+</pre>
+</div>
+
+<p>
+With a <code>M-x c/show-hotspots</code> you can pick any directory containing a
+Git repository and generate your own interactive graph (it will ask
+you ).
+</p>
+
+<p>
+Welcome to the world of code analysis within Emacs!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org51c6f74" class="outline-2">
+<h2 id="org51c6f74">Conclusion</h2>
+<div class="outline-text-2" id="text-org51c6f74">
+<p>
+In this post I showed how to make the first step in transforming Emacs
+in your code compass! Just clone <a href="https://github.com/ag91/code-compass/blob/main/README.org">the repository</a> and start analyzing
+your Git repositories.
+</p>
+
+<p>
+Sometimes soon I will introduce you to the code-compass command that
+makes hotspots snapshots of your repository so you can notice your
+hotspots evolution. And this is only about a single repository!
+Microservices hotspot analysis coming soon too.
+</p>
+
+<p>
+Anyway, analyzing modules complexity via indentation is the next
+feature of code-compass for us: stay tuned!
+</p>
+
+<p>
+Happy code-travelling!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-12-18</span>
+        <span title="last modification date" class="post-info">2020-12-18</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
