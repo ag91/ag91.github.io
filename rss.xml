@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 18 Dec 2020 17:56:27 CET</pubDate>
-    <lastBuildDate>Fri, 18 Dec 2020 17:56:27 CET</lastBuildDate>
+    <pubDate>Tue, 22 Dec 2020 01:13:04 CET</pubDate>
+    <lastBuildDate>Tue, 22 Dec 2020 01:13:04 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Mastering Emacs is a slow process: an archeological tour of my (archived) beginnings</title>
+      <link>http://ag91.github.io/blog/2020/12/22/mastering-emacs-is-a-slow-process-an-archeological-tour-of-my-(archived)-beginnings</link>
+      <description><![CDATA[A quick tour to share how learning Emacs is a slow pleasure]]></description>
+      <pubDate>2020-12-22</pubDate>
+      <guid>http://ag91.github.io/blog/2020/12/22/mastering-emacs-is-a-slow-process-an-archeological-tour-of-my-(archived)-beginnings</guid>
+    </item>
+    <item>
       <title>Emacs as your code-compass: finding code hotspots</title>
       <link>http://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots</link>
-      <description><![CDATA[How to find complexity via hotspots]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-12-18</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-03</pubDate>
       <guid>http://ag91.github.io/blog/2018/11/07/a-docstring-for-scala-functions-through-yasnippet-</guid>
-    </item>
-    <item>
-      <title>Going through Lacinia tutorial to get familiar with GraphQL</title>
-      <link>http://ag91.github.io/blog/2018/11/18/going-through-lacinia-tutorial-to-get-familiar-with-graphql</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-03</pubDate>
-      <guid>http://ag91.github.io/blog/2018/11/18/going-through-lacinia-tutorial-to-get-familiar-with-graphql</guid>
     </item>
   </channel>
 </rss>

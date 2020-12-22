@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Mastering Emacs is a slow process: an archeological tour of my (archived) beginnings - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A quick tour to share how learning Emacs is a slow pleasure" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Mastering Emacs is a slow process: an archeological tour of my (archived) beginnings</h1>
+<p>
+If you are reading this, I guess you may be on your way to Emacs
+enlightenment.
+</p>
+
+<p>
+Here I want to give you an (archaeological) taste of how I started
+with it. I hope that this will give you also a sense of how long it
+took me to get comfortable with this amazing tool <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>. Ideally, new users that
+read this will feel comfortable even if, after some months of
+struggling, they have not yet tamed Emacs: as all the best things in
+life, learning Emacs takes time and dedication.
+</p>
+
+<p>
+I started using Emacs towards the end of 2013, the beginning of my
+Ph.D. There must be a strong connection between academia's need to
+publish elegant scientific work (i.e., LaTex) and the adoption of
+Emacs <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>.
+</p>
+
+<p>
+Anyway, I know that I started roughly then because the oldest Org
+Archive entry I could find is the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* DONE Buy Christmas return ticket &lt;2013-11-09 Sat&gt;                
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2016-03-25 Fri 14:41
+  :ARCHIVE_FILE: ~/.when/todos/myTasks.org
+  :ARCHIVE_OLPATH: Daily Stuff
+  :ARCHIVE_CATEGORY: myTasks
+  :ARCHIVE_TODO: DONE
+  :END:
+</pre>
+</div>
+
+<p>
+Something interesting is that my first archived note tells us what I
+was using before Org Mode for my calendar: <a href="http://www.lightandmatter.com/when/when.html">when</a> by Benjamin Crowell
+<sup><a id="fnr.3" class="footref" href="#fn.3">3</a></sup>. You can guess that from the
+directory in which I was storing my main Org file.
+</p>
+
+<p>
+This reminded me how powerful is to archive your tasks for later
+memory.
+</p>
+
+<p>
+I guess by that point I already familiarized with the basic Emacs
+editing commands: cancelling an action <code>C-g</code>, undoing an edit <code>C-/</code>,
+killing <code>C-w</code> and yanking text <code>C-y</code> (i.e., copy/pasting), visit files
+<code>C-x C-f</code>, and load modes specific to programming languages via the
+init file (I was writing Bash, Java, Haskell, C#, OCaml, Python and
+Scala during my studies).
+</p>
+
+<p>
+I guess Erc, Emacs' <a href="https://en.wikipedia.org/wiki/Internet_Relay_Chat">IRC</a> mode, entered my life a year after, when I
+took note of a chat important for my research:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* DONE have chat with IRC ocaml &lt;2014-10-22 Wed&gt;                   
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2016-03-25 Fri 14:40
+  :ARCHIVE_FILE: ~/.when/todos/myTasks.org
+  :ARCHIVE_OLPATH: Ph.D.
+  :ARCHIVE_CATEGORY: myTasks
+  :ARCHIVE_TODO: DONE
+  :END:
+@@@ You have joined channel #ocaml                                      [18:39]
+@@@ Topic for #ocaml: Discussions about the OCaml programming language |
+    http://www.ocaml.org and http://caml.inria.fr |
+    http://ocaml.org/releases/4.02.0.html | Public channel logs at
+    http://irclog.whitequark.org/ocaml
+</pre>
+</div>
+
+<p>
+Notice how I must have still been unaware of Org source blocks and
+quotations at that time because I was just pasting the raw chat under
+the heading as a way to log things.
+</p>
+
+<p>
+The outcome of a Ph.D. is, mainly, the final thesis, so I started
+writing my research down in a Org file early on. Emacs'
+<a href="https://github.com/cute-jumper/gscholar-bibtex">gscholar-bibtex</a> helped a lot with managing references for my LaTex
+bibliography:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* add gscholar extension to emacs to get bibtex info directly in emacs &lt;2015-11-03 Tue&gt; 
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2016-03-25 Fri 14:39
+  :ARCHIVE_FILE: ~/.when/todos/myTasks.org
+  :ARCHIVE_OLPATH: On the fly
+  :ARCHIVE_CATEGORY: myTasks
+  :END:
+use M-x gscholar-bibtex
+
+</pre>
+</div>
+
+<p>
+Today, if you need a bibliography, you should surely look also into
+<a href="https://github.com/jkitchin/org-ref">org-ref</a>.
+</p>
+
+<p>
+I guess 2016 was the turning point for my customization of Emacs. I
+started using org-contacts for keeping track of birthdays and I
+finally found the need for Org Archive (all the entries I found were
+archived on that year).
+</p>
+
+<p>
+Immediately after that came the installation of <a href="https://github.com/magit/magit">magit</a> and wdired:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* DONE [#B] check out magit and wdired mode for emacs &lt;2016-01-24 Sun&gt; 
+  CLOSED: [2016-02-20 Sat 22:52]
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2016-03-25 Fri 14:39
+  :ARCHIVE_FILE: ~/.when/todos/myTasks.org
+  :ARCHIVE_OLPATH: On the fly
+  :ARCHIVE_CATEGORY: myTasks
+  :ARCHIVE_TODO: DONE
+  :END:
+- [X] magit
+https://www.emacswiki.org/emacs/Magit
+
+  | Keys | Effect in Magit mode |
+  |------+----------------------|
+  | s    | stage new file       |
+  | c c  | commit               |
+  | b b  | change branch        |
+  | P p  | push changes         |
+  | F f  | pull changes         |
+
+- [X] dired
+  from: https://www.youtube.com/watch?v=7jZdul2fC94
+
+  after C-f a directory, the dired buffer will open.
+  Here the commands:
+
+  | Keys    | Effect in Dired mode                          |
+  |---------+-----------------------------------------------|
+  | m       | marks an entry                                |
+  | t       | marks all entries that                        |
+  |         | are not marked, and unmarks those that are    |
+  | u       | unmarks an entry                              |
+  | U       | unmarks all entry                             |
+  | x       | executes command                              |
+  | C       | copies entry                                  |
+  | d       | set for deletion                              |
+  | D       | asks for deletion                             |
+  | !       | calls shell command on entry                  |
+  | g       | updates buffer                                |
+  | * - /   | marks all directories                         |
+  | A       | search for text                               |
+  | M - ,   | to see next found results for the text search |
+  | R       | renames entry                                 |
+  | S       | changes sorting order of directory            |
+  | C-x C-q | make buffer editable                          |
+  | C-c C-c | commit changes to dir - that changes the fs   |
+  | C-h i   | emacs manual                                  |
+
+
+</pre>
+</div>
+
+<p>
+Evidently I needed a sweeter and efficient way to both manage Git
+repositories and modify my file system contents swiftly. Note how I
+was taking notes of keybindings cheatsheets as Org tables: it really
+takes time for muscle memory to kick in!
+</p>
+
+<p>
+My big challenge as a new Emacs user, which I can still remember with
+uneasiness, was to setup <a href="https://github.com/djcb/mu/tree/master/mu4e">mu4e</a> to read my emails:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* DONE switch to mu4e as email client                        :emacs
+  CLOSED: [2016-03-02 Wed 22:18]
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2016-03-25 Fri 14:39
+  :ARCHIVE_FILE: ~/.when/todos/myTasks.org
+  :ARCHIVE_OLPATH: On the fly
+  :ARCHIVE_CATEGORY: myTasks
+  :ARCHIVE_TODO: DONE
+  :END:
+** THE REASON: Mozilla does not maintain Thunderbird anymore
+and the plugin to increase the font ceases to work (blind me!)
+** DONE STEP 1: gather information
+** DONE STEP 2: OMG, let's install this!
+*** DONE understand how to fetch mails
+    CLOSED: [2016-03-01 Tue 09:28]
+**** offlineimap [5/5]
+*** DONE understand how to use smtpmail [4/4]
+    CLOSED: [2016-02-29 Mon 23:27]
+     - Note taken on [2016-02-29 Mon 23:27] \\
+       &lt; C-x m &gt; to send an email
+*** DONE install mu (if we get to this victory near :D)
+    CLOSED: [2016-03-01 Tue 10:14]
+** DONE STEP 3: now read manual LOL
+   CLOSED: [2016-03-02 Wed 22:18]
+#+BEGIN_SRC sh :results output silent
+wget -P /tmp/ https://github.com/djcb/mu-releases/raw/master/mu4e-0.9.16.pdf;
+evince /tmp/mu4e-0.9.16.pdf;
+#+END_SRC
+</pre>
+</div>
+
+<p>
+It felt difficult because I needed to integrate multiple pieces of
+software while still being a bit uncomfortable with how configuring
+Emacs itself.
+</p>
+
+<p>
+Again it is funny to discover that I had an actual reason to start
+managing emails from within Emacs other than being a geek: at that
+time Mozilla ended maintenance for Thunderbird, my previous preferred
+email client.
+</p>
+
+<p>
+Few months later I learned how to maintain my Emacs configuration as
+an Org Mode file by copying <a href="https://github.com/durantschoon/.emacs.d">Daniel Mai</a>'s approach.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* DONE move to org and use-package 
+  SCHEDULED:&lt;2016-06-21 Tue&gt;
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2016-06-21 Tue 01:06
+  :ARCHIVE_FILE: ~/workspace/agenda/myTasks.org
+  :ARCHIVE_OLPATH: Daily Stuff
+  :ARCHIVE_CATEGORY: myTasks
+  :ARCHIVE_TODO: DONE
+  :END:
+</pre>
+</div>
+
+<p>
+More importantly I started using <a href="https://github.com/jwiegley/use-package">use-package</a> for my dependencies. At
+that time I introduced use-package mainly because of its clean syntax.
+Only much later I learned how to use it to load packages lazily and
+<a href="https://ag91.github.io/blog/2020/08/07/how-i-inspected-my-emacs-configuration-and-discovered-once-again-org-mode-people-are-smart/">instrument my configuration to find out initialization problems</a>. By
+the way, that time must have also been when I started preferring the
+<code>SCHEDULED</code> timestamp format to Org raw dates.
+</p>
+
+<p>
+From then on I started installing programming environments within
+Emacs, like <a href="https://github.com/ensime/ensime-emacs">Ensime</a>, <a href="https://github.com/ocaml/tuareg">Tuareg</a> and <a href="https://github.com/clojure-emacs/cider">Cider</a>. I also bugged a significant
+amount of times <a href="https://github.com/jgm/pandoc">Pandoc</a>'s maintainers to support all the features I
+needed to export my thesis written in Org Mode via the amazing
+<a href="https://github.com/kawabata/ox-pandoc">ox-pandoc</a>.
+</p>
+
+<p>
+All in all, Emacs was a majestic investment: I basically
+literate-programmed away my Ph.D. activities via Org Mode and
+completed the numerous todos with all the extensions Emacs support.
+</p>
+
+
+<p>
+If you are a new user, a possible checklist to familiarize with Emacs is:
+</p>
+
+<ol class="org-ol">
+<li>learn the basics keybindings with the Emacs tutorial <code>C-h t</code></li>
+<li>start using Org Mode to keep track of your todos</li>
+<li>explore how to extend your Emacs to fulfill your needs, where good
+resources for this are
+<ul class="org-ul">
+<li><a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/index.html">https://www.gnu.org/software/emacs/manual/html_node/emacs/index.html</a> (this is also in you Emacs <code>C-h r</code>)</li>
+<li><a href="https://orgmode.org/manual/">https://orgmode.org/manual/</a> (this is also in you Emacs <code>C-h r</code> and then search for "Org Mode")</li>
+<li><a href="https://planet.emacslife.com/">https://planet.emacslife.com/</a></li>
+<li><a href="https://www.reddit.com/r/emacs/">https://www.reddit.com/r/emacs/</a></li>
+<li><a href="https://www.masteringemacs.org/reading-guide">https://www.masteringemacs.org/reading-guide</a></li>
+</ul></li>
+</ol>
+
+
+<p>
+Again I wish my beginnings (about 3 years actually!) with Emacs
+let you get that learning this tool is a process. So no rush and enjoy
+each struggle (and get in touch with the lovely community please)!
+</p>
+
+<p>
+Happy enlightening!
+</p>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">It will take
+longer or shorter for you, it does not matter: is a joy not a
+challenge, so take all the time you need.</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">Later I found out even my mother used Emacs for composing
+her dissertation, but she moved on as soon as she typed the last
+dissertation character.</p></div></div>
+
+<div class="footdef"><sup><a id="fn.3" class="footnum" href="#fnr.3">3</a></sup> <div class="footpara"><p class="footpara"><i>When</i> is a minimal tool to keep track of your calendar, and,
+until now, I totally forgot about it.</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-12-22</span>
+        <span title="last modification date" class="post-info">2020-12-22</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
