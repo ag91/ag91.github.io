@@ -1,0 +1,72 @@
+#+TITLE:       Emacs as your code-compass: looking at hotspots evolution
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-12-24 Thu
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-looking-at-hotspots-evolution
+#+KEYWORDS:    emacs, code-compass
+#+TAGS:        emacs, code-compass
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Code-compass shows your hotspots evolution
+
+
+* Too long; didn't read
+
+You can see the evolution of your hotspots over time with
+code-compass' =c/show-hotspot-snapshot-sync=.
+
+* The problem
+
+[[https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/][I showed previously that hotspots]] help you find part of your codebase
+receiving a great number of changes. These parts move from hot to cool
+over time. What if you want to know what parts were hot?
+
+* It is a problem indeed
+
+Apart of curiosity, it is useful to know how and where your codebase
+received significant amount of changes when you are looking for places
+to refactor.
+
+Also say you find two hotspots in your codebase that you think
+requires your attention: how do you prioritize between them? If you
+know how fast they heated up, you can choose!
+
+* And there is a solution
+
+Well this one is sweet and short: just run the hotspot analysis of
+code-compass over the list of periods you need and compare the browser
+tabs!
+
+Code-compass provides this for you:
+
+#+begin_src elisp :noeval
+(defun c/show-hotspot-snapshot-sync (repository)
+  "Snapshot COMMAND over REPOSITORY over the last year every three months."
+  (interactive
+   (list
+    (read-directory-name "Choose git repository directory:" (vc-root-dir))))
+  (--each c/snapshot-periods (c/show-hotspots-sync repository (c/request-date it) 8888)))
+#+end_src
+
+You can see that it is just an iterations over the periods. You can
+set the periods that you need: I set as default the last year
+trimesters
+
+#+begin_src elisp :noeval
+(defcustom c/snapshot-periods
+  '("1d" "3m" "6m" "9m" "12m" "15m")
+  "A list of snapshots periods to show evolution of analyses over time."
+  :group 'code-compass)
+#+end_src
+
+Note that it may be that there were no changes in those periods and
+you get an empty tab: this is expected and I did not put effort in
+fixing it yet.
+
+* Conclusion
+
+Just try creating your hotspot snapshots out! It is just calling
+=c/show-hotspot-snapshot-sync= and you will have some further insight
+from the precious hotspot analysis!
+
+Happy journeying & Merry Christmas! 
