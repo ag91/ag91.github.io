@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: looking at hotspots evolution - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Code-compass shows your hotspots evolution" />
+    <meta name="keywords" content="emacs, code-compass" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: looking at hotspots evolution</h1>
+
+
+<div id="outline-container-org4e590f1" class="outline-2">
+<h2 id="org4e590f1">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org4e590f1">
+<p>
+You can see the evolution of your hotspots over time with
+code-compass' <code>c/show-hotspot-snapshot-sync</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org71530ef" class="outline-2">
+<h2 id="org71530ef">The problem</h2>
+<div class="outline-text-2" id="text-org71530ef">
+<p>
+<a href="https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/">I showed previously that hotspots</a> help you find part of your codebase
+receiving a great number of changes. These parts move from hot to cool
+over time. What if you want to know what parts were hot?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org907c6f7" class="outline-2">
+<h2 id="org907c6f7">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org907c6f7">
+<p>
+Apart of curiosity, it is useful to know how and where your codebase
+received significant amount of changes when you are looking for places
+to refactor.
+</p>
+
+<p>
+Also say you find two hotspots in your codebase that you think
+requires your attention: how do you prioritize between them? If you
+know how fast they heated up, you can choose!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2b4875b" class="outline-2">
+<h2 id="org2b4875b">And there is a solution</h2>
+<div class="outline-text-2" id="text-org2b4875b">
+<p>
+Well this one is sweet and short: just run the hotspot analysis of
+code-compass over the list of periods you need and compare the browser
+tabs!
+</p>
+
+<p>
+Code-compass provides this for you:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun c/show-hotspot-snapshot-sync (repository)
+  "Snapshot COMMAND over REPOSITORY over the last year every three months."
+  (interactive
+   (list
+    (read-directory-name "Choose git repository directory:" (vc-root-dir))))
+  (--each c/snapshot-periods (c/show-hotspots-sync repository (c/request-date it) 8888)))
+</pre>
+</div>
+
+<p>
+You can see that it is just an iterations over the periods. You can
+set the periods that you need: I set as default the last year
+trimesters
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defcustom c/snapshot-periods
+  '("1d" "3m" "6m" "9m" "12m" "15m")
+  "A list of snapshots periods to show evolution of analyses over time."
+  :group 'code-compass)
+</pre>
+</div>
+
+<p>
+Note that it may be that there were no changes in those periods and
+you get an empty tab: this is expected and I did not put effort in
+fixing it yet.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1c66b2f" class="outline-2">
+<h2 id="org1c66b2f">Conclusion</h2>
+<div class="outline-text-2" id="text-org1c66b2f">
+<p>
+Just try creating your hotspot snapshots out! It is just calling
+<code>c/show-hotspot-snapshot-sync</code> and you will have some further insight
+from the precious hotspot analysis!
+</p>
+
+<p>
+Happy journeying &amp; Merry Christmas! 
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-12-24</span>
+        <span title="last modification date" class="post-info">2020-12-24</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/code-compass/">code-compass</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
