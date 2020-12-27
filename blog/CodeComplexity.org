@@ -48,6 +48,9 @@ analysis]], and we shall do better: we need a way to quantify how worse
 or how better we are making code for future maintainers!
 
 * And there is a solution
+:PROPERTIES:
+:ID:       c665973e-b716-406f-9099-9312e8897b13
+:END:
 
 There are a bunch of ways to calculate a complexity score, one of the
 many being [[https://en.wikipedia.org/wiki/Cyclomatic_complexity][cyclomatic complexity]]. The simplest, roughest and also
@@ -120,7 +123,7 @@ which lets you see how complexity of a buffer has increased or
 decreased over the last few commits. The graph you obtain looks like
 this:
 
-#+BEGIN_SRC emacs-lisp :results file :exports results :file "/tmp/XMonadOperationsHs.png"
+#+BEGIN_SRC emacs-lisp :results file :exports results :file "XMonadOperationsHs.png"
   (base64-decode-string
       "iVBORw0KGgoAAAANSUhEUgAAAyAAAAH0CAYAAADFQEl4AAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90
 bGliIHZlcnNpb24zLjMuMywgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy/Il7ecAAAACXBIWXMAAA9h
@@ -1122,6 +1125,9 @@ TqdTruP55ptvnC6HiOhiwQEIEVEzDB06FJ07dwYA/O1vf0NtbW2TbdLS0gBYv31funSpwzqzZs0C
 AERHR+PGG2+U1FvfEB4eDgAoKSlp03Js14Js377d4czyVVVVWLRokdP2trtS1Z9Vvj5Hdwirrznv
 48EHHwQArFu3DuvWrWt0eUVFRY2WExH5uv8Pd22UKdjcW4kAAAAASUVORK5CYII=")
 #+END_SRC
+
+#+RESULTS:
+[[file:XMonadOperationsHs.png]]
 
 Note that I put complexity in relation to lines of code so that I
 notice if a spike in complexity is due to a lot of new code added to
