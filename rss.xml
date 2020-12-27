@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 24 Dec 2020 17:48:53 CET</pubDate>
-    <lastBuildDate>Thu, 24 Dec 2020 17:48:53 CET</lastBuildDate>
+    <pubDate>Sun, 27 Dec 2020 14:07:20 CET</pubDate>
+    <lastBuildDate>Sun, 27 Dec 2020 14:07:20 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emacs as your code-compass: how complex is this code?</title>
+      <link>http://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code</link>
+      <description><![CDATA[Emacs can tell you if you made your code more or less readable!]]></description>
+      <pubDate>2020-12-27</pubDate>
+      <guid>http://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code</guid>
+    </item>
+    <item>
       <title>Emacs as your code-compass: looking at hotspots evolution</title>
       <link>http://ag91.github.io/blog/2020/12/24/emacs-as-your-code-compass-looking-at-hotspots-evolution</link>
-      <description><![CDATA[Code-compass shows your hotspots evolution]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-12-24</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/24/emacs-as-your-code-compass-looking-at-hotspots-evolution</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-03</pubDate>
       <guid>http://ag91.github.io/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine</guid>
-    </item>
-    <item>
-      <title>Fold the recursive function</title>
-      <link>http://ag91.github.io/blog/2019/08/06/fold-the-recursive-function</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-03</pubDate>
-      <guid>http://ag91.github.io/blog/2019/08/06/fold-the-recursive-function</guid>
     </item>
   </channel>
 </rss>

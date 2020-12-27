@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: how complex is this code? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Emacs can tell you if you made your code more or less readable!" />
+    <meta name="keywords" content="emacs, code-compass" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: how complex is this code?</h1>
+
+<div id="outline-container-orge6a008d" class="outline-2">
+<h2 id="orge6a008d">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orge6a008d">
+<p>
+Find out how complex is your (indented) code by using <a href="https://github.com/ag91/code-compass">code-compass</a>'
+<code>c/calculate-complexity-current-buffer</code>. The best way to interpret
+that score is to integrate the time dimension: use
+<code>c/show-complexity-over-commits</code> to see how complex your code became
+over the last commits.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org26b6615" class="outline-2">
+<h2 id="org26b6615">The problem</h2>
+<div class="outline-text-2" id="text-org26b6615">
+<p>
+Often I am so absorbed by the problem at hand that when my code gets
+to the review stage, I find comments like: "Mmm, can you make it more
+readable?". I know I should not rush to the review, but it happens
+that I have some other work in progress that distracts me. That makes
+me forget to "empathically" review my code before clicking the "open
+pull request" button.
+</p>
+
+<p>
+(Meanwhile I master sequential problem solving) If only I had a way to
+quantify code complexity, maybe I could make my preferred editor to
+stop me at the right time?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9bb4cf9" class="outline-2">
+<h2 id="org9bb4cf9">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org9bb4cf9">
+<p>
+Code that is hard to read is a serious issue. Give it enough time and
+I cannot tell the meaning of my own code! Indeed, time erases from my
+memory why I structured code in a certain way and why I chose those
+random names for variables and functions (and luckily so, because
+otherwise I would not have mental space for my future!).
+</p>
+
+<p>
+This is troublesome for my code, and extremely so for organizations
+because of the quantity of engineers involved (with different
+backgrounds) and their turnover. This feed the cycle of architectural
+decay and technical debt.
+</p>
+
+<p>
+We already saw we can find this out with the <a href="https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/">hotspot
+analysis</a>, and we shall do better: we need a way to quantify how worse
+or how better we are making code for future maintainers!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0d5647a" class="outline-2">
+<h2 id="org0d5647a">And there is a solution</h2>
+<div class="outline-text-2" id="text-org0d5647a">
+<p>
+There are a bunch of ways to calculate a complexity score, one of the
+many being <a href="https://en.wikipedia.org/wiki/Cyclomatic_complexity">cyclomatic complexity</a>. The simplest, roughest and also
+language agnostic is code indentation.
+</p>
+
+<p>
+Given your code follows a uniform indentation scheme (Emacs has a tons
+of amazing packages for that), you can easily see if a piece of code
+is difficult to read. For example, check out the following pieces of
+code to get the idea (they are meaningless, so ignore the semantics):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(defun someCommonLispFunction (someInput)
+  (if (&gt; someImput 0)
+      (if (&gt; someImput 1)
+          (if (&gt; someImput 3)
+              "bigger than 3"
+              (if (= someImput 3)
+                  "equal to 3"
+                  "..."))
+          "...")))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(let ((someInput 1))
+  (let ((someOtherInput 2))
+    (+
+     (if someInput
+         1
+         2)
+     (when someOtherInput
+       3))))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(setf a 1)
+(setf b 1)
+(+ a b)
+</pre>
+</div>
+
+<p>
+I made these up randomly with the only aim to show you how difficult
+to read is code with too much (unnecessary) nesting.
+</p>
+
+<p>
+If you want to see other examples in your favourite programming
+language, check out
+<a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">https://github.com/emilybache/GildedRose-Refactoring-Kata</a>, which is
+also a useful refactoring kata.
+</p>
+
+<p>
+The point is that your computer can calculate a complexity score
+easily: just sum up the units of indentation appearing in the code.
+</p>
+
+<p>
+The unit of indentation for the Common Lisp code above is two spaces.
+So the calculation of complexity for each block results in:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">block</th>
+<th scope="col" class="org-right">complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">block with if statements</td>
+<td class="org-right">46</td>
+</tr>
+
+<tr>
+<td class="org-left">block with let statements</td>
+<td class="org-right">20.5</td>
+</tr>
+
+<tr>
+<td class="org-left">block with setf</td>
+<td class="org-right">0.0</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+In my experience I agree with that score when I am reviewing, and
+<a href="https://softwareprocess.es/static/WhiteSpace.html">researchers found indentation to be a good rough metric to indicate
+complexity</a>.
+</p>
+
+<p>
+Clearly I use this metric as an indication. So rather than looking at
+the raw number, I look for deltas: I want to see how much my change
+increases and decreases this complexity value.
+</p>
+
+<p>
+This is why code-compass implements <code>c/show-complexity-over-commits</code>,
+which lets you see how complexity of a buffer has increased or
+decreased over the last few commits. The graph you obtain looks like
+this:
+</p>
+
+
+<div id="orgff27eb2" class="figure">
+<p><img src="/assets/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/XMonadOperationsHs.png" alt="XMonadOperationsHs.png" />
+</p>
+</div>
+
+<p>
+Note that I put complexity in relation to lines of code so that I
+notice if a spike in complexity is due to a lot of new code added to
+the file (and this is typical indeed).
+</p>
+
+<p>
+Now equipped with this graph, I can find a bit more easily when my
+changes are a bit too complex to open a pull request :)
+</p>
+</div>
+</div>
+
+<div id="outline-container-org538030a" class="outline-2">
+<h2 id="org538030a">Conclusion</h2>
+<div class="outline-text-2" id="text-org538030a">
+<p>
+So grab the last version of <a href="https://github.com/ag91/code-compass">code-compass</a> and find out how complex is
+your code by running <code>c/calculate-complexity-current-buffer</code> on a
+buffer! Or checking the differential in complexity a file experienced
+with <code>c/show-complexity-over-commits</code>.
+</p>
+
+<p>
+This way you can evaluate the time future maintainers will have to
+invest in understanding your code, and save that for them.
+</p>
+
+<p>
+Happy simplifying!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-12-27</span>
+        <span title="last modification date" class="post-info">2020-12-27</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/code-compass/">code-compass</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
