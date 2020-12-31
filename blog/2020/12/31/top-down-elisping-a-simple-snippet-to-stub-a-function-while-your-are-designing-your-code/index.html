@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Top down Elisping: a simple snippet to stub a function while your are designing your code - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Make a function snippet while you are coding!" />
+    <meta name="keywords" content="elisp, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Top down Elisping: a simple snippet to stub a function while your are designing your code</h1>
+<p>
+Yesterday I was writing some Elisp to help me score how risky it is to
+merge a pull request according to the age of a commit and others
+factors (something I want add to <a href="https://github.com/ag91/code-compass">code-compass</a> and I hope to blog about
+later on), and I have finally fixed something that was boring me while
+Elisping: maybe it helps you to!
+</p>
+
+<p>
+So say you want to write some top down Elisp. You would start with something like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun function-to-wish-happy-2021 ()
+  "Make wishes 2021 to people."
+  nil)
+</pre>
+</div>
+
+<p>
+And then you would write this functio by adding the high
+level process (top down):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun function-to-wish-happy-2021 ()
+  "Make wishes 2021 to people."
+  (call-the-rest (message-wishes-to-some-people (make-a-list-of-people))))
+</pre>
+</div>
+
+<p>
+At this point I get bored. For each function I have to:
+</p>
+
+<ol class="org-ol">
+<li>copy each function name,</li>
+<li>write a new function with that name,</li>
+<li>add the arguments,</li>
+<li>add docs</li>
+<li>AND FINALLY write the code for it.</li>
+</ol>
+
+<p>
+Where only the last point is interesting for me.
+So I said: "you know what? Enough, let's meta-Elisp this out".
+</p>
+
+<p>
+And here the result (rough, but working!):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/stub-elisp-defun ()
+  "Stub an elisp function from symbol at point."
+  (interactive)
+  (let* ((fun (thing-at-point 'list 'no-properties)))
+    (when fun
+      (let* ((fun-list (car (read-from-string fun)))
+             (name (symbol-name (nth 0 fun-list)))
+             (args (cdr fun-list)))
+        (save-excursion        
+          (or (search-backward "(defun" nil 't) (goto-char (point-min)))
+          (insert
+           (s-concat
+            "(defun "
+            name
+            " "
+            (format "%s" (--map (s-concat "arg" (number-to-string it)) (number-sequence 1 (length args))))
+            "\n  \"SomeDocs\"\n  nil)\n\n")))))))
+</pre>
+</div>
+
+
+<p>
+Now look!
+</p>
+
+<p>
+<a href="/assets/blog/2020/12/31/top-down-elisping-a-simple-snippet-to-stub-a-function-while-your-are-designing-your-code/showStubElisp.mp4">/assets/blog/2020/12/31/top-down-elisping-a-simple-snippet-to-stub-a-function-while-your-are-designing-your-code/showStubElisp.mp4</a>
+</p>
+
+<p>
+That is it: just put your cursor on the function name you want to
+stub, call <code>my/stub-elisp-defun</code>, and have a stub awaiting for your
+implementation.
+</p>
+
+<p>
+The resulting code looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun call-the-rest (arg1)
+  "SomeDocs"
+  nil)
+
+(defun message-wishes-to-some-people (arg1)
+  "SomeDocs"
+  nil)
+
+(defun make-a-list-of-people nil
+  "SomeDocs"
+  nil)
+
+(defun function-to-wish-happy-2021 ()
+  "Make wishes 2021 to people."
+  (call-the-rest (message-wishes-to-some-people (make-a-list-of-people))))
+</pre>
+</div>
+
+<p>
+Hopefully it will take away a bit of boring typing while you code
+Elisp!
+</p>
+
+<p>
+Maybe somebody knows about an Elisp package that does these things
+already? I would really love something like <a href="https://github.com/clojure-emacs/clj-refactor.el">clj-refactor</a> for Elisp!
+</p>
+
+<p>
+Merry 2021!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2020-12-31</span>
+        <span title="last modification date" class="post-info">2020-12-31</span>
+        <span title="tags" class="post-info"><a href="/tags/elisp/">elisp</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

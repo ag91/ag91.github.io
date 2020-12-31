@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 27 Dec 2020 14:08:43 CET</pubDate>
-    <lastBuildDate>Sun, 27 Dec 2020 14:08:43 CET</lastBuildDate>
+    <pubDate>Thu, 31 Dec 2020 15:51:00 CET</pubDate>
+    <lastBuildDate>Thu, 31 Dec 2020 15:51:00 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Top down Elisping: a simple snippet to stub a function while your are designing your code</title>
+      <link>http://ag91.github.io/blog/2020/12/31/top-down-elisping-a-simple-snippet-to-stub-a-function-while-your-are-designing-your-code</link>
+      <description><![CDATA[Make a function snippet while you are coding!]]></description>
+      <pubDate>2020-12-31</pubDate>
+      <guid>http://ag91.github.io/blog/2020/12/31/top-down-elisping-a-simple-snippet-to-stub-a-function-while-your-are-designing-your-code</guid>
+    </item>
+    <item>
       <title>Emacs as your code-compass: how complex is this code?</title>
       <link>http://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code</link>
-      <description><![CDATA[Emacs can tell you if you made your code more or less readable!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2020-12-27</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-03</pubDate>
       <guid>http://ag91.github.io/blog/2019/07/01/how-to-jump-to-next-bullet-point-in-org-mode</guid>
-    </item>
-    <item>
-      <title>JVisualVM, or how to observe the state of your Java Virtual Machine</title>
-      <link>http://ag91.github.io/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-03</pubDate>
-      <guid>http://ag91.github.io/blog/2019/08/28/jvisualvm-or-how-to-observe-the-state-of-your-java-virtual-machine</guid>
     </item>
   </channel>
 </rss>
