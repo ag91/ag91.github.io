@@ -1,0 +1,103 @@
+#+TITLE:       Top down Elisping: a simple snippet to stub a function while your are designing your code
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2020-12-31 Thu
+#+URI:         /blog/%y/%m/%d/top-down-elisping-a-simple-snippet-to-stub-a-function-while-your-are-designing-your-code
+#+KEYWORDS:    elisp, emacs
+#+TAGS:        elisp, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Make a function snippet while you are coding!
+
+Yesterday I was writing some Elisp to help me score how risky it is to
+merge a pull request according to the age of a commit and others
+factors (something I want add to [[https://github.com/ag91/code-compass][code-compass]] and I hope to blog about
+later on), and I have finally fixed something that was boring me while
+Elisping: maybe it helps you to!
+
+So say you want to write some top down Elisp. You would start with something like:
+
+#+begin_src elisp :noeval
+(defun function-to-wish-happy-2021 ()
+  "Make wishes 2021 to people."
+  nil)
+#+end_src
+
+And then you would write this functio by adding the high
+level process (top down):
+
+#+begin_src elisp :noeval
+(defun function-to-wish-happy-2021 ()
+  "Make wishes 2021 to people."
+  (call-the-rest (message-wishes-to-some-people (make-a-list-of-people))))
+#+end_src
+
+At this point I get bored. For each function I have to:
+
+1. copy each function name,
+2. write a new function with that name,
+3. add the arguments,
+4. add docs
+5. AND FINALLY write the code for it.
+
+Where only the last point is interesting for me.
+So I said: "you know what? Enough, let's meta-Elisp this out".
+
+And here the result (rough, but working!):
+
+#+begin_src elisp :noeval
+(defun my/stub-elisp-defun ()
+  "Stub an elisp function from symbol at point."
+  (interactive)
+  (let* ((fun (thing-at-point 'list 'no-properties)))
+    (when fun
+      (let* ((fun-list (car (read-from-string fun)))
+             (name (symbol-name (nth 0 fun-list)))
+             (args (cdr fun-list)))
+        (save-excursion        
+          (or (search-backward "(defun" nil 't) (goto-char (point-min)))
+          (insert
+           (s-concat
+            "(defun "
+            name
+            " "
+            (format "%s" (--map (s-concat "arg" (number-to-string it)) (number-sequence 1 (length args))))
+            "\n  \"SomeDocs\"\n  nil)\n\n")))))))
+#+end_src
+
+
+Now look!
+
+[[file:showStubElisp.mp4]]
+
+That is it: just put your cursor on the function name you want to
+stub, call =my/stub-elisp-defun=, and have a stub awaiting for your
+implementation.
+
+The resulting code looks like:
+
+#+begin_src elisp :noeval
+(defun call-the-rest (arg1)
+  "SomeDocs"
+  nil)
+
+(defun message-wishes-to-some-people (arg1)
+  "SomeDocs"
+  nil)
+
+(defun make-a-list-of-people nil
+  "SomeDocs"
+  nil)
+
+(defun function-to-wish-happy-2021 ()
+  "Make wishes 2021 to people."
+  (call-the-rest (message-wishes-to-some-people (make-a-list-of-people))))
+#+end_src
+
+Hopefully it will take away a bit of boring typing while you code
+Elisp!
+
+Maybe somebody knows about an Elisp package that does these things
+already? I would really love something like [[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]] for Elisp!
+
+Merry 2021!
