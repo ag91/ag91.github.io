@@ -1,4 +1,4 @@
-#+TITLE:       Emacs as your code-compass: how much code we produced for this repository lately?
+#+TITLE:       Emacs as your code-compass: how much code did we produce for this repository lately?
 #+AUTHOR:      Andrea
 #+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2021-01-01 Fri
