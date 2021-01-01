@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: how much code we produced for this repository lately? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Adding code churn to code-compass!" />
+    <meta name="keywords" content="code-compass, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: how much code we produced for this repository lately?</h1>
+
+
+<div id="outline-container-orgf6e3b5f" class="outline-2">
+<h2 id="orgf6e3b5f">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgf6e3b5f">
+<p>
+Use code-compass <code>c/show-code-churn</code> to keep an eagle eye on what
+happened on your repository by checking how much more or less code
+entered your repository. The more the new lines the more you need to maintain!!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org423cc62" class="outline-2">
+<h2 id="org423cc62">The problem</h2>
+<div class="outline-text-2" id="text-org423cc62">
+<p>
+Git can tell you how much code you added or removed from your
+repository over the last commits. However that requires a bit of
+terminal-fu: can Emacs tell us that in a more human readable way?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgee864f3" class="outline-2">
+<h2 id="orgee864f3">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgee864f3">
+<p>
+Actually code churn is more than just a curiosity. Sometimes you may
+discover a spike of additions over the history of the repository.
+Probably because you were adding some new functionality. And that
+spike may be a warning to finally split the repository in two, so that
+responsibility is organized more clearly and maybe you can end up
+reusing it better!
+</p>
+
+<p>
+Another thing you may want to look for is that the amount of removed
+code increases as well: if you keep adding without deleting, you are
+making things harder to maintain! Ideally lines of code should keep
+decreasing, indicating that we are finding simpler and smarter ways to
+do the same things (even testing!).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org90ae13c" class="outline-2">
+<h2 id="org90ae13c">And there is a solution</h2>
+<div class="outline-text-2" id="text-org90ae13c">
+<p>
+Well, code-compass has a command for that: <code>c/show-code-churn</code>.
+</p>
+
+<p>
+If you call that, you will see a graph like the following:
+</p>
+
+
+<div id="org6331738" class="figure">
+<p><img src="/assets/blog/2021/01/01/emacs-as-your-code-compass-how-much-code-we-produced-for-this-repository-lately/churnScalafix.png" alt="churnScalafix.png" />
+</p>
+</div>
+
+<p>
+In the picture above you can see that on the 2020-09 somebody added
+more that 900 lines of code without deleting much. On 2020-11 there
+was an addition of more than 1k lines but also a similar number of
+removed lines which would make me feel less concerned.
+</p>
+
+<p>
+This graph gives a high level warning that something atypical has
+happened, but by itself leaves us unaware about what kind of change
+happened on the repository (for example, a lot of documentation may
+have entered the repository. So any finding obtained from this
+analysis is a starting point for further investigation. Ideally, you
+will see deleted lines spikes which indicate some lovely engineers
+taking care of the codebase with their refactoring.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgf00c346" class="outline-2">
+<h2 id="orgf00c346">Conclusion</h2>
+<div class="outline-text-2" id="text-orgf00c346">
+<p>
+If you are curious to see the code churn for your repository, just get
+<a href="https://github.com/ag91/code-compass">code-compass</a> and run <code>c/show-code-churn</code>!
+</p>
+
+<p>
+Happy eagle-viewing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-01-01</span>
+        <span title="last modification date" class="post-info">2021-01-01</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
