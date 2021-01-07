@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: how related are these modules? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="andrea" />
+    <meta name="description" content="See how coupled are your modules for better design and easier changes!" />
+    <meta name="keywords" content="code-compass, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: how related are these modules?</h1>
+
+<div id="outline-container-org9948990" class="outline-2">
+<h2 id="org9948990">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org9948990">
+<p>
+Emacs can show us how files are historically related to each other,
+just use <a href="https://github.com/ag91/code-compass">code-compass</a> <code>c/show-coupling-graph</code>. In this post I explain how
+that helps you.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org798aadc" class="outline-2">
+<h2 id="org798aadc">The problem</h2>
+<div class="outline-text-2" id="text-org798aadc">
+<p>
+When I am maintaining a code base that is not mine, I always wonder:
+what would the writer of this code do in my place to extend it. So it
+turns out that after some head scratching and reading around, I resort
+to act. I add my test, the old tests pass, the pipeline is green.
+Everything seems fine, until... crash! The infamous end to end tests
+are not flaky this time: my modification broke one. I found the error,
+fix it, redeploy: pheeew, all is well what ends well. Then a moment of
+curiosity: let me check via <a href="https://github.com/magit/magit">magit</a> if anybody else touched the same
+files lately. Aaargh! Exactly the same change I did a few weeks ago.
+And I spent 3 hours because I broke the end to end tests. If only I
+could see this extra file needed a change too!!!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8d961d4" class="outline-2">
+<h2 id="org8d961d4">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org8d961d4">
+<p>
+Well, apart of learning from our ancestor maintainers, there is
+another reason for which visualizing the relationship between files
+over time. That is coupling of irrelevant modules. When two distinct
+files need always to change together for a reason, something is wrong
+with the design. Most likely there is some functionality that you can
+extract from both towards a new module. Discovering and acting on this
+design coupling will make you shine with your closer software
+architects (you need to show them though, because they are busy
+people), and more importantly will save you from the kind of forgetful
+behavior I wrote earlier. It is normal for new maintainers to be
+unaware of these hidden relations, and it is really a challenge that
+makes little sense: let's be tidy and just put things in their right
+place!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org73add02" class="outline-2">
+<h2 id="org73add02">And there is a solution</h2>
+<div class="outline-text-2" id="text-org73add02">
+<p>
+So let's skim through the theory once more. Git knows. Code under
+version control has another dimension you can access: time. A bit of
+Git-foo can already tell you a lot of how files have changed together
+during the life of the repository. Why is this information unused by
+our editors? Amazing question, let's fix the most adaptable editor
+ever to give the example!
+</p>
+
+<p>
+Actually let me show you what we can do:
+</p>
+
+<p>
+<a href="/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/coupling.mp4">/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/coupling.mp4</a>
+</p>
+
+<p>
+The hedge bundling graph is showing you all the files of the
+repository.
+</p>
+
+
+<div id="org010f475" class="figure">
+<p><img src="/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/hedge-bundling.jpg" alt="hedge-bundling.jpg" />
+</p>
+</div>
+
+<p>
+The links show you that files have a temporal relationship: when one
+changed the other file changed too. The denser the line the more often
+it changed together. The color of the lines indicate which changed
+before the other, and I did not find a use for that yet. You will
+notice that often the coupled files are a module and its test: we
+expect that.
+</p>
+
+<p>
+Another interesting use case of this is learning about the code base:
+this graph relationships helps grouping modules by their meaning. For
+example the main cluster of relationships in the <a href="https://github.com/jgm/pandoc">pandoc</a>'s graph
+represent groups of test files that are likely used to test file
+conversion from one format to the other. I use this graph myself to
+complement the structure of a repositories (I mean the directory tree)
+with the structure of the changes over the repository.
+</p>
+
+<p>
+Another thing I do with this graph, or better the information
+underneath is: to let Emacs find the files I should change next! I
+shall show you in my next post how a mix of projectile and
+code-compass can lighten the way forward.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5bb82ed" class="outline-2">
+<h2 id="org5bb82ed">Conclusion</h2>
+<div class="outline-text-2" id="text-org5bb82ed">
+<p>
+So the hunt is open! Grab your <a href="https://github.com/ag91/code-compass">code-compass</a>, run
+<code>c/show-coupling-graph</code> over your favourite repository, and let your
+editor finally do more than showing you a flat file with annotations!
+What are you going to discover? Please make the best you can out of
+this analysis: you really can maintain your repository more
+effectively now.
+</p>
+
+<p>
+Happy decoupling!
+in your code.
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-01-07</span>
+        <span title="last modification date" class="post-info">2021-01-07</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

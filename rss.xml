@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 07 Jan 2021 19:14:29 CET</pubDate>
-    <lastBuildDate>Thu, 07 Jan 2021 19:14:29 CET</lastBuildDate>
+    <pubDate>Fri, 08 Jan 2021 00:00:58 CET</pubDate>
+    <lastBuildDate>Fri, 08 Jan 2021 00:00:58 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emacs as your code-compass: how related are these modules?</title>
+      <link>http://ag91.github.io/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules</link>
+      <description><![CDATA[See how coupled are your modules for better design and easier changes!]]></description>
+      <pubDate>2021-01-07</pubDate>
+      <guid>http://ag91.github.io/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules</guid>
+    </item>
+    <item>
       <title>Cycle everything: why waste does not exist</title>
       <link>http://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist</link>
-      <description><![CDATA[Think about reusing anything that you think as waste!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-01-07</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-11</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/11/emacsconf2020-first-steps-towards-emacs-becoming-your-code-compass</guid>
-    </item>
-    <item>
-      <title>Automate boring configuration changes</title>
-      <link>http://ag91.github.io/blog/2019/09/26/automate-boring-configuration-changes</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-03</pubDate>
-      <guid>http://ag91.github.io/blog/2019/09/26/automate-boring-configuration-changes</guid>
     </item>
   </channel>
 </rss>
