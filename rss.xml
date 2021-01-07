@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 01 Jan 2021 16:52:39 CET</pubDate>
-    <lastBuildDate>Fri, 01 Jan 2021 16:52:39 CET</lastBuildDate>
+    <pubDate>Thu, 07 Jan 2021 19:14:29 CET</pubDate>
+    <lastBuildDate>Thu, 07 Jan 2021 19:14:29 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Emacs as your code-compass: how much code we produced for this repository lately?</title>
+      <title>Cycle everything: why waste does not exist</title>
+      <link>http://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist</link>
+      <description><![CDATA[Think about reusing anything that you think as waste!]]></description>
+      <pubDate>2021-01-07</pubDate>
+      <guid>http://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist</guid>
+    </item>
+    <item>
+      <title>Emacs as your code-compass: how much code did we produce for this repository lately?</title>
       <link>http://ag91.github.io/blog/2021/01/01/emacs-as-your-code-compass-how-much-code-we-produced-for-this-repository-lately</link>
-      <description><![CDATA[Adding code churn to code-compass!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-01-01</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/01/emacs-as-your-code-compass-how-much-code-we-produced-for-this-repository-lately</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-03</pubDate>
       <guid>http://ag91.github.io/blog/2019/09/26/automate-boring-configuration-changes</guid>
-    </item>
-    <item>
-      <title>Functional abstractions in JavaScript: fishing fmaps with Kleisli</title>
-      <link>http://ag91.github.io/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-03</pubDate>
-      <guid>http://ag91.github.io/blog/2019/08/06/functional-abstractions-in-javascript-fishing-fmaps-with-kleisli</guid>
     </item>
   </channel>
 </rss>
