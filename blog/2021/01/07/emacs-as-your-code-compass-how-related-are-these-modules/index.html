@@ -100,44 +100,48 @@ Actually let me show you what we can do:
 </p>
 
 <p>
-<a href="/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/coupling.mp4">/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/coupling.mp4</a>
+    <video width="420" height="240" controls>
+      <source src="/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/coupling.mp4" type="video/mp4">
+      <a href="/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/coupling.mp4">/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/coupling.mp4</a>
+    </video>
 </p>
 
+
 <p>
-The hedge bundling graph is showing you all the files of the
-repository.
+  The hedge bundling graph is showing you all the files of the
+  repository.
 </p>
 
 
 <div id="org010f475" class="figure">
-<p><img src="/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/hedge-bundling.jpg" alt="hedge-bundling.jpg" />
-</p>
+  <p><img src="/assets/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/hedge-bundling.jpg" alt="hedge-bundling.jpg" />
+  </p>
 </div>
 
 <p>
-The links show you that files have a temporal relationship: when one
-changed the other file changed too. The denser the line the more often
-it changed together. The color of the lines indicate which changed
-before the other, and I did not find a use for that yet. You will
-notice that often the coupled files are a module and its test: we
-expect that.
+  The links show you that files have a temporal relationship: when one
+  changed the other file changed too. The denser the line the more often
+  it changed together. The color of the lines indicate which changed
+  before the other, and I did not find a use for that yet. You will
+  notice that often the coupled files are a module and its test: we
+  expect that.
 </p>
 
 <p>
-Another interesting use case of this is learning about the code base:
-this graph relationships helps grouping modules by their meaning. For
-example the main cluster of relationships in the <a href="https://github.com/jgm/pandoc">pandoc</a>'s graph
-represent groups of test files that are likely used to test file
-conversion from one format to the other. I use this graph myself to
-complement the structure of a repositories (I mean the directory tree)
-with the structure of the changes over the repository.
+  Another interesting use case of this is learning about the code base:
+  this graph relationships helps grouping modules by their meaning. For
+  example the main cluster of relationships in the <a href="https://github.com/jgm/pandoc">pandoc</a>'s graph
+  represent groups of test files that are likely used to test file
+  conversion from one format to the other. I use this graph myself to
+  complement the structure of a repositories (I mean the directory tree)
+  with the structure of the changes over the repository.
 </p>
 
 <p>
-Another thing I do with this graph, or better the information
-underneath is: to let Emacs find the files I should change next! I
-shall show you in my next post how a mix of projectile and
-code-compass can lighten the way forward.
+  Another thing I do with this graph, or better the information
+  underneath is: to let Emacs find the files I should change next! I
+  shall show you in my next post how a mix of projectile and
+  code-compass can lighten the way forward.
 </p>
 </div>
 </div>
