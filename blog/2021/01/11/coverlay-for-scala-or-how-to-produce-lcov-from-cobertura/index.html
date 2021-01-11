@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Coverlay for Scala, or how to produce lcov from cobertura - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="how to produce lcov files from cobertura and have coverage information in your Scala files" />
+    <meta name="keywords" content="scala. emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Coverlay for Scala, or how to produce lcov from cobertura</h1>
+
+<div id="outline-container-orgf99dd0c" class="outline-2">
+<h2 id="orgf99dd0c">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgf99dd0c">
+<p>
+Visualize your scala code coverage directly in your Scala buffers!
+Here I show some Elisp to cobertura files to the lcov file, so that
+Scala coders can leverage <a href="https://github.com/twada/coverlay.el">coverlay</a> too.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgce020cf" class="outline-2">
+<h2 id="orgce020cf">The problem</h2>
+<div class="outline-text-2" id="text-orgce020cf">
+<p>
+I always found coverage reports boring to read. Waiting for
+instrumented code to produce a report is already a bit long. Then you
+get an html file that you need to open, consult and translate to a
+place in your code, so that, finally, you can add some test cases to
+cover those lines.
+</p>
+
+<p>
+Apart of the clicking involved, I was looking forward to have my
+preferred editor show me those reports and immediately displaying me
+which lines my tests miss to cover. Then just the other day I
+discovered from <a href="https://sachachua.com/blog/category/emacs/">Sacha's blog</a> the existence of <a href="https://github.com/twada/coverlay.el">coverlay</a>. Finally, in
+2021 I can see my code coverage!!!
+</p>
+
+<p>
+Or not? Argh, it does not support xml reports!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd2d9812" class="outline-2">
+<h2 id="orgd2d9812">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgd2d9812">
+<p>
+So I think: "there must surely be a converter from lcov to cobertura,
+doesn't it?". The answer iiiis... no. Apparently, <code>cobertura</code> is the
+format that some continuous integration tools use, while <code>lcov</code> is the
+format (quite simple and elegant I must say) that Linux maintainers
+came up with. So some people decided to create translators from lcov
+to cobertura but NOT the other way around.
+</p>
+
+<p>
+It really seems I need to write some Elisp myself to fix this.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org507ed7c" class="outline-2">
+<h2 id="org507ed7c">And there is a solution</h2>
+<div class="outline-text-2" id="text-org507ed7c">
+<p>
+The idea is that coverlay reads an lcov file which looks like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">SF:/path/to/target.js
+DA:15,1
+DA:16,1
+DA:20,1
+DA:21,0
+DA:22,1
+DA:23,1
+DA:25,0
+DA:28,1
+DA:30,1
+DA:32,1
+DA:33,5
+end_of_record
+</pre>
+</div>
+
+<p>
+Nice and simple, at first sight you can see that the top is the file
+location and the lines in the middle represent line numbers and the
+number of times the tests hit that line.
+</p>
+
+<p>
+Now for a Scala project we can create cobertura files with
+<a href="https://github.com/scoverage/sbt-scoverage">sbt-scoverage</a>, they look like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml">&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd"&gt;
+&lt;coverage 
+line-rate="0.71" lines-valid="1833" lines-covered="1297" branches-valid="125" branches-covered="86" branch-rate="0.69" complexity="0" version="1.0" timestamp="1609609652641"&gt;
+    &lt;sources&gt;
+        &lt;source&gt;--source&lt;/source&gt;
+        &lt;source&gt;/home/andrea/workspace/scalafix/scalafix-cli/src/main/scala&lt;/source&gt;
+    &lt;/sources&gt;
+    &lt;packages&gt;
+        &lt;package name="scalafix.cli" line-rate="0.74" branch-rate="0.83" complexity="0"&gt;
+            &lt;classes&gt;
+                &lt;class name="scalafix.cli.Cli" filename="scalafix/cli/Cli.scala" line-rate="0.00" branch-rate="0.00" complexity="0"&gt;
+                    &lt;methods&gt;
+                        &lt;method name="scalafix.cli/Cli/helpMessage" signature="()V" line-rate="0.00" branch-rate="0.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="7" hits="0" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method name="scalafix.cli/Cli/nailMain" signature="()V" line-rate="0.00" branch-rate="0.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="12" hits="0" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method name="scalafix.cli/Cli/main" signature="()V" line-rate="0.00" branch-rate="0.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="9" hits="0" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                    &lt;/methods&gt;
+                    &lt;lines&gt;
+                        &lt;line number="9" hits="0" branch="false"/&gt;
+                        &lt;line number="7" hits="0" branch="false"/&gt;
+                        &lt;line number="12" hits="0" branch="false"/&gt;
+                    &lt;/lines&gt;
+                &lt;/class&gt;
+                &lt;class 
+                name="scalafix.cli.ExitStatus" filename="scalafix/cli/ExitStatus.scala" line-rate="0.78" branch-rate="0.83" complexity="0"&gt;
+                    &lt;methods&gt;
+                        &lt;method name="scalafix.cli/ExitStatus/from" signature="()V" line-rate="0.00" branch-rate="0.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="78" hits="0" branch="false"/&gt;
+                                &lt;line number="76" hits="0" branch="false"/&gt;
+                                &lt;line number="80" hits="0" branch="false"/&gt;
+                                &lt;line number="74" hits="0" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method name="scalafix.cli/ExitStatus/&amp;lt;none&amp;gt;" signature="()V" line-rate="1.00" branch-rate="1.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                                &lt;line number="21" hits="1" branch="false"/&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                                &lt;line number="20" hits="1" branch="false"/&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                                &lt;line number="23" hits="1" branch="false"/&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                                &lt;line number="42" hits="1" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method name="scalafix.cli/ExitStatus/is" signature="()V" line-rate="1.00" branch-rate="1.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="13" hits="1" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method name="scalafix.cli/ExitStatus/codeToName" signature="()V" line-rate="1.00" branch-rate="1.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="49" hits="1" branch="false"/&gt;
+                                &lt;line number="51" hits="1" branch="false"/&gt;
+                                &lt;line number="46" hits="1" branch="false"/&gt;
+                                &lt;line number="49" hits="1" branch="false"/&gt;
+                                &lt;line number="48" hits="1" branch="false"/&gt;
+                                &lt;line number="46" hits="1" branch="false"/&gt;
+                                &lt;line number="47" hits="1" branch="false"/&gt;
+                                &lt;line number="46" hits="1" branch="false"/&gt;
+                                &lt;line number="48" hits="1" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method name="scalafix.cli/ExitStatus/merge" signature="()V" line-rate="0.38" branch-rate="1.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="67" hits="0" branch="false"/&gt;
+                                &lt;line number="64" hits="1" branch="false"/&gt;
+                                &lt;line number="68" hits="0" branch="false"/&gt;
+                                &lt;line number="67" hits="0" branch="false"/&gt;
+                                &lt;line number="68" hits="0" branch="false"/&gt;
+                                &lt;line number="64" hits="1" branch="false"/&gt;
+                                &lt;line number="64" hits="1" branch="false"/&gt;
+                                &lt;line number="68" hits="0" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method name="scalafix.cli/ExitStatus/isOk" signature="()V" line-rate="1.00" branch-rate="1.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="12" hits="1" branch="false"/&gt;
+                                &lt;line number="12" hits="1" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method name="scalafix.cli/ExitStatus/apply" signature="()V" line-rate="0.67" branch-rate="0.50" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="58" hits="1" branch="false"/&gt;
+                                &lt;line number="55" hits="0" branch="false"/&gt;
+                                &lt;line number="57" hits="1" branch="false"/&gt;
+                                &lt;line number="55" hits="1" branch="false"/&gt;
+                                &lt;line number="55" hits="0" branch="false"/&gt;
+                                &lt;line number="56" hits="1" branch="false"/&gt;
+                            &lt;/lines&gt;
+                        &lt;/method&gt;
+                        &lt;method 
+                        name="scalafix.cli/ExitStatus/generateExitStatus" signature="()V" line-rate="1.00" branch-rate="1.00" complexity="0"&gt;
+                            &lt;lines&gt;
+                                &lt;line number="27" hits="1" branch="false"/&gt;
+                                &lt;line number="26" hits="1" branch="false"/&gt;
+                                &lt;line number="26" hits="1" branch="false"/&gt;
+                                &lt;line number="26" hits="1" branch="false"/&gt;
+                                &lt;line number="26" hits="1" branch="false"/&gt;
+                                &lt;line number="25" hits="1" branch="false"/&gt;
+                                &lt;line number="28" hits="1" branch="false"/&gt;
+                                &lt;line number="26" hits="1" branch="false"/&gt;
+                                &lt;line number="26" hits="1" branch="false"/&gt;
+                            &lt;/lines&gt;
+&lt;/method&gt;
+                    &lt;/methods&gt;
+                    &lt;lines&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="67" hits="0" branch="false"/&gt;
+                        &lt;line number="49" hits="1" branch="false"/&gt;
+                        &lt;line number="58" hits="1" branch="false"/&gt;
+                        &lt;line number="78" hits="0" branch="false"/&gt;
+                        &lt;line number="51" hits="1" branch="false"/&gt;
+                        &lt;line number="21" hits="1" branch="false"/&gt;
+                        &lt;line number="64" hits="1" branch="false"/&gt;
+                        &lt;line number="27" hits="1" branch="false"/&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="26" hits="1" branch="false"/&gt;
+                        &lt;line number="46" hits="1" branch="false"/&gt;
+                        &lt;line number="55" hits="0" branch="false"/&gt;
+                        &lt;line number="68" hits="0" branch="false"/&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="12" hits="1" branch="false"/&gt;
+                        &lt;line number="26" hits="1" branch="false"/&gt;
+                        &lt;line number="67" hits="0" branch="false"/&gt;
+                        &lt;line number="57" hits="1" branch="false"/&gt;
+                        &lt;line number="68" hits="0" branch="false"/&gt;
+                        &lt;line number="12" hits="1" branch="false"/&gt;
+                        &lt;line number="26" hits="1" branch="false"/&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="49" hits="1" branch="false"/&gt;
+                        &lt;line number="26" hits="1" branch="false"/&gt;
+                        &lt;line number="20" hits="1" branch="false"/&gt;
+                        &lt;line number="64" hits="1" branch="false"/&gt;
+                        &lt;line number="76" hits="0" branch="false"/&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="48" hits="1" branch="false"/&gt;
+                        &lt;line number="25" hits="1" branch="false"/&gt;
+                        &lt;line number="55" hits="1" branch="false"/&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="46" hits="1" branch="false"/&gt;
+                        &lt;line number="64" hits="1" branch="false"/&gt;
+                        &lt;line number="80" hits="0" branch="false"/&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="47" hits="1" branch="false"/&gt;
+                        &lt;line number="23" hits="1" branch="false"/&gt;
+                        &lt;line number="28" hits="1" branch="false"/&gt;
+                        &lt;line number="68" hits="0" branch="false"/&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="26" hits="1" branch="false"/&gt;
+                        &lt;line number="46" hits="1" branch="false"/&gt;
+                        &lt;line number="55" hits="0" branch="false"/&gt;
+                        &lt;line number="26" hits="1" branch="false"/&gt;
+                        &lt;line number="56" hits="1" branch="false"/&gt;
+                        &lt;line number="74" hits="0" branch="false"/&gt;
+                        &lt;line number="42" hits="1" branch="false"/&gt;
+                        &lt;line number="48" hits="1" branch="false"/&gt;
+                        &lt;line number="13" hits="1" branch="false"/&gt;
+                    &lt;/lines&gt;
+&lt;/class&gt;
+            &lt;/classes&gt;
+</pre>
+</div>
+
+<p>
+Much less readable, but more detailed: here we know package names,
+line coverage percentage, we have even branch coverage and method
+coverage!
+</p>
+
+<p>
+The little complications:
+</p>
+
+<ol class="org-ol">
+<li>we have a different cobertura file for each project module
+(typically more than one in average sized applications)</li>
+<li>the path of the file is both in the <code>source</code> tag and in the <code>class</code>
+tag under the <code>filename</code> attribute</li>
+<li>same line numbers can be repeated under the <code>lines</code> tag because the
+<code>hits</code> attribute is really a boolean value.</li>
+</ol>
+
+<p>
+So our first challenge is to locate the files. The thing we know is that they always have the same name:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun coverlays/find-cobertura-files ()
+    "Find cobertura.xml files."
+    (--&gt; (projectile-root-bottom-up ".")
+         (format "find %s -type f -name \"cobertura.xml\"" it)
+         (shell-command-to-string it)
+         (s-split "\n" it)
+         (-map 's-trim it)
+         (--remove (or (null it) (s-blank-p it)) it))
+</pre>
+</div>
+
+<p>
+The trick is to use the shell's <a href="https://man7.org/linux/man-pages/man1/find.1p.html">find</a> utility to list the file paths we
+need. Most of the code above is just to clean the shell output.
+</p>
+
+<p>
+Next for each file we want to parse its xml and grab what we need:
+file paths, line numbers and hits.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun coverlays/parse-path-lines-from-cobertura (filepath)
+  "Parse FILEPATH to an alist with a filepath and lines, which contain number and hits."
+  (when (f-file-p filepath)
+    (with-temp-buffer
+      (insert-file-contents-literally filepath)
+      (let* ((xml (libxml-parse-html-region (point-min) (point-max)))
+             (path (nth 2 (nth 3 (esxml-query "sources" xml)))) ;; TODO maybe not universal
+             (classes (-drop 2 (esxml-query "classes" xml)))
+             (make-path-lines-from-class
+              (lambda (class)
+                `((filepath . ,(s-concat path "/" (alist-get 'filename (nth 1 class))))
+                  (lines . ,(--map (--&gt; it
+                                        (nth 1 it)
+                                        (--filter
+                                         (or (eq (car it) 'number)
+                                             (eq (car it) 'hits))
+                                         it))
+                                   (-drop 2 (nth 3 class))))))))
+
+        (-map make-path-lines-from-class classes)))))
+</pre>
+</div>
+
+<p>
+The nice esxml library takes the toll of parsing xml away from me.
+Most of the code in this function goes in grabbing the right
+information and putting it together to obtain the filepath and the
+line count (note the TODO in the code: I am not sure the cobertura.xml
+files always put the module path in that position, but in all my
+projects has worked fine for now).
+</p>
+
+<p>
+This function generates this sort of output:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(((filepath . "some/path")
+ (lines . (((number. 123) (hits . 1))
+           ((number. 123) (hits . 1))
+           ((number. 124) (hits . 1))))))
+</pre>
+</div>
+
+<p>
+Note that I could not find yet the time to merge the duplicate lines:
+the duplication means that multiple tests have exercised those lines.
+The lcov format expects the sum of the hits, while the cobertura
+format expect duplication. I postponed this feature, because it only
+partially breaks coverlay's functionality: I saw that the statistics
+buffer fails in error with duplication.
+</p>
+
+<p>
+Now we have all the information to produce our lcov file:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun coverlays/produce-lcov (filenames-lines)
+  "Produce lcov file from FILENAMES-LINES."
+  (--&gt; (--reduce-from
+        (let ((heading (s-concat "SF:" (alist-get 'filepath it) "\n"))
+              (line-numbers
+               (--map
+                (s-concat "DA:" (alist-get 'number it) "," (alist-get 'hits it) "\n")
+                (alist-get 'lines it))))
+          (s-concat acc heading (apply 's-concat line-numbers) "end_of_record\n"))
+        ""
+        filenames-lines)
+       ))
+
+(defun coverlays/produce-lcov-from-cobertura ()
+  "Produce lcov file from cobertura"
+  (interactive)
+  (let ((file (s-concat (projectile-project-root) "/lcov.lcov")))
+    (delete-file file)
+    (--&gt; (coverlays/find-cobertura-files)
+         (--each
+             it
+           (--&gt; (coverlays/parse-path-lines-from-cobertura it)
+                (coverlays/produce-lcov it)
+                (write-region it nil file t))))))
+</pre>
+</div>
+
+<p>
+The function <code>coverlays/produce-lcov</code> just formats the information
+according to the lcov syntax, while
+<code>coverlays/produce-lcov-from-cobertura</code> integrates the above functions
+to generate all the cobertura files and an lcov from them.
+</p>
+
+<p>
+After you run <code>coverlays/produce-lcov-from-cobertura</code> you just have to
+call coverlay's <code>coverlay-load-file</code> and you will see for the first
+time coverage lines in Scala buffers!!!
+</p>
+
+<p>
+Naturally this sounds still a bit boring, doesn't it?
+</p>
+
+<p>
+You still have to:
+</p>
+
+<ol class="org-ol">
+<li>produce the cobertura files with something like <code>sbt ;clean;coverage;test;coverageReport</code></li>
+<li>run <code>coverlays/produce-lcov-from-cobertura=</code></li>
+<li>finally run <code>coverlay-load-file</code> on the produced lcov file</li>
+</ol>
+
+<p>
+We can do better! Let's automate that out :)
+</p>
+
+<p>
+I will rely on <a href="https://github.com/jwiegley/emacs-async">emacs-async</a>, <a href="https://github.com/bbatsov/projectile">projectile</a> and the <code>scala-mode-hook</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun coverlays/rebuild-cobertura-on-project ()
+  "Run sbt tests and produce lcov file."
+  (interactive)
+  (let ((proj-type (projectile-project-type))
+        (directory (projectile-project-root)))
+    (when (or (eq 'bloop proj-type) (eq 'sbt proj-type) (eq 'scala proj-type))
+      (message "Producing cobertura output...")
+      (async-start
+       `(lambda () (let ((default-directory ,directory)) (message "starting %s" ,directory) (call-process "sbt" nil nil nil ";clean;coverage;test;coverageReport;") (message "finishing")))
+       `(lambda (result)
+          (cd ,directory)
+          (coverlays/produce-lcov-from-cobertura)
+          (message (format "Coverlay mode ready for %s" ,directory)))))))
+
+(add-hook
+ 'scala-mode-hook
+ (lambda ()
+   (let ((file (concat (projectile-project-root) "/lcov.lcov")))
+     (when (or (not (f-file-p file)
+                    (&gt; (time-to-seconds (time-since
+                                         (file-attribute-modification-time
+                                          (file-attributes (file-truename file)))))
+                       (* 60 60 2))))  ;; maybe just lcov older than 2 hours?
+       (coverlays/rebuild-cobertura-on-project)))))
+
+(add-hook
+ 'scala-mode-hook
+ (lambda ()
+   (when (f-file-p (concat (projectile-project-root) "/lcov.lcov"))
+     (turn-on-coverlay-mode))))
+
+(add-hook
+ 'coverlay-mode-hook
+ (lambda ()
+   (let ((proj-type (projectile-project-type))
+         (file (concat (projectile-project-root) "/lcov.lcov")))
+     (when
+         (and
+          (or
+           (eq 'bloop proj-type)
+           (eq 'sbt proj-type)
+           (eq 'scala proj-type))
+          (projectile-project-root)
+          (f-file-p file))
+       (coverlay-load-file file)))))
+</pre>
+</div>
+
+<p>
+In short what I came up with is to run sbt in the background the first
+time I visit a project, and when that succeeds to produce the lcov
+file and load it when I open a Scala buffer.
+</p>
+
+<p>
+I created a repository to make this code easy to use:
+<a href="https://github.com/ag91/coverlay-for-scala-example">https://github.com/ag91/coverlay-for-scala-example</a>
+</p>
+
+<p>
+This is just a first iteration, but better rough than without, no? I
+will update the repository as soon as I do progress.
+</p>
+
+<p>
+Also I still plan to have a fully working coverlay, and maybe who knows
+even just extend coverlay to support cobertura's branch analysis.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4eab6f3" class="outline-2">
+<h2 id="org4eab6f3">Conclusion</h2>
+<div class="outline-text-2" id="text-org4eab6f3">
+<p>
+So take the code from my repository and see finally your code coverage
+in your Scala projects! If you have sbt-scoverage and the Emacs
+dependencies (look at the README for how to install them), you just
+need to visit a Scala file in your repository and after a few minutes
+the coverage should kick in.
+</p>
+
+<p>
+Happy testing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-01-11</span>
+        <span title="last modification date" class="post-info">2021-01-11</span>
+        <span title="tags" class="post-info"><a href="/tags/scala-emacs/">scala. emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

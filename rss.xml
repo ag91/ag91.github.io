@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 08 Jan 2021 00:00:58 CET</pubDate>
-    <lastBuildDate>Fri, 08 Jan 2021 00:00:58 CET</lastBuildDate>
+    <pubDate>Mon, 11 Jan 2021 19:32:05 CET</pubDate>
+    <lastBuildDate>Mon, 11 Jan 2021 19:32:05 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Coverlay for Scala, or how to produce lcov from cobertura</title>
+      <link>http://ag91.github.io/blog/2021/01/11/coverlay-for-scala-or-how-to-produce-lcov-from-cobertura</link>
+      <description><![CDATA[how to produce lcov files from cobertura and have coverage information in your Scala files]]></description>
+      <pubDate>2021-01-11</pubDate>
+      <guid>http://ag91.github.io/blog/2021/01/11/coverlay-for-scala-or-how-to-produce-lcov-from-cobertura</guid>
+    </item>
+    <item>
       <title>Emacs as your code-compass: how related are these modules?</title>
       <link>http://ag91.github.io/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules</link>
-      <description><![CDATA[See how coupled are your modules for better design and easier changes!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-01-07</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-12</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</guid>
-    </item>
-    <item>
-      <title>EmacsConf2020: first steps towards Emacs becoming your code compass!</title>
-      <link>http://ag91.github.io/blog/2020/12/11/emacsconf2020-first-steps-towards-emacs-becoming-your-code-compass</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-11</pubDate>
-      <guid>http://ag91.github.io/blog/2020/12/11/emacsconf2020-first-steps-towards-emacs-becoming-your-code-compass</guid>
     </item>
   </channel>
 </rss>
