@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 11 Jan 2021 19:32:05 CET</pubDate>
-    <lastBuildDate>Mon, 11 Jan 2021 19:32:05 CET</lastBuildDate>
+    <pubDate>Tue, 12 Jan 2021 22:15:33 CET</pubDate>
+    <lastBuildDate>Tue, 12 Jan 2021 22:15:33 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emacs as your code-compass: let history show you which files to edit next</title>
+      <link>http://ag91.github.io/blog/2021/01/12/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next</link>
+      <description><![CDATA[See which files need changes after you edit the current one]]></description>
+      <pubDate>2021-01-12</pubDate>
+      <guid>http://ag91.github.io/blog/2021/01/12/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next</guid>
+    </item>
+    <item>
       <title>Coverlay for Scala, or how to produce lcov from cobertura</title>
       <link>http://ag91.github.io/blog/2021/01/11/coverlay-for-scala-or-how-to-produce-lcov-from-cobertura</link>
-      <description><![CDATA[how to produce lcov files from cobertura and have coverage information in your Scala files]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-01-11</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/11/coverlay-for-scala-or-how-to-produce-lcov-from-cobertura</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-18</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots</guid>
-    </item>
-    <item>
-      <title>Life is a cycle: why periodic behaviour is good for your health</title>
-      <link>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-12</pubDate>
-      <guid>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</guid>
     </item>
   </channel>
 </rss>

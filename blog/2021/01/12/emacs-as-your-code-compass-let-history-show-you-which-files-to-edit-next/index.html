@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: let history show you which files to edit next - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="See which files need changes after you edit the current one" />
+    <meta name="keywords" content="code-compass, emacs, programming" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: let history show you which files to edit next</h1>
+
+
+<div id="outline-container-org6f2f98d" class="outline-2">
+<h2 id="org6f2f98d">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org6f2f98d">
+<p>
+Emacs can suggest you what file to modify next according to your
+repository history. Just get <a href="https://github.com/ag91/code-compass">code-compass</a> run <code>c/find-coupled-files</code>
+on a file in your Git repository!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org903f4c6" class="outline-2">
+<h2 id="org903f4c6">The problem</h2>
+<div class="outline-text-2" id="text-org903f4c6">
+<p>
+In <a href="https://ag91.github.io/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/">a previous post</a> I have shown how we can look at modules relations
+via a graph. The idea was to find more easily modules that need to
+change together and to give you visibility on modules that should be
+independent but that are still coupled according to historical change
+patterns.
+</p>
+
+<p>
+Now, a graph is useful as an overview, but what about while we are
+coding? As I was saying in my previous post, sometimes I forget to
+change some important file causing myself rework and delivery delays.
+The terrible thing is that my repository history can tell me what to
+do! How nice would it be if Emacs could directly tell me what to
+change next?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org92f1098" class="outline-2">
+<h2 id="org92f1098">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org92f1098">
+<p>
+There is <a href="https://www.kite.com/">some</a> <a href="https://www.tabnine.com/">momentum</a> for text editors to become smarter and make
+life easier for the developer. Ideally, as Gregory T. Brown explores
+in the last chapter of his book <a href="file:///home/andrea/workspace/agenda/notes/20200726202344-programming_beyond_practice.html">Programming beyond practice</a>, we should
+replace low-level tools with more advanced tools which make us feel
+closer to our work: imagine focusing only on understanding your
+clients problems, and then in a few knowledgeable inputs shave off the
+rough solution of our computer to fit our client requirements
+perfectly. Instead we get side tracked by that recursion that is
+overflowing our stack <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>.
+</p>
+
+<p>
+This is still a bit far away as far as I know. It would be cool,
+though, if we could move Emacs a step closer to that side of things.
+At least, let's make it learn from our Git history!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgef58f5b" class="outline-2">
+<h2 id="orgef58f5b">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgef58f5b">
+<p>
+Until we get to the point where our <del>computer</del> Emacs does most of the
+plumbing work for us, let's integrate the data of that fancy graph I
+showed you earlier into our <code>find-file</code>!
+</p>
+
+<p>
+This is how code-compass latest feature looks like:
+</p>
+
+<p>
+<a href="/assets/blog/2021/01/12/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next/findCoupled.mp4">/assets/blog/2021/01/12/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next/findCoupled.mp4</a>
+</p>
+
+<p>
+In the above we generate a cache that stores for each project you
+visit a list of coupled files. When the cache is ready we can use
+<code>c/find-coupled-files</code>. If the file has no significant history, a
+message lets us know that no file was found. Otherwise, it provides a
+list of coupled files sorted by amount of changes and relevance: so
+the first proposed file is surely what you want to change next.
+</p>
+
+<p>
+(Now that I think of it, I should probably introduce an optional
+toggle that if on discards files if you have already changed them: in
+that way you could use this choice as a todo list for your change.)
+</p>
+
+<p>
+Anyway, I surely cannot remember to produce the cache while I am
+working on something. For that reason, I set a hook appositely for
+that in my configuration:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(run-with-timer 10 nil (lambda () (add-hook 'projectile-find-file-hook 'c/get-coupled-files-alist-hook-fn)))
+</pre>
+</div>
+
+<p>
+I use <a href="https://github.com/bbatsov/projectile">projectile</a>, and I thought that the best moment for me to create
+the cache is when I open a new file through projectile. Due to some
+initialization error, I delay the setting of that hook in my
+configuration: I run a timer to set the hook after 10 seconds Emacs
+initialized.
+</p>
+
+<p>
+On the long run I plan to focus my code-compass work more towards this
+direction, because I think the repository history can give us much
+more value than this. I am still experimenting and designing things,
+but hopefully this gives you a taste of what is coming.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1e18fcd" class="outline-2">
+<h2 id="org1e18fcd">Conclusion</h2>
+<div class="outline-text-2" id="text-org1e18fcd">
+<p>
+So get <a href="https://github.com/ag91/code-compass">code-compass</a> and let it help you finding out which files is
+best to change after the one at hand! You just need to run
+<code>c/find-coupled-files</code> on a file in the current project, and set a
+hook if you do not want to wait.
+</p>
+
+<p>
+Happy coding!
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">by the way, use the fold/reduce operation
+if you are having recursion problems, because working with explicit
+recursion is mostly for learning purpose</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-01-12</span>
+        <span title="last modification date" class="post-info">2021-01-12</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/programming/">programming</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
