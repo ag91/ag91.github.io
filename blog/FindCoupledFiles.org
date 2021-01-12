@@ -1,0 +1,108 @@
+#+TITLE:       Emacs as your code-compass: let history show you which files to edit next
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-01-12 Tue
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next
+#+KEYWORDS:    code-compass, emacs, programming
+#+TAGS:        code-compass, emacs, programming
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: See which files need changes after you edit the current one
+
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       4473a09b-b353-4a2d-aa0f-36c35eee5ee1
+:END:
+
+Emacs can suggest you what file to modify next according to your
+repository history. Just get [[https://github.com/ag91/code-compass][code-compass]] run =c/find-coupled-files=
+on a file in your Git repository!
+
+* The problem
+:PROPERTIES:
+:ID:       8c4e0ffb-b537-49d2-b2af-b6e7e95e6e74
+:END:
+
+In [[https://ag91.github.io/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/][a previous post]] I have shown how we can look at modules relations
+via a graph. The idea was to find more easily modules that need to
+change together and to give you visibility on modules that should be
+independent but that are still coupled according to historical change
+patterns.
+
+Now, a graph is useful as an overview, but what about while we are
+coding? As I was saying in my previous post, sometimes I forget to
+change some important file causing myself rework and delivery delays.
+The terrible thing is that my repository history can tell me what to
+do! How nice would it be if Emacs could directly tell me what to
+change next?
+
+* It is a problem indeed
+
+There is [[https://www.kite.com/][some]] [[https://www.tabnine.com/][momentum]] for text editors to become smarter and make
+life easier for the developer. Ideally, as Gregory T. Brown explores
+in the last chapter of his book [[file:/home/andrea/workspace/agenda/notes/20200726202344-programming_beyond_practice.org][Programming beyond practice]], we should
+replace low-level tools with more advanced tools which make us feel
+closer to our work: imagine focusing only on understanding your
+clients problems, and then in a few knowledgeable inputs shave off the
+rough solution of our computer to fit our client requirements
+perfectly. Instead we get side tracked by that recursion that is
+overflowing our stack [fn::by the way, use the fold/reduce operation
+if you are having recursion problems, because working with explicit
+recursion is mostly for learning purpose].
+
+This is still a bit far away as far as I know. It would be cool,
+though, if we could move Emacs a step closer to that side of things.
+At least, let's make it learn from our Git history!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       f536e0f8-d6cd-45cb-ac6d-08fd4c0314e4
+:END:
+
+Until we get to the point where our +computer+ Emacs does most of the
+plumbing work for us, let's integrate the data of that fancy graph I
+showed you earlier into our =find-file=!
+
+This is how code-compass latest feature looks like:
+
+[[file:findCoupled.mp4]]
+
+In the above we generate a cache that stores for each project you
+visit a list of coupled files. When the cache is ready we can use
+=c/find-coupled-files=. If the file has no significant history, a
+message lets us know that no file was found. Otherwise, it provides a
+list of coupled files sorted by amount of changes and relevance: so
+the first proposed file is surely what you want to change next.
+
+(Now that I think of it, I should probably introduce an optional
+toggle that if on discards files if you have already changed them: in
+that way you could use this choice as a todo list for your change.)
+
+Anyway, I surely cannot remember to produce the cache while I am
+working on something. For that reason, I set a hook appositely for
+that in my configuration:
+
+#+begin_src elisp :noeval
+(run-with-timer 10 nil (lambda () (add-hook 'projectile-find-file-hook 'c/get-coupled-files-alist-hook-fn)))
+#+end_src
+
+I use [[https://github.com/bbatsov/projectile][projectile]], and I thought that the best moment for me to create
+the cache is when I open a new file through projectile. Due to some
+initialization error, I delay the setting of that hook in my
+configuration: I run a timer to set the hook after 10 seconds Emacs
+initialized.
+
+On the long run I plan to focus my code-compass work more towards this
+direction, because I think the repository history can give us much
+more value than this. I am still experimenting and designing things,
+but hopefully this gives you a taste of what is coming.
+
+* Conclusion
+
+So get [[https://github.com/ag91/code-compass][code-compass]] and let it help you finding out which files is
+best to change after the one at hand! You just need to run
+=c/find-coupled-files= on a file in the current project, and set a
+hook if you do not want to wait.
+
+Happy coding!
