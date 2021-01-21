@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Have you writer ambitions? Write a little, write everyday, and let Emacs be your coach! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Use writer word goals to keep you motivated while writing!" />
+    <meta name="keywords" content="learning, emacs, failure" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Have you writer ambitions? Write a little, write everyday, and let Emacs be your coach!</h1>
+
+
+
+<div id="outline-container-org7ade100" class="outline-2">
+<h2 id="org7ade100">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org7ade100">
+<p>
+Do you want to be a writer? Be a writer every day! Set a goal on the
+number of words you want to write and DO IT. If you need support with
+that, try <a href="https://github.com/ag91/writer-word-goals">writer-word-goals</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8607c20" class="outline-2">
+<h2 id="org8607c20">The problem</h2>
+<div class="outline-text-2" id="text-org8607c20">
+<p>
+I like to write. It is something that I enjoy. It also allows my
+thoughts to reach more people that I could ever meet in person. Most
+of my writing effort goes into making what I think as clear as
+possible to my readers. This because I try to share things that are
+beneficial to them. Naturally I test these on myself first.
+</p>
+
+<p>
+One thing that bugs me as a writer is my lack of consistency. I
+typically write when I like it. I keep track of a list of topics I
+want to write about, but I have always kept the when and how
+malleable.
+</p>
+
+<p>
+Lately I have been wondering if this is a smart thing to (not) do.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2afe235" class="outline-2">
+<h2 id="org2afe235">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org2afe235">
+<p>
+In general you can find cases of geniuses that can run a marathon or
+produce an incredible work of art without practice. Well, from a range
+of activities that I do (from bread making to writing) I carefully
+tested that I am outside that small set of people. So as any other
+common mortal I need to <a href="https://ag91.github.io/blog/2020/05/02/fail-fast-and-then-fail-better/">try, fail and fail better</a>. The problem is that
+I need to do it a lot of times to really catch up with the geniuses
+(and overcome them if they keep skipping practice)! And the only
+better tool than quantity that I am aware of is constancy.
+</p>
+
+<p>
+And I asked myself: can my editor help me with that?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org820e0f1" class="outline-2">
+<h2 id="org820e0f1">And there is a solution</h2>
+<div class="outline-text-2" id="text-org820e0f1">
+<p>
+I had these ideas lurking in my head from some weeks when I started
+taking <a href="https://www.masterclass.com/classes/walter-mosley-teaches-fiction-and-storytelling">this course by Walter Mosley</a>. This person is inspiring. What
+touched me is that he decided to become a writer because in the eyes
+of his society he was already a failure. Then he managed to get there
+by his grit.
+</p>
+
+<p>
+Even watching just the little sample of the class you get his pearl:
+write every day and, before writing, edit the work of the previous
+day. Then just keep going. Forever. Likely, you will become a
+professional writer because of compounding. He also suggests the
+amount of words: one thousands word per day.
+</p>
+
+<p>
+This resonated with <a href="https://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms/">my</a> <a href="https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning/">beliefs</a> <a href="https://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist/">in</a> <a href="https://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health/">habits</a>. Assuming that you have a way
+to tell yourself everyday to do something, I can show you how to
+customize Emacs to be your coach while you are running towards
+completing your thousand words mini-marathon.
+</p>
+
+<p>
+I wrote a few lines of Elisp to change Emacs in your writing coach:
+you tell your editor your goal for the current buffer, and Emacs will
+quietly ping you every quarter of a minute with encouragement for your
+progress until you are in the buffer.
+</p>
+
+<p>
+The idea behind this is to make our writing process a bit of a game: I
+want to see that I am succeeding towards my writing goal while I am
+doing it.
+</p>
+
+<p>
+I initially thought to show a progress bar <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>, but than I thought: <a href="file:///home/andrea/workspace/agenda/notes/20200716000000_worse_is_better.html">worse is
+better</a>! While I am writing this, Emacs has just printed a message
+<code>Okay! 328 words left.</code> which tells me that I am rather close to my
+goal. I am going to edit this blog, so I may end up cutting or/and
+adding some content, but as a first go I find it supporting to see the
+count going down. It just makes me feel good and enjoy the writing
+session even more.
+</p>
+
+<p>
+You can try my mode by just downloading (or copying) the code from
+<a href="https://github.com/ag91/writer-word-goals">https://github.com/ag91/writer-word-goals</a>.
+</p>
+
+<p>
+This little mode is so simple that the only customization I left to
+the user is <code>wwg/monitor-period</code>. This defines how often Emacs
+notifies you about progress. I tuned this to 15 seconds according to
+my tastes. Potentially you can also customize the logic of the counter
+by modifying <code>wwg/monitor-function</code>, for example to make it fitter to
+the kind of file you are editing. I write in plain text formats, so
+keywords do not bias the word count. If you are editing LaTex files or
+similar, where keywords are everywhere, the bias can be significant.
+Then you may really want to provide a more sophisticated value for
+<code>wwg/monitor-function</code>.
+</p>
+
+<p>
+The only curious feature of this mode is that Emacs becomes silent if
+you move to another buffer. Maybe you got caught in something urgent
+and you will likely dislike if your minibuffer is getting polluted
+unnecessarily. Hence, I have flashed out a bit of buffer management so
+that if you wish to run multiple goals at the same time for the
+current Emacs session, you are free to challenge yourself.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org695fb32" class="outline-2">
+<h2 id="org695fb32">Conclusion</h2>
+<div class="outline-text-2" id="text-org695fb32">
+<p>
+Are you or do you wish to be a writer then? No matter how good you
+are, some practice is necessary. And the more you are consistent the
+more incredible will be your progress. If you want a bit of support in
+your endeavour, grab my <a href="https://github.com/ag91/writer-word-goals">writer-word-goals</a> and run
+<code>wwg/set-goal-current-buffer</code> to set your own goal. Or follow Walter
+Mosley's advice and just run <code>wwg/set-1k-goal-current-buffer</code>, which
+will set your goal to one thousand words.
+</p>
+
+<p>
+Happy writing!
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">Note that this is
+still possible. I left the code open to support other notifications if
+the minibuffer is not ideal for you.</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-01-21</span>
+        <span title="last modification date" class="post-info">2021-01-21</span>
+        <span title="tags" class="post-info"><a href="/tags/learning/">learning</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/failure/">failure</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

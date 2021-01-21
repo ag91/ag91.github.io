@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 12 Jan 2021 22:15:33 CET</pubDate>
-    <lastBuildDate>Tue, 12 Jan 2021 22:15:33 CET</lastBuildDate>
+    <pubDate>Thu, 21 Jan 2021 23:52:30 CET</pubDate>
+    <lastBuildDate>Thu, 21 Jan 2021 23:52:30 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Have you writer ambitions? Write a little, write everyday, and let Emacs be your coach!</title>
+      <link>http://ag91.github.io/blog/2021/01/21/have-you-writer-ambitions-write-a-little-write-everyday-and-let-emacs-be-your-coach</link>
+      <description><![CDATA[Use writer word goals to keep you motivated while writing!]]></description>
+      <pubDate>2021-01-21</pubDate>
+      <guid>http://ag91.github.io/blog/2021/01/21/have-you-writer-ambitions-write-a-little-write-everyday-and-let-emacs-be-your-coach</guid>
+    </item>
+    <item>
       <title>Emacs as your code-compass: let history show you which files to edit next</title>
       <link>http://ag91.github.io/blog/2021/01/12/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next</link>
-      <description><![CDATA[See which files need changes after you edit the current one]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-01-12</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/12/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-22</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/22/mastering-emacs-is-a-slow-process-an-archeological-tour-of-my-(archived)-beginnings</guid>
-    </item>
-    <item>
-      <title>Emacs as your code-compass: finding code hotspots</title>
-      <link>http://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-18</pubDate>
-      <guid>http://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots</guid>
     </item>
   </channel>
 </rss>
