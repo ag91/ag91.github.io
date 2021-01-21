@@ -1,0 +1,117 @@
+#+TITLE:       Have you writer ambitions? Write a little, write everyday, and let Emacs be your coach!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-01-21 Thu
+#+URI:         /blog/%y/%m/%d/have-you-writer-ambitions-write-a-little-write-everyday-and-let-emacs-be-your-coach
+#+KEYWORDS:    learning, emacs, failure
+#+TAGS:        learning, emacs, failure
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Use writer word goals to keep you motivated while writing!
+
+
+
+* Too long; didn't read
+
+Do you want to be a writer? Be a writer every day! Set a goal on the
+number of words you want to write and DO IT. If you need support with
+that, try [[https://github.com/ag91/writer-word-goals][writer-word-goals]].
+
+* The problem
+
+I like to write. It is something that I enjoy. It also allows my
+thoughts to reach more people that I could ever meet in person. Most
+of my writing effort goes into making what I think as clear as
+possible to my readers. This because I try to share things that are
+beneficial to them. Naturally I test these on myself first.
+
+One thing that bugs me as a writer is my lack of consistency. I
+typically write when I like it. I keep track of a list of topics I
+want to write about, but I have always kept the when and how
+malleable.
+
+Lately I have been wondering if this is a smart thing to (not) do.
+
+* It is a problem indeed
+
+In general you can find cases of geniuses that can run a marathon or
+produce an incredible work of art without practice. Well, from a range
+of activities that I do (from bread making to writing) I carefully
+tested that I am outside that small set of people. So as any other
+common mortal I need to [[https://ag91.github.io/blog/2020/05/02/fail-fast-and-then-fail-better/][try, fail and fail better]]. The problem is that
+I need to do it a lot of times to really catch up with the geniuses
+(and overcome them if they keep skipping practice)! And the only
+better tool than quantity that I am aware of is constancy.
+
+And I asked myself: can my editor help me with that?
+
+* And there is a solution
+
+I had these ideas lurking in my head from some weeks when I started
+taking [[https://www.masterclass.com/classes/walter-mosley-teaches-fiction-and-storytelling][this course by Walter Mosley]]. This person is inspiring. What
+touched me is that he decided to become a writer because in the eyes
+of his society he was already a failure. Then he managed to get there
+by his grit.
+
+Even watching just the little sample of the class you get his pearl:
+write every day and, before writing, edit the work of the previous
+day. Then just keep going. Forever. Likely, you will become a
+professional writer because of compounding. He also suggests the
+amount of words: one thousands word per day.
+
+This resonated with [[https://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms/][my]] [[https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning/][beliefs]] [[https://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist/][in]] [[https://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health/][habits]]. Assuming that you have a way
+to tell yourself everyday to do something, I can show you how to
+customize Emacs to be your coach while you are running towards
+completing your thousand words mini-marathon.
+
+I wrote a few lines of Elisp to change Emacs in your writing coach:
+you tell your editor your goal for the current buffer, and Emacs will
+quietly ping you every quarter of a minute with encouragement for your
+progress until you are in the buffer.
+
+The idea behind this is to make our writing process a bit of a game: I
+want to see that I am succeeding towards my writing goal while I am
+doing it.
+
+I initially thought to show a progress bar [fn::Note that this is
+still possible. I left the code open to support other notifications if
+the minibuffer is not ideal for you.], but than I thought: [[file:/home/andrea/workspace/agenda/notes/20200716000000_worse_is_better.org][worse is
+better]]! While I am writing this, Emacs has just printed a message
+=Okay! 328 words left.= which tells me that I am rather close to my
+goal. I am going to edit this blog, so I may end up cutting or/and
+adding some content, but as a first go I find it supporting to see the
+count going down. It just makes me feel good and enjoy the writing
+session even more.
+
+You can try my mode by just downloading (or copying) the code from
+https://github.com/ag91/writer-word-goals.
+
+This little mode is so simple that the only customization I left to
+the user is =wwg/monitor-period=. This defines how often Emacs
+notifies you about progress. I tuned this to 15 seconds according to
+my tastes. Potentially you can also customize the logic of the counter
+by modifying =wwg/monitor-function=, for example to make it fitter to
+the kind of file you are editing. I write in plain text formats, so
+keywords do not bias the word count. If you are editing LaTex files or
+similar, where keywords are everywhere, the bias can be significant.
+Then you may really want to provide a more sophisticated value for
+=wwg/monitor-function=.
+
+The only curious feature of this mode is that Emacs becomes silent if
+you move to another buffer. Maybe you got caught in something urgent
+and you will likely dislike if your minibuffer is getting polluted
+unnecessarily. Hence, I have flashed out a bit of buffer management so
+that if you wish to run multiple goals at the same time for the
+current Emacs session, you are free to challenge yourself.
+
+* Conclusion
+
+Are you or do you wish to be a writer then? No matter how good you
+are, some practice is necessary. And the more you are consistent the
+more incredible will be your progress. If you want a bit of support in
+your endeavour, grab my [[https://github.com/ag91/writer-word-goals][writer-word-goals]] and run
+=wwg/set-goal-current-buffer= to set your own goal. Or follow Walter
+Mosley's advice and just run =wwg/set-1k-goal-current-buffer=, which
+will set your goal to one thousand words.
+
+Happy writing!
