@@ -1,4 +1,4 @@
-#+TITLE:       Have you writer ambitions? Write a little, write everyday, and let Emacs be your coach!
+#+TITLE:       Have you writer's ambitions? Write a little, write everyday, and let Emacs be your coach!
 #+AUTHOR:      Andrea
 #+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2021-01-21 Thu
@@ -8,7 +8,6 @@
 #+LANGUAGE:    en
 #+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
 #+DESCRIPTION: Use writer word goals to keep you motivated while writing!
-
 
 
 * Too long; didn't read
