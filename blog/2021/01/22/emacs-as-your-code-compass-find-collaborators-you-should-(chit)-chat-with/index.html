@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: find collaborators you should (chit) chat with - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to show the ideal code communication in your repository" />
+    <meta name="keywords" content="code-compass, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: find collaborators you should (chit) chat with</h1>
+
+<div id="outline-container-org9b36304" class="outline-2">
+<h2 id="org9b36304">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org9b36304">
+<p>
+Have you ever strongly desired to have a chat about the design of your
+code but did not know who to pick? Find who running
+<code>c/show-code-communication</code> with your <a href="https://github.com/ag91/code-compass">code-compass</a>!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org762ac9f" class="outline-2">
+<h2 id="org762ac9f">The problem</h2>
+<div class="outline-text-2" id="text-org762ac9f">
+<p>
+Once in a while I have to jump in a code base, do my work, and finally
+walk away leaving things better off. I would probably be like Mr. Wolf
+in <a href="https://en.wikipedia.org/wiki/Pulp_Fiction">Pulp Fiction</a>, if only it were a movie. Instead, particularly when I
+have no clue, my job requires asking around. That easily becomes a
+proper investigation when the developer, who Git blamed, is away. How
+am I going to find another person now? And how without disturbing my
+busy colleagues?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9794b06" class="outline-2">
+<h2 id="org9794b06">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org9794b06">
+<p>
+Apart of my exploratory problem, it would be cool to see clusters of
+collaborations for the code base we are working on. I am thinking of
+the code base telling me: "you changed this module recently, your
+colleague touched this same module, mmm... shall you two have a chat
+to see if you are still on the same page?" Probably this is easily
+achievable for two close collaborators, but what about <a href="https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/">hotspots</a> which
+more than one team changes often? It would be nice to have the
+repository history suggest who should have a design chat together to
+keep things organized.
+</p>
+
+<p>
+And even if you are just looking for a bit of gossip: you may want to
+discover who communicates/works more often with who. Just to get an
+idea!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org55c32a8" class="outline-2">
+<h2 id="org55c32a8">And there is a solution</h2>
+<div class="outline-text-2" id="text-org55c32a8">
+<p>
+We can, indeed, learn who we should chat with from our software
+history! Any time we work on the same code in the repository, Git
+records it. Then we can just count how often that happens over the
+repository. If it happens a lot, we shall get notified to discuss
+together about the design of this repository (if we are not already
+doing it).
+</p>
+
+<p>
+So let's reuse our fancy edge bundling graph that we saw earlier for
+<a href="https://ag91.github.io/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules/">change coupling</a>.
+</p>
+
+<p>
+If you run <a href="https://github.com/ag91/code-compass">code-compass</a>'s <code>c/show-code-communication</code> on the <a href="https://github.com/xmonad/xmonad">XMonad</a>
+repository for the last 2 months, you will see this:
+</p>
+
+
+<div id="org2285703" class="figure">
+<p><img src="/assets/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with/xmonadCodeCommunication.jpg" alt="xmonadCodeCommunication.jpg" />
+</p>
+</div>
+
+<p>
+I put my cursor on the <i>slotThe</i> to see the connections this user has
+with the others. You can see that the user <i>slotThe</i> has worked on the
+same code of the other three users. Since this is a project on GitHub
+these people may never have actually spoken together face to face,
+still their work intersects.
+</p>
+
+<p>
+So, say I am editing a piece of code that <i>slotThe</i> edited last time:
+if I am really scratching my head, I can try to ping any of those
+other authors to see if they can help me out.
+</p>
+
+<p>
+All in all, this is an analysis that gives you a bit of context of the
+relationship between authors.
+</p>
+
+<p>
+By the way, I find the colors of the links insignificant. The
+important information is in the relationships.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org18b7ae6" class="outline-2">
+<h2 id="org18b7ae6">Conclusion</h2>
+<div class="outline-text-2" id="text-org18b7ae6">
+<p>
+So just try to see if you find any unexpected communication between
+your collaborators! You are just a <code>c/show-code-communication</code> away
+from seeing the relationship in the history of your project.
+</p>
+
+<p>
+Happy communication!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-01-22</span>
+        <span title="last modification date" class="post-info">2021-01-22</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

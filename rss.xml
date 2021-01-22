@@ -4,15 +4,22 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 21 Jan 2021 23:55:53 CET</pubDate>
-    <lastBuildDate>Thu, 21 Jan 2021 23:55:53 CET</lastBuildDate>
+    <pubDate>Fri, 22 Jan 2021 20:30:27 CET</pubDate>
+    <lastBuildDate>Fri, 22 Jan 2021 20:30:27 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
+    <item>
+      <title>Emacs as your code-compass: find collaborators you should (chit) chat with</title>
+      <link>http://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with</link>
+      <description><![CDATA[How to show the ideal code communication in your repository]]></description>
+      <pubDate>2021-01-22</pubDate>
+      <guid>http://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with</guid>
+    </item>
     <item>
       <title>Have you writer&#39;s ambitions? Write a little, write everyday, and let Emacs be your coach!</title>
       <link>http://ag91.github.io/blog/2021/01/21/have-you-writer-ambitions-write-a-little-write-everyday-and-let-emacs-be-your-coach</link>
       <description><![CDATA[Use writer word goals to keep you motivated while writing!]]></description>
-      <pubDate>2021-01-21</pubDate>
+      <pubDate>2021-01-22</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/21/have-you-writer-ambitions-write-a-little-write-everyday-and-let-emacs-be-your-coach</guid>
     </item>
     <item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-24</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/24/emacs-as-your-code-compass-looking-at-hotspots-evolution</guid>
-    </item>
-    <item>
-      <title>Mastering Emacs is a slow process: an archeological tour of my (archived) beginnings</title>
-      <link>http://ag91.github.io/blog/2020/12/22/mastering-emacs-is-a-slow-process-an-archeological-tour-of-my-(archived)-beginnings</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-22</pubDate>
-      <guid>http://ag91.github.io/blog/2020/12/22/mastering-emacs-is-a-slow-process-an-archeological-tour-of-my-(archived)-beginnings</guid>
     </item>
   </channel>
 </rss>
