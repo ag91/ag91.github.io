@@ -59,7 +59,7 @@ professional writer because of compounding. He also suggests the
 amount of words: one thousands word per day.
 
 This resonated with [[https://ag91.github.io/blog/2020/09/12/slow-growth-insomnia-and-curing-symptoms/][my]] [[https://ag91.github.io/blog/2020/09/26/life-is-short-but-not-short-enough-to-skip-planning/][beliefs]] [[https://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist/][in]] [[https://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health/][habits]]. Assuming that you have a way
-to tell yourself everyday to do something, I can show you how to
+to tell yourself to do something everyday, I can show you how to
 customize Emacs to be your coach while you are running towards
 completing your thousand words mini-marathon.
 
@@ -74,7 +74,7 @@ doing it.
 
 I initially thought to show a progress bar [fn::Note that this is
 still possible. I left the code open to support other notifications if
-the minibuffer is not ideal for you.], but than I thought: [[file:/home/andrea/workspace/agenda/notes/20200716000000_worse_is_better.org][worse is
+the minibuffer is not ideal for you.], but then I thought: [[file:/home/andrea/workspace/agenda/notes/20200716000000_worse_is_better.org][worse is
 better]]! While I am writing this, Emacs has just printed a message
 =Okay! 328 words left.= which tells me that I am rather close to my
 goal. I am going to edit this blog, so I may end up cutting or/and
@@ -98,8 +98,8 @@ Then you may really want to provide a more sophisticated value for
 
 The only curious feature of this mode is that Emacs becomes silent if
 you move to another buffer. Maybe you got caught in something urgent
-and you will likely dislike if your minibuffer is getting polluted
-unnecessarily. Hence, I have flashed out a bit of buffer management so
+and you will likely dislike it, if your minibuffer is getting polluted
+unnecessarily. Hence, I have fleshed out a bit of buffer management so
 that if you wish to run multiple goals at the same time for the
 current Emacs session, you are free to challenge yourself.
 
