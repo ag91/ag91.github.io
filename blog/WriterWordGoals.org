@@ -45,6 +45,9 @@ better tool than quantity that I am aware of is constancy.
 And I asked myself: can my editor help me with that?
 
 * And there is a solution
+:PROPERTIES:
+:ID:       665f6c27-8c72-4715-878c-588977a1c0ae
+:END:
 
 I had these ideas lurking in my head from some weeks when I started
 taking [[https://www.masterclass.com/classes/walter-mosley-teaches-fiction-and-storytelling][this course by Walter Mosley]]. This person is inspiring. What
@@ -74,13 +77,17 @@ doing it.
 
 I initially thought to show a progress bar [fn::Note that this is
 still possible. I left the code open to support other notifications if
-the minibuffer is not ideal for you.], but then I thought: [[file:/home/andrea/workspace/agenda/notes/20200716000000_worse_is_better.org][worse is
-better]]! While I am writing this, Emacs has just printed a message
-=Okay! 328 words left.= which tells me that I am rather close to my
-goal. I am going to edit this blog, so I may end up cutting or/and
-adding some content, but as a first go I find it supporting to see the
-count going down. It just makes me feel good and enjoy the writing
-session even more.
+the minibuffer is not ideal for you.], but then I thought: worse is
+better [fn:: This is a Unix principle (see [[https://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters/][here]] for some more
+principles I wrote about): instead of a perfect solution, have a lot
+of micro +services+ solutions that you can compose together. This has
+a significant pro: you leave room to compose them in novel ways to
+solve other problems you have to deal with later.]! While I am writing
+this, Emacs has just printed a message =Okay! 328 words left.= which
+tells me that I am rather close to my goal. I am going to edit this
+blog, so I may end up cutting or/and adding some content, but as a
+first go I find it supporting to see the count going down. It just
+makes me feel good and enjoy the writing session even more.
 
 You can try my mode by just downloading (or copying) the code from
 https://github.com/ag91/writer-word-goals.
