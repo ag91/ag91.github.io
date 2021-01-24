@@ -4,23 +4,23 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 22 Jan 2021 20:30:27 CET</pubDate>
-    <lastBuildDate>Fri, 22 Jan 2021 20:30:27 CET</lastBuildDate>
+    <pubDate>Sun, 24 Jan 2021 14:59:55 CET</pubDate>
+    <lastBuildDate>Sun, 24 Jan 2021 14:59:55 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
-    <item>
-      <title>Emacs as your code-compass: find collaborators you should (chit) chat with</title>
-      <link>http://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with</link>
-      <description><![CDATA[How to show the ideal code communication in your repository]]></description>
-      <pubDate>2021-01-22</pubDate>
-      <guid>http://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with</guid>
-    </item>
     <item>
       <title>Have you writer&#39;s ambitions? Write a little, write everyday, and let Emacs be your coach!</title>
       <link>http://ag91.github.io/blog/2021/01/21/have-you-writer-ambitions-write-a-little-write-everyday-and-let-emacs-be-your-coach</link>
       <description><![CDATA[Use writer word goals to keep you motivated while writing!]]></description>
-      <pubDate>2021-01-22</pubDate>
+      <pubDate>2021-01-24</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/21/have-you-writer-ambitions-write-a-little-write-everyday-and-let-emacs-be-your-coach</guid>
+    </item>
+    <item>
+      <title>Emacs as your code-compass: find collaborators you should (chit) chat with</title>
+      <link>http://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with</link>
+      <description><![CDATA[]]></description>
+      <pubDate>2021-01-22</pubDate>
+      <guid>http://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with</guid>
     </item>
     <item>
       <title>Emacs as your code-compass: let history show you which files to edit next</title>
