@@ -3,8 +3,8 @@
 #+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2021-01-11 Mon
 #+URI:         /blog/%y/%m/%d/coverlay-for-scala-or-how-to-produce-lcov-from-cobertura
-#+KEYWORDS:    scala. emacs
-#+TAGS:        scala. emacs
+#+KEYWORDS:    scala, emacs
+#+TAGS:        scala, emacs
 #+LANGUAGE:    en
 #+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
 #+DESCRIPTION: how to produce lcov files from cobertura and have coverage information in your Scala files

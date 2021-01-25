@@ -1,0 +1,172 @@
+#+TITLE:       VLC via Emacs: how to open a YouTube link
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-01-25 Mon
+#+URI:         /blog/%y/%m/%d/vlc-via-emacs-how-to-open-a-youtube-link
+#+KEYWORDS:    emacs, vlc
+#+TAGS:        emacs, vlc
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to open YouTube links with VLC
+
+* Too long; didn't read
+
+If you are a YouTube user and you keep lists of links you want to
+watch, this is for you: I will show how to integrate VLC and Emacs!
+
+* The problem
+
+I like VLC and I like to listen music from YouTube. Until lately I
+would open a tab, search a song I like, and let YouTube auto-play run
+playlist for me. Well, that is good to discover new music but not
+really to organize my own playlists. I deliberately lack a YouTube
+account, so I worked that around by creating [[https://github.com/org-roam/org-roam][org-roam]] notes with the
+music I like. Now I can see my potential playlists when I use
+org-roam, but what about playing them? (Also how annoying are YouTube popups?!?)
+
+* It is a problem indeed
+
+Probably this is not really a problem, but maybe rather an obstacle
+between me and my chill time :)
+
+And, well at least [[https://github.com/xuchunyang/vlc.el][two]] [[https://github.com/mohkale/vlc-rc][people]] have spent some time in integrating VLC
+and Emacs, so I guess at least someone likes to open media files in
+VLC via their editor. The missing bit is that both those modes seem to
+ignore HTTP links! In this Internet world it is a bit of a pity: let's
+fix that :)
+
+* And there is a solution
+
+First things first: you need to get VLC interpret YouTube links! That is easy:
+
+1) enable all sort of YouTube links:
+   copy https://raw.githubusercontent.com/videolan/vlc/master/share/lua/playlist/youtube.lua into ~/.local/share/vlc/lua/playlist/youtube.luac (if you are on Linux)
+
+   see https://forum.videolan.org/viewtopic.php?t=152202 for more details.
+2) enable playlists:
+
+   copy https://gist.github.com/seraku24/db42e0e418b2252f2136d2d7f1656be5 into ~/.local/share/vlc/lua/playlist/youtubeplaylist.lua (if you are on Linux)
+
+   see https://www.maketecheasier.com/play-youtube-playlist-vlc/ for more details.
+
+Congratulations. Now your VLC can run YouTube videos!
+
+From the Emacs side of things, I started by trying out =vlc.el= and
+hoping it would open my YouTube links. Nope. But that is easy to fix,
+given you know how vlc.el sends a file to VLC:
+
+#+begin_src elisp :noeval
+(defun vlc-add (uri &optional noaudio novideo)
+  "Add URI to playlist and start playback.
+NOAUDIO and NOVIDEO are optional options.
+If NOAUDIO is non-nil, disable audio.
+If NOVIDEO is non-nil, disable video.
+When called interactively, with prefix arg, you can pick one."
+  (interactive (cons (concat "file://" (expand-file-name (read-file-name "Add file: ")))
+                     (pcase current-prefix-arg
+                       ('nil (list nil nil))
+                       (_ (pcase (completing-read "Option: " '("noaudio" "novideo") nil t)
+                            ("noaudio" (list t nil))
+                            ("novideo" (list nil t)))))))
+  (vlc--get "/requests/status.json" :command 'in_play
+            :input uri
+            :option (cond (noaudio "noaudio")
+                          (novideo "novideo"))))
+#+end_src
+
+This =vlc.el= library is using the VLC HTTP API (you can see by
+looking at the last sexp of the function). This function accepts only
+files because it explicitly concatenates =file://= to the filename it
+sends to VLC. That tells VLC that the URI must exist on the file
+system.
+
+We can work around that easily:
+
+#+begin_src elisp :noeval
+(defun vlc-add-uri (uri &optional noaudio novideo)
+    "Add URI to playlist and start playback.
+NOAUDIO and NOVIDEO are optional options.
+If NOAUDIO is non-nil, disable audio.
+If NOVIDEO is non-nil, disable video.
+When called interactively, with prefix arg, you can pick one."
+    (interactive (cons (let ((uri (read-string "Add file or url: ")))
+                         (if (s-starts-with-p "http" uri) uri
+                           (concat "file://" (expand-file-name uri))))
+                       (pcase current-prefix-arg
+                         ('nil (list nil nil))
+                         (_ (pcase (completing-read "Option: " '("noaudio" "novideo") nil t)
+                              ("noaudio" (list t nil))
+                              ("novideo" (list nil t)))))))
+    (vlc-add uri noaudio novideo))
+
+(defun vlc-enqueue-uri (uri)
+    "Add URI to playlist."
+    (interactive (list (let ((uri (read-string "Add file or url: ")))
+                         (if (s-starts-with-p "http" uri) uri
+                           (concat "file://" (expand-file-name uri))))
+                       ))
+    (vlc-enqueue uri))
+#+end_src
+
+As you can see we just add an =if= statement to check if the string
+starts for =http=, and if not we assume that is a file. Naive, but
+that works okay. The rest is just a call to the original function.
+Same trick goes for queuing a URI to the current playlist.
+
+Now that we can add and queue videos, I just wish commands to:
+
+1. queue a link if my cursor is on it
+2. queue a bunch of links that I have in my kill ring ([[https://github.com/charlesbrandt/copy_all_tabs][there is a
+   useful add-on in Firefox to store the links to your open tabs]])
+
+For the link at point we can rely on =thing-at-point=:
+
+#+begin_src elisp :noeval
+(defun vlc-enqueue-uri-at-point ()
+    "Add URI to playlist."
+    (interactive)
+    (let ((uri (thing-at-point 'url)))
+      (when uri (vlc-enqueue uri))))
+#+end_src
+
+For the bunch of links things are not difficult either:
+
+#+begin_src elisp :noeval
+(defun vlc-uris-in-clipboard ()
+    (--> (with-temp-buffer
+           (clipboard-yank)
+           (buffer-substring-no-properties (point-min) (point-max)))
+         (s-split "\n" it)
+         (--filter (s-starts-with-p "http" it) it)))
+
+(defun vlc-enqueue-uris (uris)
+    "Queue URIS to current VLC playlist."
+    (interactive)
+    (let ((uris (or uris (vlc-uris-in-clipboard))))
+      (-each uris 'vlc-enqueue-uri)))
+#+end_src
+
+So =vlc-enqueue-uris= queues a list of uris to your current VLC
+playlist. It defaults to queue the links in your clipboard. I did
+expect to use this only with YouTube, so be careful if you have other
+sort of links in your clipboard because it may not work.
+
+And if you wonder if you can search YouTube from Emacs itself, you
+can! I shall blog about that soon.
+
+* Conclusion
+:PROPERTIES:
+:ID:       7c3f1124-8fe9-490c-8343-a5e9e32ffd94
+:END:
+
+And that is it! All you need to do is to install vlc.el with something
+like this:
+
+#+begin_src elisp :noeval
+(use-package vlc)
+#+end_src
+
+Start a VLC instance with =vlc-start=, load my snippets to start
+playing your preferred YouTube videos with VLC from Emacs!
+
+Happy playing!
