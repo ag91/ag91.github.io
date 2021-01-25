@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="author" content="Andrea" />
     <meta name="description" content="how to produce lcov files from cobertura and have coverage information in your Scala files" />
-    <meta name="keywords" content="scala. emacs" />
+    <meta name="keywords" content="scala, emacs" />
     <link rel="stylesheet" href="/media/css/main.css" type="text/css">
     <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
   </head>
@@ -32,9 +32,9 @@
 <div class="post">
 <h1>Coverlay for Scala, or how to produce lcov from cobertura</h1>
 
-<div id="outline-container-orgf99dd0c" class="outline-2">
-<h2 id="orgf99dd0c">Too long; didn't read</h2>
-<div class="outline-text-2" id="text-orgf99dd0c">
+<div id="outline-container-org8976d5f" class="outline-2">
+<h2 id="org8976d5f">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org8976d5f">
 <p>
 Visualize your scala code coverage directly in your Scala buffers!
 Here I show some Elisp to cobertura files to the lcov file, so that
@@ -43,9 +43,9 @@ Scala coders can leverage <a href="https://github.com/twada/coverlay.el">coverla
 </div>
 </div>
 
-<div id="outline-container-orgce020cf" class="outline-2">
-<h2 id="orgce020cf">The problem</h2>
-<div class="outline-text-2" id="text-orgce020cf">
+<div id="outline-container-org34ffeb6" class="outline-2">
+<h2 id="org34ffeb6">The problem</h2>
+<div class="outline-text-2" id="text-org34ffeb6">
 <p>
 I always found coverage reports boring to read. Waiting for
 instrumented code to produce a report is already a bit long. Then you
@@ -68,9 +68,9 @@ Or not? Argh, it does not support xml reports!
 </div>
 </div>
 
-<div id="outline-container-orgd2d9812" class="outline-2">
-<h2 id="orgd2d9812">It is a problem indeed</h2>
-<div class="outline-text-2" id="text-orgd2d9812">
+<div id="outline-container-orga30ac78" class="outline-2">
+<h2 id="orga30ac78">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orga30ac78">
 <p>
 So I think: "there must surely be a converter from lcov to cobertura,
 doesn't it?". The answer iiiis... no. Apparently, <code>cobertura</code> is the
@@ -86,9 +86,9 @@ It really seems I need to write some Elisp myself to fix this.
 </div>
 </div>
 
-<div id="outline-container-org507ed7c" class="outline-2">
-<h2 id="org507ed7c">And there is a solution</h2>
-<div class="outline-text-2" id="text-org507ed7c">
+<div id="outline-container-org22ff136" class="outline-2">
+<h2 id="org22ff136">And there is a solution</h2>
+<div class="outline-text-2" id="text-org22ff136">
 <p>
 The idea is that coverlay reads an lcov file which looks like this:
 </p>
@@ -541,9 +541,9 @@ even just extend coverlay to support cobertura's branch analysis.
 </div>
 </div>
 
-<div id="outline-container-org4eab6f3" class="outline-2">
-<h2 id="org4eab6f3">Conclusion</h2>
-<div class="outline-text-2" id="text-org4eab6f3">
+<div id="outline-container-org402abb6" class="outline-2">
+<h2 id="org402abb6">Conclusion</h2>
+<div class="outline-text-2" id="text-org402abb6">
 <p>
 So take the code from my repository and see finally your code coverage
 in your Scala projects! If you have sbt-scoverage and the Emacs
@@ -563,8 +563,8 @@ Happy testing!
     <div>
       <div class="post-meta">
         <span title="post date" class="post-info">2021-01-11</span>
-        <span title="last modification date" class="post-info">2021-01-11</span>
-        <span title="tags" class="post-info"><a href="/tags/scala-emacs/">scala. emacs</a></span>
+        <span title="last modification date" class="post-info">2021-01-25</span>
+        <span title="tags" class="post-info"><a href="/tags/scala/">scala</a>, <a href="/tags/emacs/">emacs</a></span>
         <span title="author" class="post-info">Andrea</span>
       </div>
       <section>
