@@ -4,21 +4,28 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 25 Jan 2021 20:31:43 CET</pubDate>
-    <lastBuildDate>Mon, 25 Jan 2021 20:31:43 CET</lastBuildDate>
+    <pubDate>Thu, 28 Jan 2021 22:16:07 CET</pubDate>
+    <lastBuildDate>Thu, 28 Jan 2021 22:16:07 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emacs as your code-compass: who can I ask for help?</title>
+      <link>http://ag91.github.io/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help</link>
+      <description><![CDATA[How is knowledge distributed? Who knows what and who can help me? Emacs tell that to me!]]></description>
+      <pubDate>2021-01-28</pubDate>
+      <guid>http://ag91.github.io/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help</guid>
+    </item>
+    <item>
       <title>VLC via Emacs: how to open a YouTube link</title>
       <link>http://ag91.github.io/blog/2021/01/25/vlc-via-emacs-how-to-open-a-youtube-link</link>
-      <description><![CDATA[How to open YouTube links with VLC]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-01-25</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/25/vlc-via-emacs-how-to-open-a-youtube-link</guid>
     </item>
     <item>
       <title>Coverlay for Scala, or how to produce lcov from cobertura</title>
       <link>http://ag91.github.io/blog/2021/01/11/coverlay-for-scala-or-how-to-produce-lcov-from-cobertura</link>
-      <description><![CDATA[how to produce lcov files from cobertura and have coverage information in your Scala files]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-01-25</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/11/coverlay-for-scala-or-how-to-produce-lcov-from-cobertura</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2020-12-31</pubDate>
       <guid>http://ag91.github.io/blog/2020/12/31/top-down-elisping-a-simple-snippet-to-stub-a-function-while-your-are-designing-your-code</guid>
-    </item>
-    <item>
-      <title>Emacs as your code-compass: how complex is this code?</title>
-      <link>http://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2020-12-27</pubDate>
-      <guid>http://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code</guid>
     </item>
   </channel>
 </rss>

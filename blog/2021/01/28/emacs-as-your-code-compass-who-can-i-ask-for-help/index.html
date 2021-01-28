@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: who can I ask for help? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How is knowledge distributed? Who knows what and who can help me? Emacs tell that to me!" />
+    <meta name="keywords" content="code-compass, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: who can I ask for help?</h1>
+
+<div id="outline-container-orgf9b0dc4" class="outline-2">
+<h2 id="orgf9b0dc4">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgf9b0dc4">
+<p>
+Do you want to see how knowledge is distributed in your repository?
+Use code-compass <code>c/show-knowledge-graph</code> to see an interactive
+knowledge map!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2c6f09e" class="outline-2">
+<h2 id="org2c6f09e">The problem</h2>
+<div class="outline-text-2" id="text-org2c6f09e">
+<p>
+It is nice to know who to ask for help. One thing that is worth
+learning in life is to ask. A lot of us come to dislike asking because
+expresses needing something and makes us look vulnerable. Even if that
+were true, vulnerability has got a lot of good traits: for once it
+sets strong foundations for human relations like friendship <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>. When I am
+working, <a href="https://ag91.github.io/blog/2020/10/23/challenge-problems-effectively-how-to-know-when-to-stop-doing-it-alone-and-ask-for-help/">asking is fundamental</a>. It is efficient because you may save
+time in solving a problem if somebody experienced it before AND, more
+importantly, you get in touch with somebody! The more people you know
+at work the better.
+</p>
+
+<p>
+So which people <a href="https://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with">should you chat with</a> if you are working on a certain
+part of the repository? And if you have a problem in understanding the
+whole repository (and do not wish to go through your Git logs manually
+to find a contributor)? Could we visualize if there is a major
+contributor for this repository who can help us?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcbdc6c7" class="outline-2">
+<h2 id="orgcbdc6c7">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgcbdc6c7">
+<p>
+Apart of knowing who to ask for help, there is another interesting use
+case for having a view of how knowledge is spread in the code base. It
+may happen during your career to be working on a project and suddenly
+discovering that the main contributor has decided to move on in a few
+weeks. You congratulate them, give them your best wishes, and then in
+a moment of quiet you realize: "Wait, if they go I am the next main
+contributor!!!". This is the part where you shiver because you know
+you miss some project knowledge but it is unclear what exactly. This
+is something that happened to me, and it is such a basic error to let
+your pal leave without asking the right questions! It always happen
+that you discover what you needed to ask just the day after they have
+left!
+</p>
+
+<p>
+What if instead we had hints of what knowledge we would miss if they
+left?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2d20cd7" class="outline-2">
+<h2 id="org2d20cd7">And there is a solution</h2>
+<div class="outline-text-2" id="text-org2d20cd7">
+<p>
+Naturally <a href="https://github.com/ag91/code-compass">code-compass</a> can help you with that! Let's see how
+code-compass's knowledge is distributed at the moment:
+</p>
+
+
+<div id="orgc7c854f" class="figure">
+<p><img src="/assets/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/code-compass-knowledge.jpg" alt="code-compass-knowledge.jpg" />
+</p>
+</div>
+
+<p>
+I am enthusiastic to see somebody other than me popping up in the
+knowledge map for code-compass! Indeed, recently Blank Spruce has
+contributed to the project by moving out HTML, CSS, JavaScript and
+Python code that I had embedded in the main Elisp file. Much cleaner!
+</p>
+
+<p>
+You can see in the image that there is a legend on the right that you
+can scroll. The black big dot is a file (README.org) that <a href="https://github.com/AlDanial/cloc">cloc</a> cannot
+recognize as a source file and so the graph leaves it marked as
+unknown. You can see from the knowledge map that I have copied @Blank
+Spruce for the latest analyses, and if you cannot see it clearly let
+me show you:
+</p>
+
+<p>
+<a href="/assets/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/knowledge-map.mp4">/assets/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/knowledge-map.mp4</a>
+</p>
+
+<p>
+Another detail you may pick up now is that, if you move your pointer
+over the name of the module, the text changes to indicate who is the
+main contributor of that file <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>. Once you associate the color to the
+person, you can easily see how the knowledge is distributed.
+</p>
+
+<p>
+Let's look at another code base to get a better idea of how to use
+this for a bigger project:
+</p>
+
+
+<div id="org4915c98" class="figure">
+<p><img src="/assets/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/xmonad.jpg" alt="xmonad.jpg" />
+</p>
+</div>
+
+<p>
+This is the knowledge map for <a href="">xmonad</a>. Who do you think is the
+maintainer of this project? Naturally, Adam Vogt! You can see it at
+once from how orange is the repository. So that would be the best
+person to ask for help if you have a conceptual question about the
+project. And if Adam plans to leave the project at any point, well...
+you may need more than the notice period to ask enough questions!
+</p>
+
+<p>
+A note: the colors available by default are limited because the
+projects I work on usually have a decent amount of contributors, but
+not too many. You can change that though if you need more or just do
+not like my choice. For that you can provide a list of colors in
+<code>c/authors-colors</code> (I got some of them from <a href="https://matplotlib.org/3.1.0/gallery/color/named_colors.html">here</a> because a Python
+script was handling them).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge9a9142" class="outline-2">
+<h2 id="orge9a9142">Conclusion</h2>
+<div class="outline-text-2" id="text-orge9a9142">
+<p>
+So, curious who to ask for help? Grab <a href="https://github.com/ag91/code-compass">code-compass</a> and you are a
+<code>c/show-knowledge-graph</code> away from seeing how the knowledge is
+distributed and who to ask help to.
+</p>
+
+<p>
+Happy asking!
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">I
+guess the idea is that you want to be confortable with another person
+in chill times. It is a bit of a stress to hangout with a superman
+because you have to run after the expectations they set.</p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">The text change was the product of
+a trial and error session last evening: I really have to learn d3.js
+from scratch at some point...</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-01-28</span>
+        <span title="last modification date" class="post-info">2021-01-28</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
