@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: how stable is my code? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Find safe zones in your code base with code-compass" />
+    <meta name="keywords" content="code-compass, design, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: how stable is my code?</h1>
+
+<div id="outline-container-org9b8b509" class="outline-2">
+<h2 id="org9b8b509">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org9b8b509">
+<p>
+Reliable things in life are important, so find the code that you can
+rely upon! Some code in your repository is left alone for a long time.
+That means that it is generally safe. Find it with code-compass
+<code>c/show-stability-graph</code>: you just need to look for white circles.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org72f0347" class="outline-2">
+<h2 id="org72f0347">The problem</h2>
+<div class="outline-text-2" id="text-org72f0347">
+<p>
+Say we have a repository that has overgrown in functionality. It
+contains all sort of things: from geolocation to authentication (and
+maybe even some eastern egg that some developer unexpectedly added
+in). What if we want to split this variegated functionality among
+multiple repositories? One approach is to cluster code by feature and
+then move these code clusters in new repositories. But what if people
+are actively working on these features? Shall we surprise them with
+our new structure? It would be amazing instead if find out the code
+that is stable and untouched: that is surely ripe to move to a better
+location!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org23b1691" class="outline-2">
+<h2 id="org23b1691">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org23b1691">
+<p>
+Finding stable parts of your code is convenient also from a quality
+perspective. Things that do no change for a long time are likely to
+have enough quality in them to avoid recent modification (or dead
+code, which is somewhat the same). In his book <a href="https://www.goodreads.com/book/show/36517037-software-design-x-rays?from_search=true&amp;from_srp=true&amp;qid=i6DE6WnVxp&amp;rank=1">Software Design X-Rays</a>,
+Adam Torhill writes: "The risk of a new bug decreases with every day
+that passes. That’s due to the interesting fact that the risk of
+software faults declines with the age of the code" <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup>.
+</p>
+
+<p>
+This is interesting even for learning, because we can see what are the
+characteristics of this code to reproduce them. Typically the design
+of software produces stable code <sup><a id="fnr.2" class="footref" href="#fn.2">2</a></sup>. If we just can learn from the
+previous maintainers how to design and implement stable code, we can
+have a code base that stays reliable.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1fae044" class="outline-2">
+<h2 id="org1fae044">And there is a solution</h2>
+<div class="outline-text-2" id="text-org1fae044">
+<p>
+Code ages. The bad of this is that we gradually forget what the old
+code is doing, the good thing is that if old code stays untouched it
+is likely that is reliable. We saw that the hotspot tells us which
+parts of the code are really active and likely buggy. Code stability
+is basically the inverse of that analysis.
+</p>
+
+<p>
+You can produce a stability graph with code-compass's command
+<code>=c/show-stability-graph</code>. The graph looks like the following:
+</p>
+
+
+<div id="org677504b" class="figure">
+<p><img src="/assets/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code/codeage.jpg" alt="codeage.jpg" />
+</p>
+</div>
+
+<p>
+The clearer the white the older is the last modification on the code.
+You can then see how easily it is to spot clusters of modules that
+have been left by themselves for a long time. If circles are blue it
+means that they have been modified recently. Apparently the <code>Org</code>
+module of Pandoc is still actively modified while the <code>Docx</code> is
+growing older and stable.
+</p>
+
+<p>
+Again this analysis is interactive, let me show you how to run it:
+</p>
+
+<p>
+<a href="/assets/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code/code-age.mp4">/assets/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code/code-age.mp4</a>
+</p>
+
+<p>
+By the way, be aware of the grey circles! These modules are neither
+stable nor unstable, which means they get changes sporadically. This
+may likely imply that people are modifying them without having a clear
+idea of the design decisions they originated with. And that may result
+in subtle errors!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge3fb831" class="outline-2">
+<h2 id="orge3fb831">Conclusion</h2>
+<div class="outline-text-2" id="text-orge3fb831">
+<p>
+So find out the safe zones in your code base. You can then move them
+in libraries if you need to. And maybe you can try to document the
+partially stable modules so you can decrease the chances that sporadic
+maintainers introduce errors. Just get <a href="https://github.com/ag91/code-compass">code-compass</a>, run
+<code>c/show-stability-graph</code>, and look for the white circles!
+</p>
+
+<p>
+Happy aging!
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">He bases this
+on this study <a href="https://cs.uwaterloo.ca/~m2nagapp/courses/CS846/1179/papers/graves_tse98.pdf">T. L. Graves, A. F. Karr, J. S. Marron, and H Siy.
+Predicting fault incidence using software change history. Software
+Engineering, IEEE Transactions on. 26[7], 2000.</a></p></div></div>
+
+<div class="footdef"><sup><a id="fn.2" class="footnum" href="#fnr.2">2</a></sup> <div class="footpara"><p class="footpara">Sometimes is designed so ugly
+that people avoid to touch that code at all cost, making it stable.
+You may say that is a feature.</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-02-06</span>
+        <span title="last modification date" class="post-info">2021-02-06</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/design/">design</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
