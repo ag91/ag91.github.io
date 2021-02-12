@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: how fragmented is the knowledge of this file? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Find out where the knowledge about a file is!" />
+    <meta name="keywords" content="code-compass, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: how fragmented is the knowledge of this file?</h1>
+<div id="outline-container-org175f640" class="outline-2">
+<h2 id="org175f640">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org175f640">
+<p>
+Have you ever wondered how fragmented is the knowledge about a file?
+Your repository history can tell you that: just use <a href="https://github.com/ag91/code-compass">code-compass</a>'s
+<code>show-fragmentation</code>!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org55de9ec" class="outline-2">
+<h2 id="org55de9ec">The problem</h2>
+<div class="outline-text-2" id="text-org55de9ec">
+<p>
+The more heads at a meeting the more difficult is to take a decision.
+How does this translate to software? In successful projects multiple
+authors work together on enhancing software over time. <a href="https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/">We saw already
+that multiple changes increase the likelihood of errors</a>. So what
+happens when people have collaborated over a long time? And when we
+find a file that has been modified by dozens of authors should we
+worry?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgde2608f" class="outline-2">
+<h2 id="orgde2608f">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgde2608f">
+<p>
+Say we realize a file has got many authors, and we already know who is
+<a href="https://ag91.github.io/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code/">the primary author from our knowledge map</a>: what do we know about the
+familiarity of other authors with the code at hand? How much do they
+know? What if the main author is actually just about as knowledgeable
+as anyone else? Would it not be amazing to see these details in a nice
+visualization? Once this becomes visible, we can assess if the
+knowledge fragmentation of this file is a problem or not.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf9dfa9f" class="outline-2">
+<h2 id="orgf9dfa9f">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgf9dfa9f">
+<p>
+You can visualize knowledge fragmentation because this information is
+in your repository history (or at least a proxy: you are always the
+best at assessing this by chatting with the protagonists). The
+quickest way to extract this information (if you are a terminal savvy)
+is running the following command in your repository:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">git shortlog HEAD -n -s -- code-compass.el
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-right" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-right">11</td>
+<td class="org-left">ag91</td>
+</tr>
+
+<tr>
+<td class="org-right">8</td>
+<td class="org-left">Blank Spruce</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+This shows how many commits the authors have contributed to the given
+file (in this case <code>code-compass</code> itself). This can look rather
+different for a bigger codebase:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">git shortlog HEAD -n -s -- RemoteWebDriver.java
+</pre>
+</div>
+
+<p>
+64	Alexei Barantsev
+60	Simon Stewart
+17	Eran Messeri
+10	Daniel Wagner-Hall
+10	Luke Inman-Semerau
+ 8	Dounia Berrada
+ 7	Ahmed Ashour
+ 5	Kristian Rosenvold
+ 4	Jason Leyba
+ 3	Kevin Menard
+ 3	Valery Yatsynovich
+ 2	Gerry Gao
+ 2	Jason Juang
+ 2	Joshua Bruning
+ 2	Nina Satragno
+ 1	Alberto Scotto
+ 1	Amit Bhoraniya
+ 1	Chirag Jayswal
+ 1	Dominik Dary
+ 1	Edirin Atumah
+ 1	Erik Kuefler
+ 1	Glib Briia
+ 1	Jari Bakken
+ 1	Jim Evans
+ 1	Jonah Stiennon
+ 1	Paul Hammant
+ 1	Rajendra kadam
+ 1	Vijendarn Selvarajah
+ 1	richard.hines
+</p>
+
+<p>
+This is the result for a file in <a href="https://github.com/SeleniumHQ/selenium">Selenium</a>, a project much older and
+known than code-compass.
+</p>
+
+<p>
+The example in Selenium shows you that there are two maintainers that
+likely know as much as each other. Still thick threads of knowledge
+are spread among other contributors. This file happens also to be a
+hotspot in the Selenium code base, so there is a chance that
+fragmentation of knowledge may be hiding both errors and design decay.
+</p>
+
+<p>
+I like to use a slightly more visual approach to fragmentation though.
+Also I think that knowledge is more about the lines of code you add
+and delete from a file than the times you commit. So I use <a href="https://github.com/adamtornhill/code-maat">code-maat</a>
+to look for the authors contribution to a file and calculate the sum
+of the additions and deletions they contributed to the code. Using
+commits or lines of code should not yield significantly different
+results, but I prefer the latter.
+</p>
+
+<p>
+The visualization comes in two formats, according to your preference.
+For example if you call <code>c/show-fragmentation</code> on <code>code-compass.el</code>,
+you can produce the following pictures:
+</p>
+
+
+<div id="orgd5cc97c" class="figure">
+<p><img src="/assets/blog/2021/02/11/emacs-as-your-code-compass-how-fragmented-is-the-knowledge-of-this-file/pie-code-compass.jpg" alt="pie-code-compass.jpg" />
+</p>
+</div>
+
+
+<div id="org2539f8d" class="figure">
+<p><img src="/assets/blog/2021/02/11/emacs-as-your-code-compass-how-fragmented-is-the-knowledge-of-this-file/bar-code-compass.jpg" alt="bar-code-compass.jpg" />
+</p>
+</div>
+
+<p>
+If you prefer the bar chart over the pie chart, you have to just customize <code>c/pie-or-bar-chart-command</code> like the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq c/pie-or-bar-chart-command "graph %s --bar --width 0.4 --offset='-0.2,0.2'")
+</pre>
+</div>
+
+<p>
+Where the <code>--width</code> and <code>--offset</code> options are at your own discretion,
+I just proposed what works for me.
+</p>
+
+<p>
+If we return to our wild example <code>RemoteWebDriver.java</code>, things look
+like this:
+</p>
+
+
+<div id="orga691b4c" class="figure">
+<p><img src="/assets/blog/2021/02/11/emacs-as-your-code-compass-how-fragmented-is-the-knowledge-of-this-file/selenium-fragmentation.jpg" alt="selenium-fragmentation.jpg" />
+</p>
+</div>
+
+<p>
+From the lines of code analysis you can see that there is a slightly
+more significant division in knowledge between the two main
+contributors of <code>RemoteWebDriver.java</code>. If you would like to see
+clearly the percentages overlapping, just use the "lens" icon on the
+top-left toolbar and make a rectangular region with your mouse: it will
+zoom in to see the small percentages more clearly (you can go back
+with the arrow icons in the same toolbar).
+</p>
+
+<p>
+Now you can visualize knowledge fragmentation: what next?
+Fragmentation, as an hotspot, has a simple solution: rewrite the file.
+If the design decayed over time, you have just to understand what was
+the aim of the software. Then you can rewrite a more synthetic and
+coherent software to substitute it. Ideally, you can divide the file
+in multiple smaller parts which are easier to reason about and require
+less or no further modification. This also reminds me why the Unix
+people said "worse is better": have small units of software that you
+can compose to provide what you need. They are easier to understand,
+require less modifications and you can leverage for more use cases.
+</p>
+
+<p>
+Well, now another tool for fragmentation discovery is in your hands!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org05d0b26" class="outline-2">
+<h2 id="org05d0b26">Conclusion</h2>
+<div class="outline-text-2" id="text-org05d0b26">
+<p>
+This is the time: do you have a file that is difficult to understand?
+Check if it has tons of authors and how much they know about it with
+<a href="https://github.com/ag91/code-compass">code-compass</a> <code>c/show-fragmentation</code> (or the plain Git command I showed
+above). Then, if that file is really a pain, socialize with them and
+try to write a better version of it!
+</p>
+
+<p>
+Happy condensation!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-02-11</span>
+        <span title="last modification date" class="post-info">2021-02-12</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

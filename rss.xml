@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 06 Feb 2021 16:39:21 CET</pubDate>
-    <lastBuildDate>Sat, 06 Feb 2021 16:39:21 CET</lastBuildDate>
+    <pubDate>Fri, 12 Feb 2021 19:14:47 CET</pubDate>
+    <lastBuildDate>Fri, 12 Feb 2021 19:14:47 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emacs as your code-compass: how fragmented is the knowledge of this file?</title>
+      <link>http://ag91.github.io/blog/2021/02/11/emacs-as-your-code-compass-how-fragmented-is-the-knowledge-of-this-file</link>
+      <description><![CDATA[Find out where the knowledge about a file is!]]></description>
+      <pubDate>2021-02-12</pubDate>
+      <guid>http://ag91.github.io/blog/2021/02/11/emacs-as-your-code-compass-how-fragmented-is-the-knowledge-of-this-file</guid>
+    </item>
+    <item>
       <title>Emacs as your code-compass: how stable is my code?</title>
       <link>http://ag91.github.io/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code</link>
-      <description><![CDATA[Find safe zones in your code base with code-compass]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-02-06</pubDate>
       <guid>http://ag91.github.io/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-01-07</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist</guid>
-    </item>
-    <item>
-      <title>Emacs as your code-compass: how much code did we produce for this repository lately?</title>
-      <link>http://ag91.github.io/blog/2021/01/01/emacs-as-your-code-compass-how-much-code-we-produced-for-this-repository-lately</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-01-01</pubDate>
-      <guid>http://ag91.github.io/blog/2021/01/01/emacs-as-your-code-compass-how-much-code-we-produced-for-this-repository-lately</guid>
     </item>
   </channel>
 </rss>
