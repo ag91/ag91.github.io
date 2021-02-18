@@ -1,0 +1,114 @@
+#+TITLE:       Save your memory when compiling Scala
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-02-18 Thu
+#+URI:         /blog/%y/%m/%d/save-your-memory-when-compiling-scala
+#+KEYWORDS:    scala, emacs
+#+TAGS:        scala, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A few settings necessary to keep sbt at bay
+* Too long; didn't read
+
+[[https://github.com/sbt/sbt][Sbt]] can be a memory (RAM) drainer, [[https://github.com/scalacenter/bloop][bloop]] too and even the JVM. Here I
+am showing some sane defaults you can set in your (Emacs) settings to
+keep things healthy.
+
+* The problem
+
+My work computer has 32 GB of RAM memory. When I heard the number, I
+immediately thought that size would once have been worth the capacity
+of a server!
+
+So, happy as a child with a new toy, I have been firing applications
+in total freedom. And everything went well until I discovered the
+wonders of [[https://scalameta.org/metals/blog/][Scala Metals]]. This tool is amazing for Scala development
+and you can find how to set it up [[https://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development/][here]].
+
+Anyway, the other day I had to take a video call and... everything
+froze. Oh no! Hard reset?!? What happened!?
+
+My RAM was full! 32 GB! My own personal server, aarrrgh!!
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       8e6184ce-202c-4e5e-b62a-377a9a13d7e9
+:END:
+
+We are in 2021, and although I believe in [[https://en.wikipedia.org/wiki/Moore%27s_law][Moore's law]], I reject the
+idea that any software can fill up all of my humongous RAM memory.
+Removed from the list of culprit Microsoft Teams, I pointed my finger
+at the K8S cluster I was running: surely that was the memory drainer.
+For a month or two I kept assuming that. Tip: never ever ever assume
+(and point fingers)!
+
+Restart after restart, I started noticing the pattern: I open a Scala
+project, run sbt, and... hard reset again.
+
+My finger slowly start dropping. Time to invest some time in a proper
+investigation. Launch a terminal, write =top=, click shift-m, and...
+tada: the three knights of the RAM Apocalypse are there: metal's sbt
+13GB, bloop 10GB, and my sbt 5GB. I am an sbt instance or two away
+from hard resetting again.
+
+What's going on?! Isn't this 2021? Aren't we planning to send people
+on Mars? Oh my!
+
+* And there is a solution
+
+Apparently the default configuration of the JVM and Sbt lets each
+instance of these tools absorb 1/4 of the available RAM memory. This
+does not really scale, right? By the way, never fully trust default
+configurations: oftentimes they are real traps (see how too many
+ElasticSearch instances are publicly available for the happiness of
+[[https://www.shodan.io/][Shodan]]'s curious).
+
+So you need to establish boundaries with your tools. Here the settings
+you need:
+
+#+begin_src elisp :noeval
+(setq sbt:program-options (list "-Dsbt.supershell=false" "-J-XX:+UseParallelGC" "-J-Xmx4g" "-J-Xms100m" "-J-Xss4m"))
+#+end_src
+
+With this line you can set your [[https://github.com/hvesalai/emacs-sbt-mode][sbt-mode]] to reduce the memory
+consumption of your JVM. The relevant settings are in order:
+
+1. use [[https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/parallel.html][parallel garbage collector]], which is apparently faster than the default (and safer) choice
+2. fix memory maximum at 4GB of consumption (you can pick 2GB if your Scala projects are good)
+3. some extension of memory available for the stack, just in case
+
+This works for Java 9, if you are using older version drop the "GC" settings.
+
+The same settings are necessary for your setup of Metals:
+
+#+begin_src sh :noeval
+curl -L -o coursier https://git.io/coursier-cli
+chmod +x coursier
+./coursier bootstrap \
+           --java-opt -Xss4m \
+           --java-opt -Xms100m \
+           --java-opt -Xmx4g \
+           --java-opt -XX:+UseParallelGC \
+           --java-opt -Dmetals.client=emacs \
+           org.scalameta:metals_2.12:9.1.0 \
+           -r bintray:scalacenter/releases \
+           -r sonatype:snapshots \
+           -o /usr/local/bin/metals-emacs -f
+#+end_src
+
+Now with the extra JVM options all the Metals and Bloop processes
+should be bound to those memory sizes.
+
+If you want to know more checkout
+
+- https://github.com/scalameta/metals/issues/909
+- https://scalacenter.github.io/bloop/docs/performance-guide#pick-appropriate-jvm-and-gc-options
+
+* Conclusion
+:PROPERTIES:
+:ID:       12ddb870-d187-41f1-aa07-f2047109cf3e
+:END:
+
+I hope this saves you some unnecessary hard reset! Always configure your defaults!!
+
+Happy unfreezing!
