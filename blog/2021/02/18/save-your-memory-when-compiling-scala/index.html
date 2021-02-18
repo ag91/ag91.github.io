@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Save your memory when compiling Scala - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A few settings necessary to keep sbt at bay" />
+    <meta name="keywords" content="scala, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Save your memory when compiling Scala</h1>
+<div id="outline-container-org0101e2a" class="outline-2">
+<h2 id="org0101e2a">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org0101e2a">
+<p>
+<a href="https://github.com/sbt/sbt">Sbt</a> can be a memory (RAM) drainer, <a href="https://github.com/scalacenter/bloop">bloop</a> too and even the JVM. Here I
+am showing some sane defaults you can set in your (Emacs) settings to
+keep things healthy.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb4585d5" class="outline-2">
+<h2 id="orgb4585d5">The problem</h2>
+<div class="outline-text-2" id="text-orgb4585d5">
+<p>
+My work computer has 32 GB of RAM memory. When I heard the number, I
+immediately thought that size would once have been worth the capacity
+of a server!
+</p>
+
+<p>
+So, happy as a child with a new toy, I have been firing applications
+in total freedom. And everything went well until I discovered the
+wonders of <a href="https://scalameta.org/metals/blog/">Scala Metals</a>. This tool is amazing for Scala development
+and you can find how to set it up <a href="https://ag91.github.io/blog/2020/10/16/my-emacs-setup-for-scala-development/">here</a>.
+</p>
+
+<p>
+Anyway, the other day I had to take a video call and... everything
+froze. Oh no! Hard reset?!? What happened!?
+</p>
+
+<p>
+My RAM was full! 32 GB! My own personal server, aarrrgh!!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge62c743" class="outline-2">
+<h2 id="orge62c743">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orge62c743">
+<p>
+We are in 2021, and although I believe in <a href="https://en.wikipedia.org/wiki/Moore%27s_law">Moore's law</a>, I reject the
+idea that any software can fill up all of my humongous RAM memory.
+Removed from the list of culprit Microsoft Teams, I pointed my finger
+at the K8S cluster I was running: surely that was the memory drainer.
+For a month or two I kept assuming that. Tip: never ever ever assume
+(and point fingers)!
+</p>
+
+<p>
+Restart after restart, I started noticing the pattern: I open a Scala
+project, run sbt, and... hard reset again.
+</p>
+
+<p>
+My finger slowly start dropping. Time to invest some time in a proper
+investigation. Launch a terminal, write <code>top</code>, click shift-m, and...
+tada: the three knights of the RAM Apocalypse are there: metal's sbt
+13GB, bloop 10GB, and my sbt 5GB. I am an sbt instance or two away
+from hard resetting again.
+</p>
+
+<p>
+What's going on?! Isn't this 2021? Aren't we planning to send people
+on Mars? Oh my!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6de4c37" class="outline-2">
+<h2 id="org6de4c37">And there is a solution</h2>
+<div class="outline-text-2" id="text-org6de4c37">
+<p>
+Apparently the default configuration of the JVM and Sbt lets each
+instance of these tools absorb 1/4 of the available RAM memory. This
+does not really scale, right? By the way, never fully trust default
+configurations: oftentimes they are real traps (see how too many
+ElasticSearch instances are publicly available for the happiness of
+<a href="https://www.shodan.io/">Shodan</a>'s curious).
+</p>
+
+<p>
+So you need to establish boundaries with your tools. Here the settings
+you need:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq sbt:program-options (list "-Dsbt.supershell=false" "-J-XX:+UseParallelGC" "-J-Xmx4g" "-J-Xms100m" "-J-Xss4m"))
+</pre>
+</div>
+
+<p>
+With this line you can set your <a href="https://github.com/hvesalai/emacs-sbt-mode">sbt-mode</a> to reduce the memory
+consumption of your JVM. The relevant settings are in order:
+</p>
+
+<ol class="org-ol">
+<li>use <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/parallel.html">parallel garbage collector</a>, which is apparently faster than the default (and safer) choice</li>
+<li>fix memory maximum at 4GB of consumption (you can pick 2GB if your Scala projects are good)</li>
+<li>some extension of memory available for the stack, just in case</li>
+</ol>
+
+<p>
+This works for Java 9, if you are using older version drop the "GC" settings.
+</p>
+
+<p>
+The same settings are necessary for your setup of Metals:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">curl -L -o coursier https://git.io/coursier-cli
+chmod +x coursier
+./coursier bootstrap \
+           --java-opt -Xss4m \
+           --java-opt -Xms100m \
+           --java-opt -Xmx4g \
+           --java-opt -XX:+UseParallelGC \
+           --java-opt -Dmetals.client=emacs \
+           org.scalameta:metals_2.12:9.1.0 \
+           -r bintray:scalacenter/releases \
+           -r sonatype:snapshots \
+           -o /usr/local/bin/metals-emacs -f
+</pre>
+</div>
+
+<p>
+Now with the extra JVM options all the Metals and Bloop processes
+should be bound to those memory sizes.
+</p>
+
+<p>
+If you want to know more checkout
+</p>
+
+<ul class="org-ul">
+<li><a href="https://github.com/scalameta/metals/issues/909">https://github.com/scalameta/metals/issues/909</a></li>
+<li><a href="https://scalacenter.github.io/bloop/docs/performance-guide#pick-appropriate-jvm-and-gc-options">https://scalacenter.github.io/bloop/docs/performance-guide#pick-appropriate-jvm-and-gc-options</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org1a88425" class="outline-2">
+<h2 id="org1a88425">Conclusion</h2>
+<div class="outline-text-2" id="text-org1a88425">
+<p>
+I hope this saves you some unnecessary hard reset! Always configure your defaults!!
+</p>
+
+<p>
+Happy unfreezing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-02-18</span>
+        <span title="last modification date" class="post-info">2021-02-18</span>
+        <span title="tags" class="post-info"><a href="/tags/scala/">scala</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

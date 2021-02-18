@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 12 Feb 2021 19:14:47 CET</pubDate>
-    <lastBuildDate>Fri, 12 Feb 2021 19:14:47 CET</lastBuildDate>
+    <pubDate>Thu, 18 Feb 2021 20:38:56 CET</pubDate>
+    <lastBuildDate>Thu, 18 Feb 2021 20:38:56 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Save your memory when compiling Scala</title>
+      <link>http://ag91.github.io/blog/2021/02/18/save-your-memory-when-compiling-scala</link>
+      <description><![CDATA[A few settings necessary to keep sbt at bay]]></description>
+      <pubDate>2021-02-18</pubDate>
+      <guid>http://ag91.github.io/blog/2021/02/18/save-your-memory-when-compiling-scala</guid>
+    </item>
+    <item>
       <title>Emacs as your code-compass: how fragmented is the knowledge of this file?</title>
       <link>http://ag91.github.io/blog/2021/02/11/emacs-as-your-code-compass-how-fragmented-is-the-knowledge-of-this-file</link>
-      <description><![CDATA[Find out where the knowledge about a file is!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-02-12</pubDate>
       <guid>http://ag91.github.io/blog/2021/02/11/emacs-as-your-code-compass-how-fragmented-is-the-knowledge-of-this-file</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-01-07</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules</guid>
-    </item>
-    <item>
-      <title>Cycle everything: why waste does not exist</title>
-      <link>http://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-01-07</pubDate>
-      <guid>http://ag91.github.io/blog/2021/01/07/cycle-everything-why-waste-does-not-exist</guid>
     </item>
   </channel>
 </rss>
