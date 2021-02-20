@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: what is this text about -- without me reading it? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Let your computer skim text for you!" />
+    <meta name="keywords" content="emacs. code-compass" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: what is this text about -- without me reading it?</h1>
+
+<div id="outline-container-org5ade0e3" class="outline-2">
+<h2 id="org5ade0e3">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org5ade0e3">
+<p>
+(Structured) text has a lot of noise in it. Data scientist use some
+simple text analyses to extract meaning from text without reading
+sequentially. Let's do the same! In this post I am sharing how to
+extract information from commit messages and functions without a
+careful read.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1c49616" class="outline-2">
+<h2 id="org1c49616">The problem</h2>
+<div class="outline-text-2" id="text-org1c49616">
+<p>
+Sometimes I am on a rush and I find myself in front of a block of text
+that hides its meaning. What is this function doing? That is what I
+need to know, but there is so much accidental noise that I need to
+recur a patient reading. So here we go, check the input the return
+type, then quickly go through those ifs and elses. A few minutes
+later, maybe with the help of some tests or a REPL I have a less vague
+idea of how the function work.
+</p>
+
+<p>
+A rough idea is all I needed, but it required quite some mental
+parsing! Can we do this better?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org274c142" class="outline-2">
+<h2 id="org274c142">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org274c142">
+<p>
+It is interesting how much we work with text. Some avid readers use
+<a href="https://en.wikipedia.org/wiki/Speed_reading">speed reading</a> to navigate this ocean of information.
+</p>
+
+<p>
+When looking at a new repository, I may wonder what my predecessors
+worked on. And they took care to keep a log of meaningful messages
+with all of the changes they committed. However, that also is a wall
+of text for me, particularly if the project had a long life. And
+unlucky me, the composition of those messages is not as well connected
+as a story in a book.
+</p>
+
+<p>
+From the history of messages I could get some interesting information
+though: for example, how many bugs they fixed, what features this
+software provides, and maybe even how much refactoring happened. Can I
+get that without a long read?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org394b108" class="outline-2">
+<h2 id="org394b108">And there is a solution</h2>
+<div class="outline-text-2" id="text-org394b108">
+<p>
+Data scientists go for the Pareto principle in text analysis: we want
+to read 20% of the information and still get out 80% of the value (or
+something along those numbers).
+</p>
+
+<p>
+The easiest analysis we can do is counting words. If you take a piece
+of text and produce a histogram for the frequency of each words, you
+may be surprised by how much information you can extract from there.
+</p>
+
+<p>
+Say I got this function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-delphi">procedure TGildedRose.UpdateQuality;
+var
+  I: Integer;
+begin
+  for I := 0 to Items.Count - 1 do
+  begin
+    if (Items[I].Name &lt;&gt; 'Aged Brie') and (Items[I].Name &lt;&gt; 'Backstage passes to a TAFKAL80ETC concert') then
+    begin
+      if Items[I].Quality &gt; 0 then
+      begin
+        if Items[I].Name &lt;&gt; 'Sulfuras, Hand of Ragnaros' then
+        begin
+          Items[I].Quality := Items[I].Quality - 1;
+        end;
+      end;
+    end
+    else
+    begin
+      if Items[I].Quality &lt; 50 then
+      begin
+        Items[I].Quality := Items[I].Quality + 1;
+        if Items[I].Name = 'Backstage passes to a TAFKAL80ETC concert' then
+        begin
+          if Items[I].SellIn &lt; 11 then
+          begin
+            if Items[I].Quality &lt; 50 then
+            begin
+              Items[I].Quality := Items[I].Quality + 1;
+            end;
+          end;
+
+          if Items[I].SellIn &lt; 6 then
+          begin
+            if Items[I].Quality &lt; 50 then
+            begin
+              Items[I].Quality := Items[I].Quality + 1;
+            end;
+          end;
+        end;
+      end;
+    end;
+
+    if Items[I].Name &lt;&gt; 'Sulfuras, Hand of Ragnaros' then
+    begin
+      Items[I].SellIn := Items[I].SellIn - 1;
+    end;
+
+    if Items[I].SellIn &lt; 0 then
+    begin
+      if Items[I].Name &lt;&gt; 'Aged Brie' then
+      begin
+        if Items[I].Name &lt;&gt; 'Backstage passes to a TAFKAL80ETC concert' then
+        begin
+          if Items[I].Quality &gt; 0 then
+          begin
+            if Items[I].Name &lt;&gt; 'Sulfuras, Hand of Ragnaros' then
+            begin
+              Items[I].Quality := Items[I].Quality - 1;
+            end;
+          end;
+        end
+        else
+        begin
+          Items[I].Quality := Items[I].Quality - Items[I].Quality;
+        end;
+      end
+      else
+      begin
+        if Items[I].Quality &lt; 50 then
+        begin
+          Items[I].Quality := Items[I].Quality + 1;
+        end;
+      end;
+    end;
+  end;
+end;
+</pre>
+</div>
+
+<p>
+Note I do not know what this is doing and I do not know Delphi, the
+language it is written in, either.
+</p>
+
+<p>
+Now let's produce the word frequency of it:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-csv">word,occurences
+
+'items[i]',32
+'begin',21
+'quality',20
+'end;',18
+'then',16
+'name',8
+'sellin',5
+'backstage',3
+'concert',3
+'else',3
+'end',3
+'hand',3
+'passes',3
+'ragnaros',3
+'sulfuras',3
+'tafkal80etc',3
+'(items[i]',2
+'aged',2
+'brie',2
+'and',1
+'count',1
+'for',1
+'integer;',1
+'items',1
+'procedure',1
+'quality;',1
+'tgildedrose',1
+'updatequality;',1
+'var',1
+</pre>
+</div>
+
+<p>
+Or for the more visual ones:
+</p>
+
+
+<div id="org0376a5b" class="figure">
+<p><img src="/assets/blog/2021/02/20/emacs-as-your-code-compass-what-is-this-text-about----without-me-reading-it/barchart.jpg" alt="/assets/blog/2021/02/20/emacs-as-your-code-compass-what-is-this-text-about----without-me-reading-it/barchart.jpg" />
+</p>
+</div>
+
+<p>
+Now you can see a different view of your function:
+</p>
+
+<ul class="org-ul">
+<li>it does a lot of iterations (assuming that <code>items[i]</code> is an iteration in this language),</li>
+<li>it has surely something to do with <b>quality</b> because that word
+appears more than 20 times</li>
+<li>somehow it does something with selling, concert, aged brie and ragnaros(?!)</li>
+</ul>
+
+<p>
+This surely does not give us a deep understanding (maybe just enough
+if we have some background context about the file it comes from), but
+reduces our skimming to just reading the numbers. The picture is even
+better because it reduces that to read the labels. Indeed, each view
+is skimming the needed effort and saving us time.
+</p>
+
+
+<p>
+Naturally this is a tool you should use when the trade off seems
+convenient: in the example I am unfamiliar with the programming
+language and the function has quite some nesting (<a href="https://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/">complex to read</a>). If
+it is a one liner and in your favourite language, this analysis will
+give you a negative result because you still need time to produce it.
+</p>
+
+<p>
+You can use the same analysis to skim the messages of a repository.
+For example, let's look at Selenium messages:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">word,occurences
+
+'the',11594
+'for',6160
+'and',3193
+'tests',2505
+'simonstewart:',2497
+'test',2283
+'adding',1779
+'that',1774
+'fixing',1767
+'with',1673
+'fix',1668
+'from',1560
+'firefox',1491
+'updating',1422
+'add',1420
+'not',1319
+'driver',1316
+'this',1284
+'net',1238
+'when',1186
+'use',1174
+'issue',1164
+'build',1155
+'jaribakken:',1150
+'version',1132
+'danielwagnerhall:',1077
+'code',954
+'more',940
+'fixes',936
+'support',911
+'[java]',898
+'update',890
+'jimevans:',872
+'selenium',805
+'new',793
+'now',785
+'java',721
+'make',713
+...
+
+'yurodivuie:',1
+'yuvipanda:',1
+'z-order',1
+'zaccampbell:',1
+'zero-height',1
+'zeromq',1
+'zerosizeddivisshownifdescendanthassize',1
+'zimmerman',1
+'zing',1
+'zipentry',1
+'zipped',1
+'zipper_spec',1
+'zipping',1
+'zips)',1
+'zipstorer',1
+'zombi',1
+'zsh',1
+'{a6fd85ed-e919-4a43-a5af-8da18bda539f}',1
+'{action',1
+'{alert',1
+'{assert',1
+'{condition',1
+'{driver',1
+'{enabled',1
+'{files',1
+'{fulfilled',1
+'{iphone',1
+'{resource',1
+'{safari',1
+'{server',1
+'{set',1
+'{start',1
+'{status:0',1
+'{win?',1
+'|\r\n)/',1
+'|this|',1
+'~/src',1
+'~10x',1
+'~40',1
+'~&gt;1',1
+'¯\_(ツ)_/¯',1
+'—allow-cors',1
+'‘org',1
+'‘remote_connection’',1
+'“inc',1
+</pre>
+</div>
+
+<p>
+I cut some data because it is... data overdose! Even the picture this
+time is not as useful because there is simply to much data to handle.
+</p>
+
+<p>
+Still from this long history, we can see that:
+</p>
+
+<ul class="org-ul">
+<li>"tests" appears a lot of time (it could be a coincidence but
+Selenium is a tool for testing things)</li>
+<li>"fixing", "issue", "fix" appear more than 4k times</li>
+<li>a lot of commits focused on Firefox</li>
+<li>we also directly see some maintainers names in there</li>
+</ul>
+
+<p>
+This is not bad from a quick glimpse: we now know that this repository
+had quite some issues and fixes and we know who are the main
+maintainers even without <a href="https://ag91.github.io/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/">a knowledge map</a>.
+</p>
+
+<p>
+I have added support to code-compass to analyze text for you. You can
+use:
+</p>
+
+<ul class="org-ul">
+<li><code>c/word-analysis-region-graph</code> to produce the frequency picture for the highlighted region</li>
+<li><code>c/word-analysis-region</code> for the above in a textual format</li>
+<li><p>
+<code>c/word-analysis-commits</code> for analyzing the software history of the repository
+</p>
+
+<p>
+if you call this with the universal argument (i.e., <code>C-u M-x
+  c/word-analysis-commits</code>) it lets you choose a file and focuses the
+word analysis only on the commits affecting that file.
+</p></li>
+<li><p>
+<code>c/word-semantics</code> which shows you the word analysis in reverse order
+</p>
+
+<p>
+The idea is that less used words may carry more meaning than the
+rest.
+</p></li>
+<li><code>c/word-statistics</code> which provides the words analysis for the
+current buffer</li>
+</ul>
+
+
+<p>
+Hopefully this saves you some reading time!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8f5a259" class="outline-2">
+<h2 id="org8f5a259">Conclusion</h2>
+<div class="outline-text-2" id="text-org8f5a259">
+<p>
+So skim the reading when things get difficult for you to parse and let
+your computer provide the information! Just get <a href="https://github.com/ag91/code-compass">code-compass</a> and run
+its brand new functions!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf024c0a" class="outline-2">
+<h2 id="orgf024c0a">P.S.</h2>
+<div class="outline-text-2" id="text-orgf024c0a">
+<p>
+By the way, this was the last scheduled article in my release list!
+Whoa it was a nice ride. I have still a bunch of features that I am
+going to release at a slower pace (for example <a href="https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/">hotspots</a> against your
+microservice architecture) and I will release articles along with that.
+</p>
+
+<p>
+The aim is to reduce the release rhythm so I can experiment and write
+about other topics that interest me. So code-compass will get better
+and better over time.
+</p>
+
+<p>
+Please get in touch with ideas, requests or suggestions whenever you
+feel like!
+</p>
+
+<p>
+Happy navigating!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-02-20</span>
+        <span title="last modification date" class="post-info">2021-02-20</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs-code-compass/">emacs. code-compass</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
