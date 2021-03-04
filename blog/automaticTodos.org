@@ -1,0 +1,89 @@
+#+TITLE:       Emacs as your code-compass: what files do I need to change next?
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-03-04 Thu
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-what-files-do-i-need-to-change-next
+#+KEYWORDS:    code-compass, emacs
+#+TAGS:        code-compass, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Produce a list of next files automatically
+* Too long; didn't read
+:PROPERTIES:
+:ID:       47b05723-18bf-47e3-8166-0a80d3d65f4f
+:END:
+
+You changed a file and now you feel something is missing? Let
+Emacs produce a list of files you have to change for you.
+
+* The problem
+:PROPERTIES:
+:ID:       ed2c2cf3-7f54-4b7a-a4d8-14c629298f30
+:END:
+
+Emacs should do more work for us. This is what made me wish to build
+code-compass in the first place. Computers are fast. They are great at
+boring stuff. For example, it is boring to remember the files I still
+have to change, given I have changed the file at hand. So I wonder:
+can I make Emacs tell me what changes to do after this in a readable
+way?
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       107b2b74-31b3-4a1a-a6a6-00636343bb34
+:END:
+
+Sam Carpenter writes in his book [[https://www.goodreads.com/book/show/6019060-work-the-system?from_search=true&from_srp=true&qid=NdTfSOivtn&rank=1][Work the system]] that the worst
+problems are errors of omissions. I find this is true both for work
+and for private life. I miss some important step and so I damage
+things. If that happens, Sam suggest you lack process. A process is a
+stable way of doing things. And as Flaubert says: "Be regular and
+orderly in your life, so that you may be violent and original in your
+work". So even when we change files we should have a process. And a
+guide that indicates the road. Or a compass!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       6786995e-a172-4ae8-b60d-91672628af29
+:END:
+
+I discussed in a previous post how we can use [[https://github.com/ag91/code-compass][code-compass]] to [[https://ag91.github.io/blog/2021/01/12/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next/][find
+change-related files]]. That allows you to reach all the files to edit
+next. But what if you already changed them? That does not show you
+that information. But we can build over that!
+
+Let's think a moment. We know the files linked to the current one. We
+can know which ones we already modified from Git history. We have a
+marvellous format to show us a todo list: Org Mode.
+
+Given those ingredients, let me show you what we can do with
+code-compass now.
+
+[[file:createTodos.mp4]]
+
+You can see that I edit a file. Then I wonder what files I need to
+modify next. I produce a todo list with the next files. I modify the
+first and when I produce the todo list again, that is marked as DONE.
+
+How cool is that?! This is what I got so far. This still needs some
+testing, but I was too excited to keep it for myself.
+
+An improvement I see is to include all the modified files in the list,
+not only the one you are in. In that way you would have a more
+complete todo list for what you changed so far.
+
+Note that this list may not be complete. This because it makes todos
+based on old changes. If you are doing something new, this cannot help
+you.
+
+* Conclusion
+:PROPERTIES:
+:ID:       bcf57924-ef9c-4213-b7d9-9d85930b87b6
+:END:
+
+This is cool! We are a step closer to make Emacs doing things for us.
+If you want to try, get [[https://github.com/ag91/code-compass][code-compass]], load it and run
+=c/create-todos-from-coupled-files= on a file: if it has related files
+it will generate your todo list!
+
+Happy generation!
