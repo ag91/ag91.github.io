@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 01 Mar 2021 23:04:49 CET</pubDate>
-    <lastBuildDate>Mon, 01 Mar 2021 23:04:49 CET</lastBuildDate>
+    <pubDate>Fri, 05 Mar 2021 00:20:59 CET</pubDate>
+    <lastBuildDate>Fri, 05 Mar 2021 00:20:59 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emacs as your code-compass: what files do I need to change next?</title>
+      <link>http://ag91.github.io/blog/2021/03/04/emacs-as-your-code-compass-what-files-do-i-need-to-change-next</link>
+      <description><![CDATA[Produce a list of next files automatically]]></description>
+      <pubDate>2021-03-05</pubDate>
+      <guid>http://ag91.github.io/blog/2021/03/04/emacs-as-your-code-compass-what-files-do-i-need-to-change-next</guid>
+    </item>
+    <item>
       <title>Preview post: set your editing goals</title>
       <link>http://ag91.github.io/blog/2021/03/01/preview-post-set-your-editing-goals</link>
-      <description><![CDATA[A cliffhanger for how to edit your text with Emacs]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-03-01</pubDate>
       <guid>http://ag91.github.io/blog/2021/03/01/preview-post-set-your-editing-goals</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-01-24</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/21/have-you-writer-ambitions-write-a-little-write-everyday-and-let-emacs-be-your-coach</guid>
-    </item>
-    <item>
-      <title>Emacs as your code-compass: find collaborators you should (chit) chat with</title>
-      <link>http://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-01-22</pubDate>
-      <guid>http://ag91.github.io/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with</guid>
     </item>
   </channel>
 </rss>
