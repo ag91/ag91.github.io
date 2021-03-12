@@ -1,0 +1,126 @@
+#+TITLE:       Find Org Roam notes via their relations
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-03-12 Fri
+#+URI:         /blog/%y/%m/%d/find-org-roam-notes-via-their-relations
+#+KEYWORDS:    org-roam, emacs
+#+TAGS:        org-roam, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Find notes via relations.
+* Too long; didn't read
+:PROPERTIES:
+:ID:       887d01a6-4af0-46ea-abf5-63af72e6cd25
+:END:
+
+Are you an [[https://github.com/org-roam/org-roam][org-roam]] user that takes a lot of notes and struggles
+finding them? I will share here a function to reach lost notes via
+their relations.
+
+
+* The problem
+:PROPERTIES:
+:ID:       68df581b-b3ff-4740-aa2f-87705616a4d7
+:END:
+
+I like to read. A lot. And for a while I struggled at remembering good
+quotes and concepts that I read in books. Things somewhat improved
+when I got my e-reader. I could easily annotate text and move my notes
+around. Then I started using org-roam. With it I could organize my
+notes and discover them easily via =org-roam-find-file=. And it
+went like that for a while, until... there were too many notes around!
+
+My first adjustment was using =org-roam-graph= (long are gone the
+times when I could plot all of my notes with the default command).
+With that you [[https://www.orgroam.com/manual.html#Graphing][can see notes as a navigable picture]]. The best situation
+to consult these graphs of notes is when your notes link to each
+other, because they will be closer to each other.
+
+Anyway, give it enough time and the value of your notes will not be
+graphs but the links between different graphs. How can we explore
+them?
+
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       da244ac9-a2fd-4e47-bd90-b105134ff700
+:END:
+
+Luckily I am not the only one having this issue! Somebody [[https://github.com/org-roam/org-roam-server][developed a
+nice visualization web application for your notes]] (a serious upgrade
+of =org-roam-graph=). Some other person [[https://github.com/publicimageltd/delve][has started ordering properly
+notes via smart database queries]]. And somebody else
+[[https://org-roam.discourse.group/t/analysing-the-semantic-network/56][has
+started analyzing relations between notes with statistics tools]]!
+
+I tried all of these, but again: I got too many notes now. And I want
+a simple and quick tool to follow my note relations. So I spent some
+time searching around with little success. Then I asked myself: how
+difficult would it be to bake my own little function?
+
+
+* And there is a solution
+:PROPERTIES:
+:ID:       ceccf479-7e54-47a8-90b6-d038d863007a
+:END:
+
+My ideal function follows org-roam notes relations as if they were
+files in a file system. If a note does not have links, I can only open
+it, otherwise I can both navigate its directly related notes or open it.
+
+Well that is what I need in words. Let me show you what I got!
+
+file:orgRoamFindNote.mp4
+
+In the video I open my Tiramisu' recipe note. Then I follow its
+relations and I get to a new recipe. The relation I am using for this
+journey is "recipe". I use that as a linking note for my recipes.
+
+The code for the function is below.
+
+#+begin_src elisp
+(defun my/navigate-note (arg &optional note choices)
+  "Navigate notes by link. With universal ARG tries to use only to navigate the tags of the current note. Optionally takes a selected NOTE and filepaths CHOICES."
+  (interactive "P")
+  (let* ((choices (or
+                   choices
+                   (when arg (org-roam-db--links-with-max-distance (buffer-file-name) 1))))
+         (all-notes (org-roam--get-title-path-completions))
+         (completions
+          (or (--filter (-contains-p choices (plist-get (cdr it) :path)) all-notes) all-notes))
+         (title-with-tags (org-roam-completion--completing-read "File: " completions))
+         (res (cdr (assoc title-with-tags completions)))
+         (next-note (plist-get res :path)))
+    (if (string= note next-note)
+        (find-file note)
+      (my/navigate-note nil next-note (org-roam-db--links-with-max-distance next-note 1)))))
+#+end_src
+
+A recursive function! The design is: gather all the notes you have,
+let the user pick one, gather the notes linked to that, let the user
+pick one, ..., if the user picks the same note twice, it means the
+user really wanted that: so open it.
+
+There is a bit of noise in there due to translating file paths to note
+links, but roughly that's it. Note that if you are in a note and call
+the function with the =C-u= universal prefix, it reduces the initial
+scope to the links of the open note. That is useful if you want to
+skip a step when you know what you are looking for.
+
+I thought about making something fancier than this, but then I
+thought: why bother? It works and I am the only user for now. Let me
+know if this gives problems to you.
+
+
+* Conclusion
+:PROPERTIES:
+:ID:       fbc53723-cf79-4cbb-9d1e-ef8b76cfe5b5
+:END:
+
+From great powers come great responsibilities! Make the best out of
+your notes relations! After loading this function in your Emacs,
+please be fabulous by creating some incredible knowledge that makes us
+all better.
+
+Happy discovering!
+                                                                                                            
