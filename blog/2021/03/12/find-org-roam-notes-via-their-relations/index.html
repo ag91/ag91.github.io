@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Find Org Roam notes via their relations - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Find notes via relations." />
+    <meta name="keywords" content="org-roam, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Find Org Roam notes via their relations</h1>
+<div id="outline-container-org2216b72" class="outline-2">
+<h2 id="org2216b72">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org2216b72">
+<p>
+Are you an <a href="https://github.com/org-roam/org-roam">org-roam</a> user that takes a lot of notes and struggles
+finding them? I will share here a function to reach lost notes via
+their relations.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org805c4b9" class="outline-2">
+<h2 id="org805c4b9">The problem</h2>
+<div class="outline-text-2" id="text-org805c4b9">
+<p>
+I like to read. A lot. And for a while I struggled at remembering good
+quotes and concepts that I read in books. Things somewhat improved
+when I got my e-reader. I could easily annotate text and move my notes
+around. Then I started using org-roam. With it I could organize my
+notes and discover them easily via <code>org-roam-find-file</code>. And it
+went like that for a while, until... there were too many notes around!
+</p>
+
+<p>
+My first adjustment was using <code>org-roam-graph</code> (long are gone the
+times when I could plot all of my notes with the default command).
+With that you <a href="https://www.orgroam.com/manual.html#Graphing">can see notes as a navigable picture</a>. The best situation
+to consult these graphs of notes is when your notes link to each
+other, because they will be closer to each other.
+</p>
+
+<p>
+Anyway, give it enough time and the value of your notes will not be
+graphs but the links between different graphs. How can we explore
+them?
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org38aac0f" class="outline-2">
+<h2 id="org38aac0f">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org38aac0f">
+<p>
+Luckily I am not the only one having this issue! Somebody <a href="https://github.com/org-roam/org-roam-server">developed a
+nice visualization web application for your notes</a> (a serious upgrade
+of <code>org-roam-graph</code>). Some other person <a href="https://github.com/publicimageltd/delve">has started ordering properly
+notes via smart database queries</a>. And somebody else
+<a href="https://org-roam.discourse.group/t/analysing-the-semantic-network/56">has
+started analyzing relations between notes with statistics tools</a>!
+</p>
+
+<p>
+I tried all of these, but again: I got too many notes now. And I want
+a simple and quick tool to follow my note relations. So I spent some
+time searching around with little success. Then I asked myself: how
+difficult would it be to bake my own little function?
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org8665d94" class="outline-2">
+<h2 id="org8665d94">And there is a solution</h2>
+<div class="outline-text-2" id="text-org8665d94">
+<p>
+My ideal function follows org-roam notes relations as if they were
+files in a file system. If a note does not have links, I can only open
+it, otherwise I can both navigate its directly related notes or open it.
+</p>
+
+<p>
+Well that is what I need in words. Let me show you what I got!
+</p>
+
+<p>
+<a href="/assets/blog/2021/03/12/find-org-roam-notes-via-their-relations/orgRoamFindNote.mp4">/assets/blog/2021/03/12/find-org-roam-notes-via-their-relations/orgRoamFindNote.mp4</a>
+</p>
+
+<p>
+In the video I open my Tiramisu' recipe note. Then I follow its
+relations and I get to a new recipe. The relation I am using for this
+journey is "recipe". I use that as a linking note for my recipes.
+</p>
+
+<p>
+The code for the function is below.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/navigate-note (arg &amp;optional note choices)
+  "Navigate notes by link. With universal ARG tries to use only to navigate the tags of the current note. Optionally takes a selected NOTE and filepaths CHOICES."
+  (interactive "P")
+  (let* ((choices (or
+                   choices
+                   (when arg (org-roam-db--links-with-max-distance (buffer-file-name) 1))))
+         (all-notes (org-roam--get-title-path-completions))
+         (completions
+          (or (--filter (-contains-p choices (plist-get (cdr it) :path)) all-notes) all-notes))
+         (title-with-tags (org-roam-completion--completing-read "File: " completions))
+         (res (cdr (assoc title-with-tags completions)))
+         (next-note (plist-get res :path)))
+    (if (string= note next-note)
+        (find-file note)
+      (my/navigate-note nil next-note (org-roam-db--links-with-max-distance next-note 1)))))
+</pre>
+</div>
+
+<p>
+A recursive function! The design is: gather all the notes you have,
+let the user pick one, gather the notes linked to that, let the user
+pick one, ..., if the user picks the same note twice, it means the
+user really wanted that: so open it.
+</p>
+
+<p>
+There is a bit of noise in there due to translating file paths to note
+links, but roughly that's it. Note that if you are in a note and call
+the function with the <code>C-u</code> universal prefix, it reduces the initial
+scope to the links of the open note. That is useful if you want to
+skip a step when you know what you are looking for.
+</p>
+
+<p>
+I thought about making something fancier than this, but then I
+thought: why bother? It works and I am the only user for now. Let me
+know if this gives problems to you.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgd2fb255" class="outline-2">
+<h2 id="orgd2fb255">Conclusion</h2>
+<div class="outline-text-2" id="text-orgd2fb255">
+<p>
+From great powers come great responsibilities! Make the best out of
+your notes relations! After loading this function in your Emacs,
+please be fabulous by creating some incredible knowledge that makes us
+all better.
+</p>
+
+<p>
+Happy discovering!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-03-12</span>
+        <span title="last modification date" class="post-info">2021-03-12</span>
+        <span title="tags" class="post-info"><a href="/tags/org-roam/">org-roam</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
