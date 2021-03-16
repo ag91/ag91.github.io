@@ -1,0 +1,210 @@
+#+TITLE:       Check your performance with ScalaCheck generators
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-03-17 Wed
+#+URI:         /blog/%y/%m/%d/check-your-performance-with-scalacheck-generators
+#+KEYWORDS:    scala
+#+TAGS:        scala
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: ScalaCheck generators for performance testing
+* Too long; didn't read
+:PROPERTIES:
+:ID:       0029ebe5-54e9-47b4-9138-b7de46230ab5
+:END:
+
+How fast is your Scala application at responding queries? ScalaCheck
+generators can help you with that. Here I explain how.
+
+* The problem
+:PROPERTIES:
+:ID:       f78ca344-35bf-448b-b3b5-d2ddbb30e67a
+:END:
+
+You have a new feature to implement. The user wants some value and she
+wants it fast. We know that correctness, simplicity and performance
+stem all from the same trunk: design. If you want correctness, design
+so that errors cannot happen (from your code at least). If you want
+simplicity, have a simple design. If you want performance, design [[https://blog.nelhage.com/post/why-sorbet-is-fast/#local-only-inference][for
+locality, locality and locality]]! Slowness comes from latency. A
+database is slower than memory for accessing data because in that case
+data travel more layers of software and hardware. For the same reason
+a database is quicker than a HTTP request. Berkeley University has an
+[[https://colin-scott.github.io/personal_website/research/interactive_latency.html][interactive picture]] showing that.
+
+Still, your application (maybe) really needs to store data. Or, worse,
+you may find yourself stuck with an old design that you cannot change
+for now. How do you make sure your feature is fast?
+
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       35a3dfa2-043d-4273-ad98-0bd59f12dea2
+:END:
+
+Performance testing is an art. I remember the first time I paired with
+an engineer tuning a [[https://gatling.io/][Gatling]] scenario. He was trying to mimic a swarm
+of users which would start accessing the application in waves. Once
+written the test, we ran it against the application instances for
+test, and: flop! The application broke after a couple of waves.
+Unsurprisingly, the issue was not the test.
+
+Although I got a few performance tests under my belt, I remember the
+disappointment in that crash. The [[https://en.wikipedia.org/wiki/Shift-left_testing][shifting left movement]] resonates
+with my feeling. I think we should catch slowness earlier in the
+development cycle. Ideally, the tools we use to write software should
+highlight slow code while we type (I am experimenting with that, but
+not quite there yet). For now though: what is a quick (and cool) way
+to check performance for a (Scala) developer?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       0cfb439f-8536-46da-88ca-475ddfba1bd4
+:END:
+
+Slowness appears in the data. A function may seem alright for the few
+test cases we test it with. Then it hits production and hell breaks
+loose.
+
+What has happened? The real worlds hosts the most fearsome data
+generators: humans. I am not joking. People make data and machines
+filter it. Any program is just a filter on many data sources. [[https://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters/][I
+learned that from]] [[https://www.goodreads.com/book/show/2084939.Linux_and_the_Unix_Philosophy?from_search=true&from_srp=true&qid=AcaaFv8PnC&rank=1][Linux and the Unix Philosophy]] and my experience
+shows it true.
+
+So I get that what we need is data generators. If possible, these
+should behave like people. Reproducing people behavior is difficult though.
+But we can approximate: randomness!
+
+You may have heard of [[https://github.com/typelevel/scalacheck][ScalaCheck]] already. Earlier [[https://ag91.github.io/blog/2018/10/27/functional-abstraction-in-js-functors/][I wrote about
+jsverify, its JS counterpart]]. ScalaCheck is a tool for property
+testing. That type of testing is fantastic and you should check it
+out. In this context though, we want only ScalaCheck's generators.
+Also these are more digestible for your team, if they do not know
+property testing yet.
+
+Let me show you a generator quickly in [[https://github.com/com-lihaoyi/Ammonite][Ammonite]] syntax:
+
+#+begin_src amm :exports both :results drawer
+import $ivy.`org.scalacheck::scalacheck:1.14.1`
+
+import org.scalacheck.Gen
+
+
+val stringGen: Gen[String] = Gen.alphaNumStr
+val listOfStringGen: Gen[List[String]] = Gen.listOf(stringGen)
+listOfStringGen.sample
+#+end_src
+
+#+RESULTS:
+:results:
+import $ivy.$                                  
+
+
+import org.scalacheck.Gen
+
+
+
+stringGen: Gen[String] = org.scalacheck.Gen$$anon$5@552fffc8
+listOfStringGen: Gen[List[String]] = org.scalacheck.Gen$$anon$1@368ff8be
+res3_4: Option[List[String]] = Some(
+  List(
+    "QIsEOjnHpyIwbsjfc3epMxupwpzjwgducjyYhmgjgd8ncbttthyq4ezLlimeswgaOpieinqavfou",
+    "oplCvfyrvfwpffnppzw4drD2gwcbyYphva0i0bxrzhcrfgkcoawbvslfwaQktwnv4cfuoyo3",
+    "gtOyf0bsbi0mdcgm5llb",
+    "O0gO4qzud9hspnFrMuw3npslpvenh0lLeueAu5cnb5zbhnsc4ggmwsq0crcstgcp3c",
+    "ggcaiffzsTEvrjxcwhavYifIfJx9ouumer7h8oupzxmjat3KAop",
+    "pb4n9wf4rqwpifboazjittgurxvkgaNld6w8wlhdgsqwxF",
+    "ycsj8ekmawmMsj3gauvh4njo7pd7bbxvp6",
+    "g79afe0obfttnxrlf6r6pes2oWswiiixjnvvBu28a1dcbnqqfrqqsjjx4xIwvfhn",
+    "2jvcuslGpPiglbthzawa39vgsprmrqy4lqUeoegYaR5ylQ5pfaauui3TecbqllnuuhboupuK",
+    "qlgfxg8n3q7u8kacrcad0b30Hyb1akuhnhn5bTwon9wykdHqnIe0fZijdiYTqhnrm",
+    "kjgxslQd6wbgfaopeau7oUfa0c",
+    "gibzsbpRlyKsz2iaHeLbmkkddapensUy9DzqBocUdtxjvnomyf9y8qlknbcbthgHI0qohroweNyRcqtfjsDKylwgj",
+    "bquqvW3rvigWi6aW3udmji1vzqenijzpSmqJerevnWd"
+  )
+)
+:end:
+
+In 5 lines of code we generated a list of random strings. That is
+cool! Now let me show you how to setup the data for a performance
+test. Say you have an object, how do you make a generator for that?
+
+#+begin_src amm :exports both :results drawer
+import $ivy.`org.scalacheck::scalacheck:1.14.1`
+
+import org.scalacheck.{Gen, Arbitrary}
+
+case class SomeObjectToTest(int: Int, maybeString: Option[String])
+
+val someObjectToTestGen: Gen[SomeObjectToTest] = for {
+  int <- Arbitrary.arbitrary[Int]
+  maybeString <- Gen.option(Gen.alphaNumStr)
+} yield SomeObjectToTest(int, maybeString)
+
+Gen.listOfN(2, someObjectToTestGen).sample
+#+end_src
+
+#+RESULTS:
+:results:
+import $ivy.$                                  
+
+
+import org.scalacheck.{Gen, Arbitrary}
+
+
+defined class SomeObjectToTest
+someObjectToTestGen: Gen[SomeObjectToTest] = org.scalacheck.Gen$$anon$5@2321c420
+res11_4: Option[List[SomeObjectToTest]] = Some(
+  List(SomeObjectToTest(-2147483648, Some("4wPNvt")), SomeObjectToTest(-924389141, None))
+)
+:end:
+
+As you can see, a =for= comprehension saves you here. We just compose
+generators. And note =Gen.listOfN=: you can get =N= pieces of random
+data, once you define your generator.
+
+Now it is easy to test your function over a million of
+inputs!
+
+For performance we want to check time. What I use to record time
+follows.
+
+#+begin_src amm :exports both :results drawer
+def time[R](block: => R): R = {
+  val t0 = System.nanoTime()
+  val result = block    // call-by-name
+  val t1 = System.nanoTime()
+  println(Console.GREEN + "Elapsed time: " + (t1 - t0) + "ns, ie, " + ((t1 - t0) / 1000000000) + "s" + Console.RESET)
+  result
+}
+#+end_src
+
+
+If you connect to a database in your test, you can also try to store
+the data. Then you can time how long your database takes as
+storing/accessing data. If it feels slow,
+[[https://ag91.github.io/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements/][instrument your database and run again to check what queries are slow]].
+
+Generators save you a lot of time but make sure to use them on a good
+design! For example, the class above has Int and String attributes.
+These types can host an infinity of values. Particularly these values
+can be rather big! Generators take these at random, so you may find
+the Bible in one of those strings. Instead, your design should have
+types that allow only the values you want (for example limiting the
+length of the string and the range of the integers).
+
+
+* Conclusion
+:PROPERTIES:
+:ID:       fdf1725c-0586-41cb-a943-7d253fbf0110
+:END:
+
+With this knowledge you can start testing performance. You will surely
+catch your biggest bottlenecks. Most of your time will go in setting
+up your generators. This is worthy because you can also use them for
+property testing (and setting up data in a test environment too!). So
+run your Ammonite, paste the code and start generating right now.
+
+Happy performing!
+
