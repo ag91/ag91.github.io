@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 12 Mar 2021 20:45:04 CET</pubDate>
-    <lastBuildDate>Fri, 12 Mar 2021 20:45:04 CET</lastBuildDate>
+    <pubDate>Wed, 17 Mar 2021 00:02:12 CET</pubDate>
+    <lastBuildDate>Wed, 17 Mar 2021 00:02:12 CET</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Check your performance with ScalaCheck generators</title>
+      <link>http://ag91.github.io/blog/2021/03/17/check-your-performance-with-scalacheck-generators</link>
+      <description><![CDATA[ScalaCheck generators for performance testing]]></description>
+      <pubDate>2021-03-17</pubDate>
+      <guid>http://ag91.github.io/blog/2021/03/17/check-your-performance-with-scalacheck-generators</guid>
+    </item>
+    <item>
       <title>Find Org Roam notes via their relations</title>
       <link>http://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations</link>
-      <description><![CDATA[Find notes via relations.]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-03-12</pubDate>
       <guid>http://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-01-28</pubDate>
       <guid>http://ag91.github.io/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help</guid>
-    </item>
-    <item>
-      <title>VLC via Emacs: how to open a YouTube link</title>
-      <link>http://ag91.github.io/blog/2021/01/25/vlc-via-emacs-how-to-open-a-youtube-link</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-01-25</pubDate>
-      <guid>http://ag91.github.io/blog/2021/01/25/vlc-via-emacs-how-to-open-a-youtube-link</guid>
     </item>
   </channel>
 </rss>
