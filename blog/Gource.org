@@ -1,0 +1,32 @@
+#+TITLE:       Emacs as your code compass: watch history with Gource!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-03-19 Fri
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-watch-history-with-gource
+#+KEYWORDS:    code-compass, emacs
+#+TAGS:        code-compass, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Gource support added!
+I am happy to announce that a few days ago I integrated [[https://gource.io/][gource]] into
+[[https://github.com/ag91/code-compass][code-compass]]! Gource is a great tool. It lets you watch your code
+changes like a movie. Just run =gource= in a Git directory and your
+changes will take life. If you want an example, look [[https://youtu.be/NjUuAuBcoqs][here]].
+
+Gource adapts to you. If you want to watch only a section of your
+changes, just define the starting date. Code-compass' =c/show-gource=
+will ask you from how many days or months ago you want to start. By
+command line this looks more like =gource --start-date 2021-01-01=,
+but code-compass makes it easier! You can also set how quick each day
+should be with =c/gource-seconds-per-day=. By default each day is half
+a second.
+
+I use this tool to show the complexity of keeping track of changes.
+For example, take two repositories that depend on each other and run
+gource. You will see how many people work together on them. Each
+change could break the dependency of the projects.
+
+It was easy to add to code-compass. I hope this brings a little more
+awareness to the great gource!
+
+Happy watching!
