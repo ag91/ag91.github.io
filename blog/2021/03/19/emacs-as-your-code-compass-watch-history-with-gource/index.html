@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <title>Tag: code-compass - Where parallels cross</title>
+    <title>Emacs as your code compass: watch history with Gource! - Where parallels cross</title>
     <meta charset="utf-8" />
     <meta name="author" content="Andrea" />
+    <meta name="description" content="Gource support added!" />
+    <meta name="keywords" content="code-compass, emacs" />
     <link rel="stylesheet" href="/media/css/main.css" type="text/css">
     <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
   </head>
@@ -25,27 +27,55 @@
         </form>
       </header>
     </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code compass: watch history with Gource!</h1>
+<p>
+I am happy to announce that a few days ago I integrated <a href="https://gource.io/">gource</a> into
+<a href="https://github.com/ag91/code-compass">code-compass</a>! Gource is a great tool. It lets you watch your code
+changes like a movie. Just run <code>gource</code> in a Git directory and your
+changes will take life. If you want an example, look <a href="https://youtu.be/NjUuAuBcoqs">here</a>.
+</p>
+
+<p>
+Gource adapts to you. If you want to watch only a section of your
+changes, just define the starting date. Code-compass' <code>c/show-gource</code>
+will ask you from how many days or months ago you want to start. By
+command line this looks more like <code>gource --start-date 2021-01-01</code>,
+but code-compass makes it easier! You can also set how quick each day
+should be with <code>c/gource-seconds-per-day</code>. By default each day is half
+a second.
+</p>
+
+<p>
+I use this tool to show the complexity of keeping track of changes.
+For example, take two repositories that depend on each other and run
+gource. You will see how many people work together on them. Each
+change could break the dependency of the projects.
+</p>
+
+<p>
+It was easy to add to code-compass. I hope this brings a little more
+awareness to the great gource!
+</p>
+
+<p>
+Happy watching!
+</p>
+
+</div>
+</div>
     <div>
-      <div class="post">
-        <h1>Tag: code-compass</h1>
-        <ul class="org-ul">
-          <li><a href="/blog/2021/03/04/emacs-as-your-code-compass-what-files-do-i-need-to-change-next">Emacs as your code-compass: what files do I need to change next?</a></li>
-          <li><a href="/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help">Emacs as your code-compass: who can I ask for help?</a></li>
-          <li><a href="/blog/2021/02/11/emacs-as-your-code-compass-how-fragmented-is-the-knowledge-of-this-file">Emacs as your code-compass: how fragmented is the knowledge of this file?</a></li>
-          <li><a href="/blog/2020/12/24/emacs-as-your-code-compass-looking-at-hotspots-evolution">Emacs as your code-compass: looking at hotspots evolution</a></li>
-          <li><a href="/blog/2021/03/19/emacs-as-your-code-compass-watch-history-with-gource">Emacs as your code compass: watch history with Gource!</a></li>
-          <li><a href="/blog/2021/01/12/emacs-as-your-code-compass-let-history-show-you-which-files-to-edit-next">Emacs as your code-compass: let history show you which files to edit next</a></li>
-          <li><a href="/blog/2020/12/11/emacsconf2020-first-steps-towards-emacs-becoming-your-code-compass">EmacsConf2020: first steps towards Emacs becoming your code compass!</a></li>
-          <li><a href="/blog/2021/01/07/emacs-as-your-code-compass-how-related-are-these-modules">Emacs as your code-compass: how related are these modules?</a></li>
-          <li><a href="/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code">Emacs as your code-compass: how stable is my code?</a></li>
-          <li><a href="/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code">Emacs as your code-compass: how complex is this code?</a></li>
-          <li><a href="/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots">Emacs as your code-compass: finding code hotspots</a></li>
-          <li><a href="/blog/2021/01/22/emacs-as-your-code-compass-find-collaborators-you-should-(chit)-chat-with">Emacs as your code-compass: find collaborators you should (chit) chat with</a></li>
-          <li><a href="/blog/2021/01/01/emacs-as-your-code-compass-how-much-code-we-produced-for-this-repository-lately">Emacs as your code-compass: how much code did we produce for this repository lately?</a></li>
-        </ul>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-03-19</span>
+        <span title="last modification date" class="post-info">2021-03-19</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
       </div>
-    </div>
-    <div>
+      <section>
+        <h1>Comments</h1>
+      </section>
       <script src="//code.jquery.com/jquery-latest.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
       <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -70,5 +100,6 @@
         </p>
       </div>
     </div>
+
   </body>
 </html>
