@@ -1,0 +1,249 @@
+#+TITLE:       Emacs as your code-compass: a gentle trigger for maintenance
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-03-26 Fri
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-a-gentle-trigger-for-maintenance
+#+KEYWORDS:    emacs, code-compass
+#+TAGS:        emacs, code-compass
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: An icon that warns you about always growing files
+* Too long; didn't read
+:PROPERTIES:
+:ID:       6aafebec-234c-4435-888b-59b3ba122cb6
+:END:
+
+Do you wonder if it is time to give your code some extra care? I bet you
+need an icon and [[https://github.com/ag91/code-compass][code-compass]] provides that by default now!
+
+* The problem
+:PROPERTIES:
+:ID:       ccd34204-33ad-4b62-bb6e-23497d3c81e0
+:END:
+
+We like adding features. It brings new value to your users and nice
+challenges ahead! At the same time, we know that too much enthusiasm
+will little by little bring in some structural decay. When that
+happens you may need a plan because things may have gone already a bit
+out of hand. With my code-compass work I want to challenge that. I
+would like my computer to tell me: "Hey, you worked a lot on this
+code, what about a bit of care?". Until I manage to make it interact
+with me, how about some sort of visual queue that points out the state
+of the code. I can get that via Git, but I need something immediate.
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       3337589b-fb56-4313-b090-03982f3d417e
+:END:
+
+Our society comes with a structural issue: [[https://www.britannica.com/science/tragedy-of-the-commons][the tragedy of the commons]].
+This happens when we think: "Okay, I know this is not right, but for a
+one-off should be okay". Then we commit our change. And other people
+do the same, making the code unreadable. This happens with code, with
+family issues, with the dirt on the road, with environmental issues. A
+way to fix this is to educate everybody to always leave things
+slightly better of how they found them, which [[https://www.oreilly.com/library/view/97-things-every/9780596809515/ch08.html][Robert C. Martin calls
+the Boyscout Rule]]. That is the ideal. My take is that we can also make
+our tools help us with that. Our Emacs should warn us that things are
+going downhill. Can it tell us early enough so that we can maintain
+things while having fun?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       791634df-4494-4e1b-9eaa-d2f7e3f7e9b3
+:END:
+
+The secret is in the history of code again. We have seen that [[https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots][many
+changes (by many people)]] indicate errors and that [[https://ag91.github.io/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code][old code is stable]].
+So I thought how could I be aware of this while coding. It is true
+that code-compass makes it easy to plot this out. Still I would prefer
+less latency. Ideally when I open a file and in a way that does not
+distract me from the task at hand. This reminded me of the modeline.
+After few rounds of trial and errors, I made an icon that shows the
+trend of additions for the buffer.
+
+The icon looks like the pictures below.
+
+#+BEGIN_SRC emacs-lisp :results file :exports results :file "up.jpg"
+  (base64-decode-string
+      "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
+FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
+KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAsARoDASIA
+AhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA
+AAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3
+ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm
+p6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA
+AwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx
+BhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK
+U1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3
+uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD6Yq+U
+BdW5yucVQrRoAKKKKACiiigAooooAKKKKACmlAXVucrnFOooAKKKKACiiigAooooAKKKKACiiigA
+ooooAKKKKACiiigAooooAKKKKACiiigAooooAzq0CwDBSeT0rx4+MdWDBTcRBjyB5a5Nb+n+KdSm
+tYpZWiaTn5tmO/tXj5fndDMKjpUotNK+tvJdG+56WMyutg4KpUate2n/AAx6HRXDf8JPqHrD/wB8
+Uf8ACT6h6w/98V7B5p3NFcN/wk+oesP/AHxR/wAJPqHrD/3xQB3NFcN/wk+oesP/AHxR/wAJPqHr
+D/3xQB3NFcN/wk+oesP/AHxR/wAJPqHrD/3xQB3NFcN/wk+oesP/AHxUVz4hvriCSGRlCONpMZZG
+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
+PXLAZNX6AP/Z")
+#+END_SRC
+
+#+RESULTS:
+[[file:up.jpg]]
+
+#+BEGIN_SRC emacs-lisp :results file :exports results :file "slightly-up.jpg"
+  (base64-decode-string
+      "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
+FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
+KCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAtAP0DASIA
+AhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQA
+AAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3
+ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWm
+p6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEA
+AwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSEx
+BhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElK
+U1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3
+uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD2D4c/
+8k98L/8AYLtf/RS16TXm3w5/5J74X/7Bdr/6KWvSa9DMf4r9X+ZENgooorzywooooAKKKKACiiig
+ArK1jQrXVb/Sb6Z5orvTJzPBLEQD8ylHRsg5RlOCPYEEEA1q0UAR3EEVzA8NzFHNC4w0cihlYehB
+61XTStPTTvsCWNothz/owhUR8nJ+XGOvNXKqazfLpmkX1+6lltYHnKjuFUtj9KpTklZMabQyLR9M
+hhkii06yjikj8l0WBQrJz8pGOV5PHTk1K2n2bOztaW5dnSQsY1yWX7rdOowMHtXA+C5rvRfg1a63
+GI7jU7u1Gs3bSAnzJJsSyZwR0Vio9Aq9hXR6x4ngjRoNIlhn1Bbq2tijqxVfNYHJ6Z+TceD2/Ct4
+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")
+#+END_SRC
+
+#+RESULTS:
+[[file:slightly-up.jpg]]
+
+
+The idea is that an arrow pointing up tells that a lot of code was
+added last three months. The inclination of the arrow changes to tell
+that there were less additions. If it points down it means that there
+were more deletions. That is good because less code means also less
+maintenance.
+
+Behind the scenes I count all the lines added and deleted according to
+the Git history for the specific file. Then I compare these numbers:
+if there are no deletions or additions in the last three months the
+arrow points up and down respectively. Otherwise the arrow points
+upwards if there are more additions, and downwards otherwise. All this
+happens asynchronously because reading the git history can take a
+while, so there may be a little delay before the icon appears.
+
+You can customize period (the three months) and faces with the
+variable =c/icon-trends=. You can also disable the icon setting the
+variable =c/display-icon= to =nil=.
+
+This little icon on the left side of my modeline gives me some
+insights about the code. If I see an arrow pointing up, I know that I
+need to prune my code. And if it is bent, I keep just an eye open for
+maintenance.
+
+
+* Conclusion
+:PROPERTIES:
+:ID:       f6fde5fd-80eb-41eb-b951-cfe857491c9d
+:END:
+
+Check out the latest version of code-compass and you will have your
+icon. Let me know if it helps you as well!
+
+Happy coding!
+
