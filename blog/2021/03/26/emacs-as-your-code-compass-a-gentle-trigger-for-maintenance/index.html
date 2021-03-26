@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: a gentle trigger for maintenance - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="An icon that warns you about always growing files" />
+    <meta name="keywords" content="emacs, code-compass" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: a gentle trigger for maintenance</h1>
+<div id="outline-container-orgba084bd" class="outline-2">
+<h2 id="orgba084bd">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgba084bd">
+<p>
+Do you wonder if it is time to give your code some extra care? I bet you
+need an icon and <a href="https://github.com/ag91/code-compass">code-compass</a> provides that by default now!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2355162" class="outline-2">
+<h2 id="org2355162">The problem</h2>
+<div class="outline-text-2" id="text-org2355162">
+<p>
+We like adding features. It brings new value to your users and nice
+challenges ahead! At the same time, we know that too much enthusiasm
+will little by little bring in some structural decay. When that
+happens you may need a plan because things may have gone already a bit
+out of hand. With my code-compass work I want to challenge that. I
+would like my computer to tell me: "Hey, you worked a lot on this
+code, what about a bit of care?". Until I manage to make it interact
+with me, how about some sort of visual queue that points out the state
+of the code. I can get that via Git, but I need something immediate.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0ccfa80" class="outline-2">
+<h2 id="org0ccfa80">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org0ccfa80">
+<p>
+Our society comes with a structural issue: <a href="https://www.britannica.com/science/tragedy-of-the-commons">the tragedy of the commons</a>.
+This happens when we think: "Okay, I know this is not right, but for a
+one-off should be okay". Then we commit our change. And other people
+do the same, making the code unreadable. This happens with code, with
+family issues, with the dirt on the road, with environmental issues. A
+way to fix this is to educate everybody to always leave things
+slightly better of how they found them, which <a href="https://www.oreilly.com/library/view/97-things-every/9780596809515/ch08.html">Robert C. Martin calls
+the Boyscout Rule</a>. That is the ideal. My take is that we can also make
+our tools help us with that. Our Emacs should warn us that things are
+going downhill. Can it tell us early enough so that we can maintain
+things while having fun?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge18295c" class="outline-2">
+<h2 id="orge18295c">And there is a solution</h2>
+<div class="outline-text-2" id="text-orge18295c">
+<p>
+The secret is in the history of code again. We have seen that <a href="https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots">many
+changes (by many people)</a> indicate errors and that <a href="https://ag91.github.io/blog/2021/02/06/-emacs-as-your-code-compass-how-stable-is-my-code">old code is stable</a>.
+So I thought how could I be aware of this while coding. It is true
+that code-compass makes it easy to plot this out. Still I would prefer
+less latency. Ideally when I open a file and in a way that does not
+distract me from the task at hand. This reminded me of the modeline.
+After few rounds of trial and errors, I made an icon that shows the
+trend of additions for the buffer.
+</p>
+
+<p>
+The icon looks like the pictures below.
+</p>
+
+
+<div id="orgcf2f567" class="figure">
+<p><img src="/assets/blog/2021/03/26/emacs-as-your-code-compass-a-gentle-trigger-for-maintenance/up.jpg" alt="/assets/blog/2021/03/26/emacs-as-your-code-compass-a-gentle-trigger-for-maintenance/up.jpg" />
+</p>
+</div>
+
+
+<div id="orge513fed" class="figure">
+<p><img src="slightly-/assets/blog/2021/03/26/emacs-as-your-code-compass-a-gentle-trigger-for-maintenance/up.jpg" alt="slightly-/assets/blog/2021/03/26/emacs-as-your-code-compass-a-gentle-trigger-for-maintenance/up.jpg" />
+</p>
+</div>
+
+
+<p>
+The idea is that an arrow pointing up tells that a lot of code was
+added last three months. The inclination of the arrow changes to tell
+that there were less additions. If it points down it means that there
+were more deletions. That is good because less code means also less
+maintenance.
+</p>
+
+<p>
+Behind the scenes I count all the lines added and deleted according to
+the Git history for the specific file. Then I compare these numbers:
+if there are no deletions or additions in the last three months the
+arrow points up and down respectively. Otherwise the arrow points
+upwards if there are more additions, and downwards otherwise. All this
+happens asynchronously because reading the git history can take a
+while, so there may be a little delay before the icon appears.
+</p>
+
+<p>
+You can customize period (the three months) and faces with the
+variable <code>c/icon-trends</code>. You can also disable the icon setting the
+variable <code>c/display-icon</code> to <code>nil</code>.
+</p>
+
+<p>
+This little icon on the left side of my modeline gives me some
+insights about the code. If I see an arrow pointing up, I know that I
+need to prune my code. And if it is bent, I keep just an eye open for
+maintenance.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org300611b" class="outline-2">
+<h2 id="org300611b">Conclusion</h2>
+<div class="outline-text-2" id="text-org300611b">
+<p>
+Check out the latest version of code-compass and you will have your
+icon. Let me know if it helps you as well!
+</p>
+
+<p>
+Happy coding!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-03-26</span>
+        <span title="last modification date" class="post-info">2021-03-26</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/code-compass/">code-compass</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
