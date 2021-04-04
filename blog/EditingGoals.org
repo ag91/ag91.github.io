@@ -1,0 +1,75 @@
+#+TITLE:       Have you editing to do? Edit a little, edit every day, and let Emacs be your coach!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-04-04 Sun
+#+URI:         /blog/%y/%m/%d/have-you-editing-to-do-edit-a-little-edit-every-day-and-let-emacs-be-your-coach
+#+KEYWORDS:    learning, emacs, failure
+#+TAGS:        learning, emacs, failure
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Set editing goals with wwg!
+
+* Too long; didn't read
+
+Do you need to edit a piece of text that is hard to read? Have you to
+write something and you are afraid it will turn ugly?
+Writer-word-goals (wwg) now helps you making text more readable.
+
+
+* The problem
+:PROPERTIES:
+:ID:       cdf0086c-ad91-4df7-b33d-fc346d1d2e1a
+:END:
+
+Writing is hard. You try to share your ideas in a way that others can
+understand. Every time I write something though, I get carried away.
+The more I write, the more complicated it gets. The more complicated,
+the less readable. At the end of my writing session (after the 1k
+words [[https://github.com/ag91/writer-word-goals][wwg]] pushes me to write), I have some ideas written down. And I
+have also some new edits to do. For that I will read and reread until it feels right. That is not great, because I cannot track my progress.
+
+The question is: can my editor help me with that?
+
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       acc5700e-5388-4784-a43f-5d8dfff632c9
+:END:
+
+It is funny, because this do&review is a pattern. In software you may
+get carried away by the code, and forget users' needs. Designers
+follow the beauty of their products and forget to make them easy to
+use. Even architects put the look of houses before how livable they
+are. ([[file:/home/andrea/workspace/agenda/notes/20200822224243-stewart_brand.org][Stewart Brand]] tells a lot about architects in his book
+[[https://goodreads.com/book/show/38310.How_Buildings_Learn?from_search=true&amp;from_srp=true&amp;qid=DIwvC7gEFg&amp;rank=1][How Buildings Learn]].)
+
+It seems that we put aside the central features in favour of minor ones.
+
+I think our tools can help us reminding ourselves what we are doing
+things for.
+
+How cool would be if I can see readability
+while I write? I would like to see in one gaze that the following two
+sentences are more and less accessible.
+
+An incredible amount of time of ours is spent in less relevant efforts.
+Really, we waste too much time in details.
+
+If I could see that the first is less readable, I could change it when
+I have fresh in my mind what I wanted to express.
+
+Would this be even possible?
+
+
+* And there is a solution
+
+* Conclusion
+:PROPERTIES:
+:ID:       8041b8e5-590a-4de6-aba7-de5ef6a21113
+:END:
+
+So do you have to write work emails? Do you have to review the
+homework of your students? Are you writing the next Harry Potter? Grab
+my [[https://github.com/ag91/writer-word-goals][wwg]] and make your life a bit simpler!
+
+Happy editing!
