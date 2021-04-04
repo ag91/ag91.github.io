@@ -32,9 +32,9 @@
 <div class="post">
 <h1>Have you editing to do? Edit a little, edit every day, and let Emacs be your coach!</h1>
 
-<div id="outline-container-org6b06e38" class="outline-2">
-<h2 id="org6b06e38">Too long; didn't read</h2>
-<div class="outline-text-2" id="text-org6b06e38">
+<div id="outline-container-org930fbdf" class="outline-2">
+<h2 id="org930fbdf">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org930fbdf">
 <p>
 Do you need to edit a piece of text that is hard to read? Have you to
 write something and you are afraid it will turn ugly?
@@ -44,9 +44,9 @@ Writer-word-goals (wwg) now helps you making text more readable.
 </div>
 
 
-<div id="outline-container-org54291fe" class="outline-2">
-<h2 id="org54291fe">The problem</h2>
-<div class="outline-text-2" id="text-org54291fe">
+<div id="outline-container-org17d8643" class="outline-2">
+<h2 id="org17d8643">The problem</h2>
+<div class="outline-text-2" id="text-org17d8643">
 <p>
 Writing is hard. You try to share your ideas in a way that others can
 understand. Every time I write something though, I get carried away.
@@ -63,9 +63,9 @@ The question is: can my editor help me with that?
 </div>
 
 
-<div id="outline-container-orgd45d0e6" class="outline-2">
-<h2 id="orgd45d0e6">It is a problem indeed</h2>
-<div class="outline-text-2" id="text-orgd45d0e6">
+<div id="outline-container-org56517bc" class="outline-2">
+<h2 id="org56517bc">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org56517bc">
 <p>
 It is funny, because this do&amp;review is a pattern. In software you may
 get carried away by the code, and forget users' needs. Designers
@@ -107,13 +107,99 @@ Would this be even possible?
 </div>
 
 
-<div id="outline-container-org07d3b22" class="outline-2">
-<h2 id="org07d3b22">And there is a solution</h2>
+<div id="outline-container-orgeab6299" class="outline-2">
+<h2 id="orgeab6299">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgeab6299">
+<p>
+It is possible! I tested this myself "on the road". <a href="https://www.ministryoftesting.com/dojo/lessons/forensic-testing-uncovering-quality-issues-using-your-organization-s-code-repository">I wrote an article
+and got it published</a>. This was my first writing gig. I used <code>wwg</code> to
+write the contents and I submitted. They aim for great content, so an
+editor checked my work. She reviewed, adjusted and asked me to clarify
+certain parts. At this point I had already wwg working for editing. So
+I rewrote the unclear bits while "seeing readability". She accepted
+them! No comment was surely a good sign. Now, I thought, I may be
+onto something.
+</p>
+
+<p>
+So what did I do? I had already worked on something that did not
+lead me far. I am a happy user of <a href="https://github.com/bnbeckwith/writegood-mode/pull/27">writegood-mode</a>.
+<a href="https://github.com/bnbeckwith/writegood-mode/pull/27">Sometimes ago I proposed a on-the-fly readability score</a>. The problem
+with that is it displays you the score while you write. Again: or you
+write or you read. Doing both is hard. As hard as writing and editing
+at the same time.
+</p>
+
+<p>
+The scoring comes from writegood-mode. The mode uses
+<a href="https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests">Flesch–Kincaid readability</a> tests. In essence we score sentences
+according to how long are the words and the sentence that contains them.
+The algorithm is simple. For that reason it does not work in all
+cases. But in most ones it does magic!
+</p>
+
+<p>
+Note they made this score for English. In other languages the score my change.
+</p>
+
+<p>
+Let me show how it looks like!
+</p>
+
+
+<div id="orge12a2c2" class="figure">
+<p><img src="/assets/blog/2021/04/04/have-you-editing-to-do-edit-a-little-edit-every-day-and-let-emacs-be-your-coach/screen.jpg" alt="screen.jpg" />
+</p>
 </div>
 
-<div id="outline-container-orgd9c2b82" class="outline-2">
-<h2 id="orgd9c2b82">Conclusion</h2>
-<div class="outline-text-2" id="text-orgd9c2b82">
+<p>
+The green lines are easy. The yellow a little bit difficult. You want
+really to fix the red ones. In the example you can see all of those.
+Note how the red one contains a link. As I mentioned, the algorithm is
+simple, so false-positive are likely. So use this mode with a critical
+approach, not blind faith.
+</p>
+
+<p>
+The view is available in two flavours: scoring by sentence
+(<code>wwg-score-sentences-mode</code>) and paragraph
+(<code>wwg-score-paragraphs-mode</code>). You may want a paragraph view
+for longer pieces of text.
+</p>
+
+
+<p>
+Now comes the pretty cool bit. If we can quantify how easy a text is
+to read, we can also set <b>goals</b>!
+</p>
+
+<p>
+Imagine you get this long piece of text to edit. You can now say: "I
+want to make this at least 20% easier to read". Then you "see
+readability" and choose the part of text to edit.
+</p>
+
+<p>
+Now you can start this editing session with <code>wwg-editing-mode</code>. It
+does exactly that. It asks you to choose between three levels of
+editing: Easy, Medium or Hard. Then similarly to <code>wwg-mode</code>, it tries
+to keep up your morale by complimenting your progress. When you finish
+it, your text is easier to read!
+</p>
+
+<p>
+Note: the highlighting may have some hiccups if the first sentence in
+the file does not end by a dot. I am going to patch this as soon as I
+have some time (I also accept PRs!!). I thought to share it early
+because it is too cool to keep it all for myself!
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org1970680" class="outline-2">
+<h2 id="org1970680">Conclusion</h2>
+<div class="outline-text-2" id="text-org1970680">
 <p>
 So do you have to write work emails? Do you have to review the
 homework of your students? Are you writing the next Harry Potter? Grab
