@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 04 Apr 2021 22:16:43 CEST</pubDate>
-    <lastBuildDate>Sun, 04 Apr 2021 22:16:43 CEST</lastBuildDate>
+    <pubDate>Fri, 09 Apr 2021 21:00:14 CEST</pubDate>
+    <lastBuildDate>Fri, 09 Apr 2021 21:00:14 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emacs as your code-compass: find hotspots in micro-services!</title>
+      <link>http://ag91.github.io/blog/2021/04/08/emacs-as-your-code-compass-find-hotspots-in-micro-services</link>
+      <description><![CDATA[Find hotspots in groups of projects]]></description>
+      <pubDate>2021-04-09</pubDate>
+      <guid>http://ag91.github.io/blog/2021/04/08/emacs-as-your-code-compass-find-hotspots-in-micro-services</guid>
+    </item>
+    <item>
       <title>Have you editing to do? Edit a little, edit every day, and let Emacs be your coach!</title>
       <link>http://ag91.github.io/blog/2021/04/04/have-you-editing-to-do-edit-a-little-edit-every-day-and-let-emacs-be-your-coach</link>
-      <description><![CDATA[Set editing goals with wwg!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-04-04</pubDate>
       <guid>http://ag91.github.io/blog/2021/04/04/have-you-editing-to-do-edit-a-little-edit-every-day-and-let-emacs-be-your-coach</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-02-20</pubDate>
       <guid>http://ag91.github.io/blog/2021/02/20/emacs-as-your-code-compass-what-is-this-text-about----without-me-reading-it</guid>
-    </item>
-    <item>
-      <title>Save your memory when compiling Scala</title>
-      <link>http://ag91.github.io/blog/2021/02/18/save-your-memory-when-compiling-scala</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-02-18</pubDate>
-      <guid>http://ag91.github.io/blog/2021/02/18/save-your-memory-when-compiling-scala</guid>
     </item>
   </channel>
 </rss>

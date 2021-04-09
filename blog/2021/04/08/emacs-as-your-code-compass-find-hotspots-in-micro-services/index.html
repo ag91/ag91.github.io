@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: find hotspots in micro-services! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Find hotspots in groups of projects" />
+    <meta name="keywords" content="emacs, code-compass" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: find hotspots in micro-services!</h1>
+<div id="outline-container-org40df181" class="outline-2">
+<h2 id="org40df181">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org40df181">
+<p>
+Do you work with micro-services? You can now compare their hotspots!
+Just run <code>c/show-hotspot-cluster</code> in a directory containing them. You
+will obtain a single hotspot graph.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org522b343" class="outline-2">
+<h2 id="org522b343">The problem</h2>
+<div class="outline-text-2" id="text-org522b343">
+<p>
+<a href="https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/">We saw already that hotspots can bring us to code with problems</a>. You
+can run code-compass' <code>c/show-hotspots</code> on any Git project. It may
+happen, though, that you have to put your architect hat on and look at
+an orchestration. In that case you may want to compare hotspots of
+multiple projects. For example, this applies to micro-services. You
+have a number of projects that collaborate to bring value. Often many
+teams maintain them. And some teams follow great coding practices and
+others follow some poorer ones. It could be useful to compare these
+projects to spot problems early.
+</p>
+
+<p>
+Our hotspots analysis would be great for that, but it takes only one
+repository! What to do?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2965910" class="outline-2">
+<h2 id="org2965910">And there is a solution</h2>
+<div class="outline-text-2" id="text-org2965910">
+<p>
+We can extend it! The idea is to loop over the repositories and
+accumulate one big analyses. The implementation is a bit hacky, but
+check out how it looks.
+</p>
+
+<p>
+<a href="/assets/blog/2021/04/08/emacs-as-your-code-compass-find-hotspots-in-micro-services/code-compass-cluster.mp4">/assets/blog/2021/04/08/emacs-as-your-code-compass-find-hotspots-in-micro-services/code-compass-cluster.mp4</a>
+</p>
+
+<p>
+I just run <code>c/show-hotspot-cluster</code> and pick a directory containing
+repositories. I pick a starting date for the analysis. After waiting a
+little, I get a hotspot analysis that contains all the repositories.
+You can see that I can now compare the size of the projects. And I can
+see the modules that are most exercised.
+</p>
+
+<p>
+Again this is incredible useful to keep track of what is going on in
+the overall code base.
+</p>
+
+<p>
+Also often projects share the same structure. For example, projects
+following <a href="https://en.wikipedia.org/wiki/Domain_Driven_Design">Domain Driven Design</a> will have a domain and an adapter
+directory. If your project follows a standard, you may discover
+hotspots in a directory that is common to many projects. That could be
+a sign that many teams are working independently on the same changes.
+You could use this insight to get in touch with other teams and join
+efforts.
+</p>
+
+<p>
+All in all, this is also useful for comparing projects design. I could
+find out in one gaze that some projects had too much functionality
+compared to others. That is a good call to action to reshuffle
+responsibilities around, and keep things small.
+</p>
+
+<p>
+Note that you can also specify a <code>repos-cluster.txt</code> file in the
+directory with your projects. If you list the names of the projects in
+there, <code>c/show-hotspot-cluster</code> will pick only those. This is handy if
+you keep all your projects in a single directory.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0ef89bb" class="outline-2">
+<h2 id="org0ef89bb">Conclusion</h2>
+<div class="outline-text-2" id="text-org0ef89bb">
+<p>
+This is it! You will be able to see micro-services and compare
+components. Just run <code>c/show-hotspot-cluster</code> on the container
+directory and you will get your comprehensive view.
+</p>
+
+<p>
+Happy comprehension!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-04-08</span>
+        <span title="last modification date" class="post-info">2021-04-09</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/code-compass/">code-compass</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
