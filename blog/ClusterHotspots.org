@@ -1,0 +1,79 @@
+#+TITLE:       Emacs as your code-compass: find hotspots in micro-services!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-04-08 Thu
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-find-hotspots-in-micro-services
+#+KEYWORDS:    emacs, code-compass
+#+TAGS:        emacs, code-compass
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Find hotspots in groups of projects
+* Too long; didn't read
+
+Do you work with micro-services? You can now compare their hotspots!
+Just run =c/show-hotspot-cluster= in a directory containing them. You
+will obtain a single hotspot graph.
+
+* The problem
+:PROPERTIES:
+:ID:       82f5db4d-d4fc-4ca4-af3c-3904ac04a527
+:END:
+
+[[https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/][We saw already that hotspots can bring us to code with problems]]. You
+can run code-compass' =c/show-hotspots= on any Git project. It may
+happen, though, that you have to put your architect hat on and look at
+an orchestration. In that case you may want to compare hotspots of
+multiple projects. For example, this applies to micro-services. You
+have a number of projects that collaborate to bring value. Often many
+teams maintain them. And some teams follow great coding practices and
+others follow some poorer ones. It could be useful to compare these
+projects to spot problems early.
+
+Our hotspots analysis would be great for that, but it takes only one
+repository! What to do?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       ed45db07-4270-43a0-aeea-0d5783c14d9e
+:END:
+
+We can extend it! The idea is to loop over the repositories and
+accumulate one big analyses. The implementation is a bit hacky, but
+check out how it looks.
+
+[[file:code-compass-cluster.mp4]]
+
+I just run =c/show-hotspot-cluster= and pick a directory containing
+repositories. I pick a starting date for the analysis. After waiting a
+little, I get a hotspot analysis that contains all the repositories.
+You can see that I can now compare the size of the projects. And I can
+see the modules that are most exercised.
+
+Again this is incredible useful to keep track of what is going on in
+the overall code base.
+
+Also often projects share the same structure. For example, projects
+following [[https://en.wikipedia.org/wiki/Domain_Driven_Design][Domain Driven Design]] will have a domain and an adapter
+directory. If your project follows a standard, you may discover
+hotspots in a directory that is common to many projects. That could be
+a sign that many teams are working independently on the same changes.
+You could use this insight to get in touch with other teams and join
+efforts.
+
+All in all, this is also useful for comparing projects design. I could
+find out in one gaze that some projects had too much functionality
+compared to others. That is a good call to action to reshuffle
+responsibilities around, and keep things small.
+
+Note that you can also specify a =repos-cluster.txt= file in the
+directory with your projects. If you list the names of the projects in
+there, =c/show-hotspot-cluster= will pick only those. This is handy if
+you keep all your projects in a single directory.
+
+* Conclusion
+
+This is it! You will be able to see micro-services and compare
+components. Just run =c/show-hotspot-cluster= on the container
+directory and you will get your comprehensive view.
+
+Happy comprehension!
