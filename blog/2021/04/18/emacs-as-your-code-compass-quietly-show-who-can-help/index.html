@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs as your code-compass: quietly show who can help - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Notify on file opening about who can help out with the current file" />
+    <meta name="keywords" content="code-compass, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs as your code-compass: quietly show who can help</h1>
+
+<div id="outline-container-org530f17d" class="outline-2">
+<h2 id="org530f17d">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org530f17d">
+<p>
+When you open a file, you want to know who to ask for help. Just in
+case. Now <a href="https://github.com/ag91/code-compass">code-compass</a> shows you the list of contributors any time you
+open a file under Git.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org045f717" class="outline-2">
+<h2 id="org045f717">The problem</h2>
+<div class="outline-text-2" id="text-org045f717">
+<p>
+I <a href="https://ag91.github.io/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/">explained earlier</a> how important is for me to know who to ask for
+help. They should be a click away. Imagine one of my Incident Response
+Team day: I am all focused on something, when a <a href="https://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda/">Slack message shows up
+in my agenda</a>. A client is having an issue! After a little
+investigation it becomes clear what piece of code is causing troubles.
+Finally I get there, and... I am unfamiliar with it. Also nothing
+looks wrong: it is time to call the cavalry! But wait who is the
+cavalry?
+</p>
+
+<p>
+This is where a mix of <a href="https://github.com/magit/magit">(ma)git</a> blame and shortlog can help me. But
+wait again: now I am all focused on the terminal!
+</p>
+
+<p>
+If you think about it, this distraction is in the way. It would be
+better if we could delegate this to my tools. So we could finally
+focus on the valuable stuff!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3a56f41" class="outline-2">
+<h2 id="org3a56f41">And there is a solution</h2>
+<div class="outline-text-2" id="text-org3a56f41">
+<p>
+This is pretty easy to achieve with Emacs: we can print the list of
+contributors any time we open a file! You can invoke
+<code>c/display-contributors</code> to see the list when you need it. Still
+<a href="https://github.com/ag91/code-compass">code-compass</a> runs that any time you open a file. You can just look at
+your <b>Messages</b> buffer to know who to ping. If you want to turn this
+off, define <code>(setq c/show-contributors-on-opening nil)</code> in your
+configuration.
+</p>
+
+<p>
+If you use <a href="https://github.com/yuya373/emacs-slack">emacs-slack</a> there is more for you. Say you want to open a
+chat with the person that knows most about the current file. If you
+use <code>c/display-contributors</code>, you need to read the contributor and
+then open manually a chat. That is fine, but still distracting! You
+may be onto something and you now need to switch focus to open a chat.
+Instead, you could run <code>c/slack-main-contributor</code>. It works by taking
+the mail of the main contributor from Git and resolving it to a Slack
+user. For this to work you need set a default team and set <code>(setq
+slack-prefer-current-team t)</code>. That way it easy to find the user via
+the Slack team you are in.
+</p>
+
+<p>
+To set a default team you need a configuration that looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(slack-register-team
+ :name "xxx"
+ :token "xxx"
+ :default t ;; *this is necessary*
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4028e9e" class="outline-2">
+<h2 id="org4028e9e">Conclusion</h2>
+<div class="outline-text-2" id="text-org4028e9e">
+<p>
+Do not interrupt your flow! Let Emacs suggest you useful contacts. Use
+ <code>c/display-contributors</code> to see who can help you! And integrate your
+ messaging tools to minimize friction in your work.
+</p>
+
+<p>
+Happy collaborating!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-04-18</span>
+        <span title="last modification date" class="post-info">2021-04-18</span>
+        <span title="tags" class="post-info"><a href="/tags/code-compass/">code-compass</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
