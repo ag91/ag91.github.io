@@ -1,0 +1,78 @@
+#+TITLE:       Emacs as your code-compass: quietly show who can help
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-04-18 Sun
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-quietly-show-who-can-help
+#+KEYWORDS:    code-compass, emacs
+#+TAGS:        code-compass, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Notify on file opening about who can help out with the current file
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       85c7b51a-60f9-43da-8fc4-c95bdc01aaaf
+:END:
+
+When you open a file, you want to know who to ask for help. Just in
+case. Now [[https://github.com/ag91/code-compass][code-compass]] shows you the list of contributors any time you
+open a file under Git.
+
+* The problem
+
+I [[https://ag91.github.io/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/][explained earlier]] how important is for me to know who to ask for
+help. They should be a click away. Imagine one of my Incident Response
+Team day: I am all focused on something, when a [[https://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda/][Slack message shows up
+in my agenda]]. A client is having an issue! After a little
+investigation it becomes clear what piece of code is causing troubles.
+Finally I get there, and... I am unfamiliar with it. Also nothing
+looks wrong: it is time to call the cavalry! But wait who is the
+cavalry?
+
+This is where a mix of [[https://github.com/magit/magit][(ma)git]] blame and shortlog can help me. But
+wait again: now I am all focused on the terminal!
+
+If you think about it, this distraction is in the way. It would be
+better if we could delegate this to my tools. So we could finally
+focus on the valuable stuff!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       6fa16620-da1f-43e0-b565-da692721a399
+:END:
+
+This is pretty easy to achieve with Emacs: we can print the list of
+contributors any time we open a file! You can invoke
+=c/display-contributors= to see the list when you need it. Still
+[[https://github.com/ag91/code-compass][code-compass]] runs that any time you open a file. You can just look at
+your *Messages* buffer to know who to ping. If you want to turn this
+off, define =(setq c/show-contributors-on-opening nil)= in your
+configuration.
+
+If you use [[https://github.com/yuya373/emacs-slack][emacs-slack]] there is more for you. Say you want to open a
+chat with the person that knows most about the current file. If you
+use =c/display-contributors=, you need to read the contributor and
+then open manually a chat. That is fine, but still distracting! You
+may be onto something and you now need to switch focus to open a chat.
+Instead, you could run =c/slack-main-contributor=. It works by taking
+the mail of the main contributor from Git and resolving it to a Slack
+user. For this to work you need set a default team and set =(setq
+slack-prefer-current-team t)=. That way it easy to find the user via
+the Slack team you are in.
+
+To set a default team you need a configuration that looks like:
+
+#+begin_src elisp :noeval
+(slack-register-team
+ :name "xxx"
+ :token "xxx"
+ :default t ;; *this is necessary*
+#+end_src
+
+* Conclusion
+
+Do not interrupt your flow! Let Emacs suggest you useful contacts. Use
+ =c/display-contributors= to see who can help you! And integrate your
+ messaging tools to minimize friction in your work.
+
+Happy collaborating!
