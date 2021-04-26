@@ -92,7 +92,7 @@ digraph {
 
 #+end_src
 
-[[softprocess.png]]
+[[file:./softprocess.png]]
 
 Each arrow is a problem. I am pretty confident to say that I do not
 fully understand reality. I get some parts of it. I proceed in
@@ -136,8 +136,6 @@ simple that you could make a habit out of it.
 To clarify with our little scheme of before:
 
 
-[[/tmp/file.png]]
-
 #+begin_src dot :file softprocesswithmoldable.png :cmdline -Tpng :exports results :results silent
 digraph {
   rankdir=LR;
@@ -148,7 +146,7 @@ digraph {
 
 #+end_src
 
-[[softprocesswithmoldable.png]]
+[[file:./softprocesswithmoldable.png]]
 
 If we can go from software to knowledge, we can make progress and reuse.
 
