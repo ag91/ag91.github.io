@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 18 Apr 2021 17:46:18 CEST</pubDate>
-    <lastBuildDate>Sun, 18 Apr 2021 17:46:18 CEST</lastBuildDate>
+    <pubDate>Mon, 26 Apr 2021 22:18:28 CEST</pubDate>
+    <lastBuildDate>Mon, 26 Apr 2021 22:18:28 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Sustainable software with Moldable Development</title>
+      <link>http://ag91.github.io/blog/2021/04/26/sustainable-software-with-moldable-development</link>
+      <description><![CDATA[Do not lose knowledge, mold it out!]]></description>
+      <pubDate>2021-04-26</pubDate>
+      <guid>http://ag91.github.io/blog/2021/04/26/sustainable-software-with-moldable-development</guid>
+    </item>
+    <item>
       <title>Emacs as your code-compass: quietly show who can help</title>
       <link>http://ag91.github.io/blog/2021/04/18/emacs-as-your-code-compass-quietly-show-who-can-help</link>
-      <description><![CDATA[Notify on file opening about who can help out with the current file]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-04-18</pubDate>
       <guid>http://ag91.github.io/blog/2021/04/18/emacs-as-your-code-compass-quietly-show-who-can-help</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-03-05</pubDate>
       <guid>http://ag91.github.io/blog/2021/03/04/emacs-as-your-code-compass-what-files-do-i-need-to-change-next</guid>
-    </item>
-    <item>
-      <title>Preview post: set your editing goals</title>
-      <link>http://ag91.github.io/blog/2021/03/01/preview-post-set-your-editing-goals</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-03-01</pubDate>
-      <guid>http://ag91.github.io/blog/2021/03/01/preview-post-set-your-editing-goals</guid>
     </item>
   </channel>
 </rss>

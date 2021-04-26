@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Sustainable software with Moldable Development - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Do not lose knowledge, mold it out!" />
+    <meta name="keywords" content="programming, growth, learning" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Sustainable software with Moldable Development</h1>
+
+<div id="outline-container-orge34a0fc" class="outline-2">
+<h2 id="orge34a0fc">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orge34a0fc">
+<p>
+Software systems can age well. They should stay accessible to people.
+Both for technical people and not. To achieve this, we must think
+software as something we can mold. With refined tools we can extract
+the knowledge we need.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org1a58669" class="outline-2">
+<h2 id="org1a58669">The problem</h2>
+<div class="outline-text-2" id="text-org1a58669">
+<p>
+I like to write software. I like even more to solve some problem with
+it. Say I am successful and I write some hack that saves you a lot of
+time and effort. I think it is beautiful code, you think it works. We
+both are happy and move on to the next problem. If we are lucky, my
+software will work all the time and we will build some new solution
+upon it. Many features later: you have a new requirement, I moved on
+and somebody else has to extend code. The code looks ugly to them.
+They can read the code, but still do not know the trade-offs decisions
+we took to get to here. There is chance that they will rewrite
+everything from scratch with a novel technology more beautiful than
+mine.
+</p>
+
+<p>
+The problem with this little story is sustainability. When you buy a
+new thing to replace an old one and that happens often, you should
+worry. In his book
+<a href="file:///home/andrea/workspace/agenda/notes/20201220223612_how_buildings_learn_what_happens_after_they_re_built_by_stewart_brand.html">How
+Buildings Learn What Happens After They’re Built</a>, Stewart Brand
+reports what Christopher Alexander learned in his Oregon project (and
+I shall quote the whole thing, because it is just clearer like that).
+</p>
+
+<blockquote>
+<p>
+Large-lump development is based on the idea of replacement. Piecemeal
+growth is based on the idea of repair. Since replacement means
+consumption of resources, while repair means conservation of
+resources, it is easy to see that piecemeal growth is the sounder of
+the two from an ecological point of view. But there are even more
+practical differences.
+</p>
+
+<p>
+Large-lump development is based on the fallacy that it is possible to
+build perfect buildings. Piecemeal growth is based on the healthier
+and more realistic view that mistakes are inevitable. Unless money is
+available for repairing these mistakes, every building, once built, is
+condemned to be, to some extent, unworkable. Piecemeal growth is based
+on the assumption that adaptation between buildings and their users is
+necessarily a slow and continuous business which cannot, under any
+circumstances, be achieved in a single leap.
+</p>
+
+<p>
+Maintenance, in this light, is learning.
+</p>
+</blockquote>
+
+<p>
+So, when you replace things with something new, you are wasting. And,
+worse, you are not learning. In our little story, the person that has
+to extend our work lacks the knowledge to do that or I built my
+software in a way they cannot extend (e.g. lack of tests, spaghetti
+code, etc...).
+</p>
+
+<p>
+How can we make visible to a total stranger what a software is doing?
+A total stranger here can be a developer or a business person or even
+a curious user!
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orge7cc2d0" class="outline-2">
+<h2 id="orge7cc2d0">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orge7cc2d0">
+<p>
+Say that making software looks like the following.
+</p>
+
+
+<div id="org28adb53" class="figure">
+<p><img src="/assets/blog/2021/04/26/sustainable-software-with-moldable-development/softprocess.png" alt="softprocess.png" />
+</p>
+</div>
+
+<p>
+Each arrow is a problem. I am pretty confident to say that I do not
+fully understand reality. I get some parts of it. I proceed in
+iterations, somewhat like babies do. So, when I produce knowledge, the
+problem is that it is always incomplete.
+</p>
+
+<p>
+This implies that I will frequently deal with my second problem. When
+I encode my partial knowledge into a software form, only programmers
+and machines can use my knowledge. This implies that I can see if a
+programmer translated my knowledge right into software, only after I
+can use it. If the aim is to make sure things work well, it would be
+ideal that as many people as possible can inspect software! Inspecting
+is really about going from software into knowledge and comparing that
+with our knowledge.
+</p>
+
+<p>
+This inspection must happen often, because over time our knowledge of
+reality will improve. Then our programmers have to improve the
+software. This is a vital cycle.
+</p>
+
+<p>
+In the current state of affairs when software becomes mature, its
+knowledge disappears. Or better stays in the code. If the language is
+out of fashion (e.g., COBOL), we are left with hieroglyphs.
+</p>
+
+<p>
+What are the chances that we can find a <a href="https://en.wikipedia.org/wiki/Rosetta_stone">Rosetta stone</a>?
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgd5f27ca" class="outline-2">
+<h2 id="orgd5f27ca">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgd5f27ca">
+<p>
+We must make it simple to extract knowledge from written software.
+</p>
+
+<p>
+Lucky us, somebody is working just on that: glamorous people have been
+introducing <a href="https://moldabledevelopment.com/">Moldable Development</a>.
+</p>
+
+<p>
+In a nutshell the idea is to make it easy for you to create tools that
+extract knowledge from code on demand. Actually, it should be so
+simple that you could make a habit out of it.
+</p>
+
+<p>
+To clarify with our little scheme of before:
+</p>
+
+
+
+<div id="orgf09fdf7" class="figure">
+<p><img src="/assets/blog/2021/04/26/sustainable-software-with-moldable-development/softprocesswithmoldable.png" alt="softprocesswithmoldable.png" />
+</p>
+</div>
+
+<p>
+If we can go from software to knowledge, we can make progress and reuse.
+</p>
+
+<p>
+How does that work, you may wonder? It all starts from the idea that
+software is written for machines. This means that it always ends up to
+bits of 0 and 1 at some point. Since machines cannot handle
+ambiguity, software must always be text with a structure.
+</p>
+
+<p>
+For example, a machine struggles at working with the phrase "dad is washing the
+dishes", but can do something useful with:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-json">{"subject": "dad",
+ "verb": "is washing",
+ "article": "the",
+ "object": "dishes"}
+</pre>
+</div>
+
+<p>
+Our software is always written in a structured shape, no matter how
+pleasant it seems to read. That structure is noisy and makes software
+foreign to most people.
+</p>
+
+<p>
+Now, machines can already transform this structured text to obscure
+bits, they should also be able to transform to a form we can easily
+understand.
+</p>
+
+<p>
+This is not new though. Think of an MRI scan: that picture with your
+skeleton comes from a computer! That image makes the doctor find
+faults in your health. The data that image comes from is about
+radiations. A person cannot decide anything from those random-looking
+numbers. Instead, our machine makes that data into an image. Doctors
+look at the image and can save your life.
+</p>
+
+<p>
+Now, if we IT folks can do that to make doctors' job easier, what
+about making easy our own jobs?
+</p>
+
+<p>
+The point of Moldable Development is to make cheap to create this
+clarity. One reads code to take a decision. (For example, I often have
+to decide: is this the code I need to extend?) Then we must strive to
+make our tools give us this information in the most comfortable form
+for us to consume. For instance, say you are working on a machine
+learning function to recognize things; you should be able to see the
+result instead of just reading the code. The following images is one
+of the examples of <a href="https://gtoolkit.com/">Glamorous Toolkit</a>, the
+tool that implements best these ideas.
+</p>
+
+<p>
+In the image you can see how they made views that show how function
+for hand recognition works.
+</p>
+
+<p>
+And this approach allows non-technical people to access the knowledge in
+software. Again, you just have to build good views. Another
+example from Glamorous Toolkit is how live code can document itself:
+</p>
+
+<p>
+In the above you can see a numerical computation explained in a way
+people can easily understand. That is a view of software, instead of
+static documentation that becomes outdated.
+</p>
+
+<p>
+Still the engine of this idea is that making those tools must be easy.
+If you check out Glamorous Toolkit, you will see how making your own
+tools is quick. That becomes simpler because of the Pharo's <sup><a id="fnr.1" class="footref" href="#fn.1">1</a></sup> runtime: everything is an object and any object
+is available in the runtime. This means that if you are looking for
+all the if-else statements in your software, you can simply query the
+runtime for all the objects that represent if-else. This is extremely
+powerful.
+</p>
+
+<p>
+Also, Glamorous Toolkit has a hackable User Interface: you can
+create objects in the runtime to make interactive pictures.
+</p>
+
+<p>
+Well it is too exciting to fit all in here! Check out this video for
+an introduction by Tudor Girba: <a href="https://tube.switch.ch/videos/326a1304">https://tube.switch.ch/videos/326a1304</a>.
+</p>
+
+<p>
+And if you this clicks with you, you have a whole playlist to
+investigate further:
+<a href="https://www.youtube.com/watch?v=5s5x2pzh-CM&amp;list=PLfrs5bwLJOoBtfhXJ4mqcQ4ktpQOEBTvP">https://www.youtube.com/watch?v=5s5x2pzh-CM&amp;list=PLfrs5bwLJOoBtfhXJ4mqcQ4ktpQOEBTvP</a>.
+</p>
+</div>
+</div>
+
+
+
+<div id="outline-container-orgf966efb" class="outline-2">
+<h2 id="orgf966efb">Conclusion</h2>
+<div class="outline-text-2" id="text-orgf966efb">
+<p>
+This is just the tip of the iceberg of Moldable Development! I am
+pretty excited about this. I find ironic that we spend so much time to
+make machines understand our world, while then the majority of people
+do not understand our programs and the knowledge they carry. Moldable
+development promises to bring knowledge back to the human user: time
+for inclusivity!
+</p>
+
+<p>
+Happy molding!
+</p>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1">1</a></sup> <div class="footpara"><p class="footpara">a
+dialect of SmallTalk</p></div></div>
+
+
+</div>
+</div>
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-04-26</span>
+        <span title="last modification date" class="post-info">2021-04-26</span>
+        <span title="tags" class="post-info"><a href="/tags/programming/">programming</a>, <a href="/tags/growth/">growth</a>, <a href="/tags/learning/">learning</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
