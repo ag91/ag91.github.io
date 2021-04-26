@@ -14957,6 +14957,9 @@ QAACEIAABCAAAQhAAAIQgAAEIAABCEAAAhCAAAQgAAEIQAACEIAABCAAAQhAAAIQgAAEIAABCEAA
 AhCAAAQgAAEIQAACEIAABCAAAQhAAAIQuAWB/wHr7eQtWx0ShAAAAABJRU5ErkJggg==")
 #+END_SRC
 
+#+RESULTS:
+[[file:gtr-opencv-tensorflow-picture-inspection-1500.png]]
+
 In the image you can see how they made views that show how function
 for hand recognition works.
 
@@ -22449,6 +22452,9 @@ DISBMBAGwkAYCANhIAyEgTAQBsJAGAgDYSAMhIEwEAbCQBgIA2EgDISBMBAGwkAYCANhIAyEgTAQ
 BsJAGAgDYSAMhIEwEAbCQBgIA2EgDISBMBAGwkAYCANhIAyEgTAQBsJAGAgDYSAMhIEwEAbCQBgI
 A2EgDISBMBAGwkAYCAPnZOD/By/JgNLb7n//AAAAAElFTkSuQmCC")
 #+END_SRC
+
+#+RESULTS:
+[[file:gtr-uhmo-prices.png]]
 
 In the above you can see a numerical computation explained in a way
 people can easily understand. That is a view of software, instead of
