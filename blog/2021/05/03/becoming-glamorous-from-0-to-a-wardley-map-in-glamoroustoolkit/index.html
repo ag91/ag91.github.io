@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Becoming Glamorous: from 0 to a Wardley map in GlamorousToolkit - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to make a Wardley map in GT without knowing SmallTalk (yet!)" />
+    <meta name="keywords" content="gt, moldable development, programming" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Becoming Glamorous: from 0 to a Wardley map in GlamorousToolkit</h1>
+
+<div id="outline-container-org0ae2e75" class="outline-2">
+<h2 id="org0ae2e75">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org0ae2e75">
+<p>
+You can program <a href="https://gtoolkit.com/">GlamorousToolkit</a> (GT) even with no knowledge of <a href="https://pharo.org/">Pharo</a>.
+Here I show how I made a Wardley map all by myself (and GT own examples).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge2ab580" class="outline-2">
+<h2 id="orge2ab580">The problem</h2>
+<div class="outline-text-2" id="text-orge2ab580">
+<p>
+<a href="https://ag91.github.io/blog/2021/04/26/sustainable-software-with-moldable-development/">I
+wrote recently how I think Moldable Development is onto something
+cool</a>. Then I thought, why not testing this in the wild? I learned
+about <a href="https://en.wikipedia.org/wiki/Wardley_map">Wardley maps</a> in
+one of GT videos. This is a strategic tool focusing on business' value
+and evolution. By business I mean anything that interests you. Anyway,
+I knew that GT is able to create and display these maps.
+</p>
+
+<p>
+The interesting challenge for my last ten minutes was: can I make a
+Wardley map in GT with zero knowledge of SmallTalk/Pharo?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdedb6cb" class="outline-2">
+<h2 id="orgdedb6cb">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgdedb6cb">
+<p>
+This is a worthy challenge because it can prove a point: I need to
+be able to extract information from my system. In this case GT is a
+system that somebody else made. I do not know how that somebody else
+made it. I have no guide on how to use it. Still I want to make a map
+with it!
+</p>
+
+<p>
+This is usual at work. I need to use a library or a service I did not
+write to make some new feature. Often, I have also some time limit.
+</p>
+
+<p>
+Just the other day I spent a few hours meeting colleagues to
+understand the design of a new microservice. Then we had a mob session
+to extend it to what my team needed. When I need to modify a very old
+software, will I find the creators still there to help me?!
+</p>
+
+<p>
+So the big question: will I need to get on GT's Discord channel to
+have a usable Wardley map?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org54d3f9d" class="outline-2">
+<h2 id="org54d3f9d">And there is a solution</h2>
+<div class="outline-text-2" id="text-org54d3f9d">
+<p>
+Incredibly not! In about ten minutes I had a pretty basic map (just a
+point in an empty canvas, but still).
+</p>
+
+<p>
+At the beginning I was a bit lost. This is the main screen, and I was unsure what to pick.
+</p>
+
+
+<div id="orgac231e3" class="figure">
+<p><img src="/assets/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit/screen-2021-05-02-23-29-45.jpg" alt="screen-2021-05-02-23-29-45.jpg" />
+</p>
+</div>
+
+<p>
+I guessed I should try the "Coder" tab because "Playground" did not sound right: I am missing the basics!
+</p>
+
+
+<div id="org44dccfc" class="figure">
+<p><img src="/assets/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit/screen-2021-05-02-23-33-32.jpg" alt="screen-2021-05-02-23-33-32.jpg" />
+</p>
+</div>
+
+<p>
+This also was a bit overwhelming: a cascade of classes. I felt so a
+newbie! Still I decided to put trust on the little search icon on the
+top right!
+</p>
+
+
+<div id="org0b1f315" class="figure">
+<p><img src="/assets/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit/screen-2021-05-02-23-37-56.jpg" alt="screen-2021-05-02-23-37-56.jpg" />
+</p>
+</div>
+
+<p>
+Typing "WardleyMap" brought me to... more feelings of inexperience!
+Still, after jumping in and back a few times, I noticed the
+"#Packages" tag. I clicked on that hoping for an overview of the
+classes useful to me.
+</p>
+
+<p>
+Only while I am writing this I noticed that there were examples already in
+this view. Instead, I just looked for some class that made sense to me.
+</p>
+
+<p>
+After a couple of attempts I chose <code>GtWardleyMapModel</code> because the name
+was short and on point.
+</p>
+
+<p>
+And I found examples!
+</p>
+
+
+<div id="org2c0cc6a" class="figure">
+<p><img src="/assets/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit/screen-2021-05-02-23-45-55.jpg" alt="screen-2021-05-02-23-45-55.jpg" />
+</p>
+</div>
+
+<p>
+After a bit of looking into them, I felt ready for my first "Playground" tab!
+</p>
+
+
+<div id="org54e26b2" class="figure">
+<p><img src="/assets/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit/screen-2021-05-02-23-46-59.jpg" alt="screen-2021-05-02-23-46-59.jpg" />
+</p>
+</div>
+
+<p>
+You can see that I started defining an empty map. Then I defined a
+node. And then I composed the two.
+</p>
+
+<p>
+The empty map was easy because I copied an example. For the node, I
+needed to jump into another example and see how that was making nodes.
+I learned also how to set positions, colors and labels, but I decided
+to go minimal to save time.
+</p>
+
+<p>
+Then I wondered if I could use an existing example in the
+Playground. So, in the bottom bit I instantiated an example!
+</p>
+
+
+<div id="orgb6060f4" class="figure">
+<p><img src="/assets/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit/screen-2021-05-02-23-52-48.jpg" alt="screen-2021-05-02-23-52-48.jpg" />
+</p>
+</div>
+
+<p>
+That is a complete Wardley map and comes directly from GT!
+</p>
+
+<p>
+I am quite happy that I could get to a map by copying examples. I
+enjoyed my small success! And all by myself, no Discord!
+</p>
+
+<p>
+Also something for the functional programmers: there may be <del>dragons</del> state!
+Look what happens if I run twice my snippet with "addNode".
+</p>
+
+
+<div id="orgd7255b4" class="figure">
+<p><img src="/assets/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit/screen-2021-05-02-23-58-21.jpg" alt="screen-2021-05-02-23-58-21.jpg" />
+</p>
+</div>
+
+<p>
+GT complains that I try to add a node that I have added already!
+SmallTalk is an object oriented language, and objects have a state.
+Although I am unfamiliar with the GT way of raising errors, the string
+was quite clear too. You just have to rerun all the snippets above to
+reset the <code>aEmptyWardleyMap</code> object state.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org57eb3b7" class="outline-2">
+<h2 id="org57eb3b7">Conclusion</h2>
+<div class="outline-text-2" id="text-org57eb3b7">
+<p>
+It is pretty cool I could make a map without prior knowledge of Pharo
+programming. This is a good start! And the interactive maps are sooo
+cool!
+</p>
+
+<p>
+Happy molding!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-05-03</span>
+        <span title="last modification date" class="post-info">2021-05-03</span>
+        <span title="tags" class="post-info"><a href="/tags/gt/">gt</a>, <a href="/tags/moldable-development/">moldable development</a>, <a href="/tags/programming/">programming</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
