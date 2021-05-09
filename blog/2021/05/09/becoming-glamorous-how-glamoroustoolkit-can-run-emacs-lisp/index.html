@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Becoming Glamorous: how GlamorousToolkit can run Emacs Lisp. - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Towards a bridge between Lisp and SmallTalk!" />
+    <meta name="keywords" content="moldable development, gt, emacs, programming" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Becoming Glamorous: how GlamorousToolkit can run Emacs Lisp.</h1>
+<div id="outline-container-org1fecfaa" class="outline-2">
+<h2 id="org1fecfaa">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org1fecfaa">
+<p>
+Two great tools like GlamorousToolkit (GT) and Emacs can work
+together! Here I show how to make GT run Emacs Lisp!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6020c36" class="outline-2">
+<h2 id="org6020c36">The problem</h2>
+<div class="outline-text-2" id="text-org6020c36">
+<p>
+Emacs is an amazing <del>OS</del> text editor. What I like most of it is that I
+can express myself in Lisp. And as I express myself, my tool adapts to
+me. This is pretty moldable. <a href="https://ag91.github.io/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit/">Recently I wrote about moldable
+development and GT</a>, a tool created for this approach. As you can mold
+Emacs via Lisp, so you can mold GT via Pharo, a Small Talk dialect.
+The advantage of GT is its wonderful community and its focus on making
+software a story that can be explained. With GT you can explore code
+by creating interactive views of it. These views are really Pharo
+objects, so you can interact with them. With some knowledge of Pharo
+and GT you can program and adapt these views to your needs.
+</p>
+
+<p>
+Can we have the best of Emacs and GT moldable worlds? Can we mix Emacs
+and GT already?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4166954" class="outline-2">
+<h2 id="org4166954">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org4166954">
+<p>
+A lot of times people polarize. I refer to battles like Vim vs Emacs.
+Every time I get into reading those smart
+how-better-is-my-tool-over-yours comparisons, I smile because I think:
+"lucky me, I like them both!". It is the same for Emacs and GT.
+Actually it seems to me that these tools can learn from each other.
+Even better they can cooperate!
+</p>
+
+<p>
+I imagine myself to open a project in Emacs, use <a href="https://github.com/ag91/code-compass">code-compass</a> to check
+if there is some architectural decay. Then still curious I would
+seamlessly move to GT and produce a graph of dependencies between
+modules in the project. <a href="https://medium.com/feenk/evaluating-deprecated-classes-in-java-systems-with-glamorous-toolkit-842e76a0afe2">I could even decide to set some architectural
+constraints with GT</a>. And then somehow I would go back to Emacs and
+keep track of these same constraints in an Org Mode file. And then
+automatically publish these somewhere with the amazing export features
+of Org Mode.
+</p>
+
+<p>
+I imagine a back and forth of Lisp and SmallTalk: what a joy!
+Is this world possible? How far away is it?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd2eea6c" class="outline-2">
+<h2 id="orgd2eea6c">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgd2eea6c">
+<p>
+Not too far! Andrew, a smart Emacs and GT user, is putting quite some
+effort into bridging these worlds. He has recently published an
+interpreter of Emacs Lisp for GT:
+<a href="https://gitlab.com/skeledrew/EmacsInGT">https://gitlab.com/skeledrew/EmacsInGT</a>. This is just too cool! I
+decided to try the latest version and see if with my minimal GT skills
+I could run some Elisp in GT. I will share it here if you want to try too!
+</p>
+
+<p>
+First of all, I have this function in my Emacs to download and run the
+latest version of GT.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun fun/make-latest-version-of-GT ()
+  "Make latest version of GT."
+  (interactive)
+  (if (file-exists-p "/tmp/myGT")
+      (async-shell-command "cd /tmp/myGT; cd */.; ./glamoroustoolkit")
+    (async-shell-command "mkdir /tmp/myGT; cd /tmp/myGT; wget https://dl.feenk.com/gt/GlamorousToolkitLinux64-release.zip; unzip GlamorousToolkitLinux64-release.zip; cd */.; ./glamoroustoolkit")))
+</pre>
+</div>
+
+<p>
+If you are on Linux, just invoke this and you will have a running
+instance of GT in a few seconds.
+</p>
+
+<p>
+Then I moved into Emacs and added a text file called data.txt. When I
+did that today (by running GT with my function) the full path of the file
+was <code>/tmp/myGT/GlamorousToolkitLinux64-v0.8.635/pharo-local/data.txt</code> and I added this contents:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">emacsclient /bin/emacsclient
+lispDirs .
+</pre>
+</div>
+
+<p>
+You will probably guess it: you want to run Emacs as a server for this
+mode to work (basically just run <code>(server-start)</code> as explained in the
+Emacs manual: <a href="https://www.emacswiki.org/emacs/EmacsClient">https://www.emacswiki.org/emacs/EmacsClient</a>).
+</p>
+
+<p>
+Then in GT select the Playground icon. And add this Pharo code:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">Metacello new
+    baseline: 'GtExemplifierAdditions';
+    repository: 'gitlab://skeledrew/GtExemplifierAdditions';
+    load.
+</pre>
+</div>
+
+<p>
+Then run it with the small "play and i" icon, that is the "Inspect"
+command.
+</p>
+
+
+<div id="orgde35c69" class="figure">
+<p><img src="/assets/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp/screen-2021-05-09-01-10-55.jpg" alt="/assets/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp/screen-2021-05-09-01-10-55.jpg" />
+</p>
+</div>
+
+
+<p>
+This should go easy. When it is done, click the "+" icon,
+choose Pharo and run this code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">Metacello new
+    baseline: 'EmacsInGT';
+    repository: 'gitlab://skeledrew/EmacsInGT:master/src';
+    load.
+</pre>
+</div>
+
+<p>
+This will likely throw an error. Don't worry, we are quite there!
+Open another Pharo Playground with the "+" icon, and type:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">Gt4Git new
+</pre>
+</div>
+
+<p>
+And press again "Inspect". If you click on the Repositories heading in
+the new tab, you should see "emacsingit". Double-click on it, a new
+tab will open, and you will see a "Load" button next to "EmacsInGit".
+Load it!
+</p>
+
+
+<div id="orga6bd2e2" class="figure">
+<p><img src="/assets/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp/screen-2021-05-09-01-15-54.jpg" alt="/assets/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp/screen-2021-05-09-01-15-54.jpg" />
+</p>
+</div>
+
+<p>
+Congratulations, you have just used Git via GT! You loaded a repository that contains a GT extension.
+</p>
+
+<p>
+Now we are ready to evaluate some Elisp!
+</p>
+
+<p>
+Just type the following in another Pharo Playground:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">EigtEngine new
+    read: '(mapcar (lambda (x) (+ 1 x)) (list 1 2 3))';  "expression to evaluate"
+    eval;
+    print.
+</pre>
+</div>
+
+<p>
+If you evaluate that with "Inspect", you will see GT evaluating Elisp!
+</p>
+
+
+<div id="org928c966" class="figure">
+<p><img src="/assets/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp/screen-2021-05-09-01-18-15.jpg" alt="/assets/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp/screen-2021-05-09-01-18-15.jpg" />
+</p>
+</div>
+
+<p>
+How cool is that! And this is just an alpha release. Looking forward
+to see the amazing things Andrew will achieve!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga3a4dd1" class="outline-2">
+<h2 id="orga3a4dd1">Conclusion</h2>
+<div class="outline-text-2" id="text-orga3a4dd1">
+<p>
+Emacs and GT can work together. They can become incredible tools in
+the tool-belt of software engineers. I am looking forward to this
+incredible synergy! If you are curious, just follow the above to be an
+alpha user of EmacsInGT.
+</p>
+
+<p>
+Happy Elisping!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-05-09</span>
+        <span title="last modification date" class="post-info">2021-05-09</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-development/">moldable development</a>, <a href="/tags/gt/">gt</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/programming/">programming</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
