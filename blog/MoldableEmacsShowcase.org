@@ -1,0 +1,134 @@
+#+TITLE:       Moldable Emacs: make everything moldable through Lisp!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-05-26 Wed
+#+URI:         /blog/%y/%m/%d/moldable-emacs-make-everything-moldable-through-lisp
+#+KEYWORDS:    moldable-emacs, emacs
+#+TAGS:        moldable-emacs, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Showcase of a moldable-emacs, a new extension I am working on!
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       c39862bf-ed5c-44ac-b058-73a96dbb13d6
+:END:
+
+[[https://moldabledevelopment.com/][Moldable development]] is exciting! Here I show how I am
+exploring the power of this development method via Emacs.
+
+* The problem
+:PROPERTIES:
+:ID:       7aa14872-2729-4c15-8bb7-38ec75c464e3
+:END:
+
+[[https://ag91.github.io/blog/2021/04/26/sustainable-software-with-moldable-development/][Moldable development is a style of programming that puts meaning at
+the center of coding]]. In short as a programmer you want the meaning of
+your code to be available to the audiences that need it. For example,
+other programmers may like to see how data flow in your code, and they
+would typically sketch this with a diagram. In moldable development
+you want to derive that diagram from your code itself. This way your
+system shows its meaning in an accessible way for the audience. To see
+this in action, you want to check out anything related to
+[[https://gtoolkit.com/][GlamorousToolkit]] (as a starter I suggest [[https://tube.switch.ch/videos/326a1304][this]]).
+
+The idea that I could see code via other media than text made me
+curious. And when I fully realized that code is structured
+information, I got very excited! I thought: "What if I could extract
+information from code? Can I do in Emacs what GlamorousToolkit users
+can do?"
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       706bef79-f1a6-4796-a677-f724f93d94e2
+:END:
+
+Emacs is great because it can become what you need it to be. With my
+work on [[https://github.com/ag91/code-compass][code-compass]] I saw how I could make Emacs a tool for code
+forensics. There is a real problem here though. When I coded the
+[[https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/][hotspot analysis]] I assumed that people understood what a hotspot
+diagram was communicating. I also made sure to introduce new people to
+the concept with blog posts (I have just been relaying the ideas of
+[[http://adamtornhill.com/][Adam Tornhill]] really).
+
+The problem is that code-compass users had to learn about this view of
+a repository. And this view belongs to somebody else.
+
+In moldable development the basic concept is that there is no view of
+software that is always useful. In other terms if you see all the
+software of the world as rooms in a hotel, there is no master key! You
+really need a special key/view to enter/understand it. This implies
+that the tool you use should make it easy to mold the key you have
+into the key you need for the next room.
+
+Indeed, the focus of a tool like GlamorousToolkit is to make the
+generation of these views the default way of understanding code.
+
+For the data flow example I mentioned above, this means that it should
+be easy to take your code, find the data you want to graph and link it
+together via the functions that transform that data. (In
+SmallTalk/Pharo this is easily possible because everything is an
+object, so once you parse your code, it is available in your editor
+runtime and you can query what you need.)
+
+So you should see that my code-compass (and basically a lot of Emacs
+modes) tries to push on you a view that may or may not apply well to
+understanding your software. Maybe for your problem you need a slight
+variation or something totally different.
+
+We need then the making of views obvious and frictionless. How can we
+make Emacs a platform for molding then?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       cbae68af-2079-46e5-8750-582136f76fc1
+:END:
+
+I was just lucky. While I was wondering about these things,
+[[https://github.com/ubolonton/emacs-tree-sitter][emacs-tree-sitter]] popped up on my radar. I said to myself: "Isn't
+parsing just what I need for my proof of concept?"
+
+After a bit of hacking and playing around, this is (an example of)
+what I got to!
+
+[[file:treeOfDuplicatesMold.mp4]]
+
+In the video you can see how I:
+1. start from a C file from the [[https://github.com/emilybache/GildedRose-Refactoring-Kata][GildedRose kata]],
+2. transform that into a list of tokens that tree-sitter parsed
+3. I filter those tokens in only those that have duplicates
+4. I make a Org todo list to go through those duplicates.
+
+When I first created this todo list view, I needed to refactor some
+code full of redundancy. Given the fact I could make tokens of the
+code, I manipulated the tree of tokens in PlayGround. After a few time
+I repeated the manipulation I created a view for it.
+
+So now Emacs generates this todo list for me! If I remove some
+duplication, the todo list (I generate again, I am working on
+automatic reloading) will shorten. I could also share this list to
+colleagues to point out the redundancy that we need to handle.
+
+And that is only the beginning! You saw that I used multiple views to
+get to that, right? Indeed, the power of moldable development lies in
+the fact you can compose views in always novel ways! And I already use
+those same views for other interesting use cases.
+
+This is just an appetizer. I plan to make the code available, but
+before I want to publish another post to write down what is the design
+of this Emacs extension. This may take a little time, because I am
+moving back to the UK and the logistics require my attention XD. Among
+things I am also trying to learn SmallTalk/Pharo in order to bridge
+the Emacs and GlamorousToolkit worlds. Hopefully learning about this
+extension will make you curious enough to try out GT as well!
+
+* Conclusion
+:PROPERTIES:
+:ID:       f064ed10-0814-4424-a60c-09b07b8d6d48
+:END:
+
+I am sure Emacs can be a solid basis to work in a moldable development
+style. My little experiments are already making my life much easier.
+If this is interesting to you, start by studying a bit the ideas
+behind moldable development because that will make you ready to
+get the most from my coming-soon extension.
