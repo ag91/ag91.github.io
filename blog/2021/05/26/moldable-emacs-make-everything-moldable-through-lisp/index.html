@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: make everything moldable through Lisp! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Showcase of a moldable-emacs, a new extension I am working on!" />
+    <meta name="keywords" content="moldable-emacs, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: make everything moldable through Lisp!</h1>
+
+<div id="outline-container-orgba356b3" class="outline-2">
+<h2 id="orgba356b3">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgba356b3">
+<p>
+<a href="https://moldabledevelopment.com/">Moldable development</a> is exciting! Here I show how I am
+exploring the power of this development method via Emacs.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9bab52b" class="outline-2">
+<h2 id="org9bab52b">The problem</h2>
+<div class="outline-text-2" id="text-org9bab52b">
+<p>
+<a href="https://ag91.github.io/blog/2021/04/26/sustainable-software-with-moldable-development/">Moldable development is a style of programming that puts meaning at
+the center of coding</a>. In short as a programmer you want the meaning of
+your code to be available to the audiences that need it. For example,
+other programmers may like to see how data flow in your code, and they
+would typically sketch this with a diagram. In moldable development
+you want to derive that diagram from your code itself. This way your
+system shows its meaning in an accessible way for the audience. To see
+this in action, you want to check out anything related to
+<a href="https://gtoolkit.com/">GlamorousToolkit</a> (as a starter I suggest <a href="https://tube.switch.ch/videos/326a1304">this</a>).
+</p>
+
+<p>
+The idea that I could see code via other media than text made me
+curious. And when I fully realized that code is structured
+information, I got very excited! I thought: "What if I could extract
+information from code? Can I do in Emacs what GlamorousToolkit users
+can do?"
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcb24dff" class="outline-2">
+<h2 id="orgcb24dff">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgcb24dff">
+<p>
+Emacs is great because it can become what you need it to be. With my
+work on <a href="https://github.com/ag91/code-compass">code-compass</a> I saw how I could make Emacs a tool for code
+forensics. There is a real problem here though. When I coded the
+<a href="https://ag91.github.io/blog/2020/12/18/emacs-as-your-code-compass-finding-code-hotspots/">hotspot analysis</a> I assumed that people understood what a hotspot
+diagram was communicating. I also made sure to introduce new people to
+the concept with blog posts (I have just been relaying the ideas of
+<a href="http://adamtornhill.com/">Adam Tornhill</a> really).
+</p>
+
+<p>
+The problem is that code-compass users had to learn about this view of
+a repository. And this view belongs to somebody else.
+</p>
+
+<p>
+In moldable development the basic concept is that there is no view of
+software that is always useful. In other terms if you see all the
+software of the world as rooms in a hotel, there is no master key! You
+really need a special key/view to enter/understand it. This implies
+that the tool you use should make it easy to mold the key you have
+into the key you need for the next room.
+</p>
+
+<p>
+Indeed, the focus of a tool like GlamorousToolkit is to make the
+generation of these views the default way of understanding code.
+</p>
+
+<p>
+For the data flow example I mentioned above, this means that it should
+be easy to take your code, find the data you want to graph and link it
+together via the functions that transform that data. (In
+SmallTalk/Pharo this is easily possible because everything is an
+object, so once you parse your code, it is available in your editor
+runtime and you can query what you need.)
+</p>
+
+<p>
+So you should see that my code-compass (and basically a lot of Emacs
+modes) tries to push on you a view that may or may not apply well to
+understanding your software. Maybe for your problem you need a slight
+variation or something totally different.
+</p>
+
+<p>
+We need then the making of views obvious and frictionless. How can we
+make Emacs a platform for molding then?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf82987f" class="outline-2">
+<h2 id="orgf82987f">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgf82987f">
+<p>
+I was just lucky. While I was wondering about these things,
+<a href="https://github.com/ubolonton/emacs-tree-sitter">emacs-tree-sitter</a> popped up on my radar. I said to myself: "Isn't
+parsing just what I need for my proof of concept?"
+</p>
+
+<p>
+After a bit of hacking and playing around, this is (an example of)
+what I got to!
+</p>
+
+<p>
+<a href="/assets/blog/2021/05/26/moldable-emacs-make-everything-moldable-through-lisp/treeOfDuplicatesMold.mp4">/assets/blog/2021/05/26/moldable-emacs-make-everything-moldable-through-lisp/treeOfDuplicatesMold.mp4</a>
+</p>
+
+<p>
+In the video you can see how I:
+</p>
+<ol class="org-ol">
+<li>start from a C file from the <a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">GildedRose kata</a>,</li>
+<li>transform that into a list of tokens that tree-sitter parsed</li>
+<li>I filter those tokens in only those that have duplicates</li>
+<li>I make a Org todo list to go through those duplicates.</li>
+</ol>
+
+<p>
+When I first created this todo list view, I needed to refactor some
+code full of redundancy. Given the fact I could make tokens of the
+code, I manipulated the tree of tokens in PlayGround. After a few time
+I repeated the manipulation I created a view for it.
+</p>
+
+<p>
+So now Emacs generates this todo list for me! If I remove some
+duplication, the todo list (I generate again, I am working on
+automatic reloading) will shorten. I could also share this list to
+colleagues to point out the redundancy that we need to handle.
+</p>
+
+<p>
+And that is only the beginning! You saw that I used multiple views to
+get to that, right? Indeed, the power of moldable development lies in
+the fact you can compose views in always novel ways! And I already use
+those same views for other interesting use cases.
+</p>
+
+<p>
+This is just an appetizer. I plan to make the code available, but
+before I want to publish another post to write down what is the design
+of this Emacs extension. This may take a little time, because I am
+moving back to the UK and the logistics require my attention XD. Among
+things I am also trying to learn SmallTalk/Pharo in order to bridge
+the Emacs and GlamorousToolkit worlds. Hopefully learning about this
+extension will make you curious enough to try out GT as well!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org36c269b" class="outline-2">
+<h2 id="org36c269b">Conclusion</h2>
+<div class="outline-text-2" id="text-org36c269b">
+<p>
+I am sure Emacs can be a solid basis to work in a moldable development
+style. My little experiments are already making my life much easier.
+If this is interesting to you, start by studying a bit the ideas
+behind moldable development because that will make you ready to
+get the most from my coming-soon extension.
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-05-26</span>
+        <span title="last modification date" class="post-info">2021-05-28</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

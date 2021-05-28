@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 09 May 2021 13:04:18 CEST</pubDate>
-    <lastBuildDate>Sun, 09 May 2021 13:04:18 CEST</lastBuildDate>
+    <pubDate>Fri, 28 May 2021 23:52:56 CEST</pubDate>
+    <lastBuildDate>Fri, 28 May 2021 23:52:56 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: make everything moldable through Lisp!</title>
+      <link>http://ag91.github.io/blog/2021/05/26/moldable-emacs-make-everything-moldable-through-lisp</link>
+      <description><![CDATA[Showcase of a moldable-emacs, a new extension I am working on!]]></description>
+      <pubDate>2021-05-28</pubDate>
+      <guid>http://ag91.github.io/blog/2021/05/26/moldable-emacs-make-everything-moldable-through-lisp</guid>
+    </item>
+    <item>
       <title>Becoming Glamorous: how GlamorousToolkit can run Emacs Lisp.</title>
       <link>http://ag91.github.io/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp</link>
-      <description><![CDATA[Towards a bridge between Lisp and SmallTalk!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-05-09</pubDate>
       <guid>http://ag91.github.io/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-03-17</pubDate>
       <guid>http://ag91.github.io/blog/2021/03/17/check-your-performance-with-scalacheck-generators</guid>
-    </item>
-    <item>
-      <title>Find Org Roam notes via their relations</title>
-      <link>http://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-03-12</pubDate>
-      <guid>http://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations</guid>
     </item>
   </channel>
 </rss>
