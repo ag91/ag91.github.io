@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Browsing in Common Lisp: Nyxt and Emacs - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Emacs can communicate with the Nyxt browser via Swank ans Slime!" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Browsing in Common Lisp: Nyxt and Emacs</h1>
+<p>
+I have kept an eye on <a href="https://nyxt.atlas.engineer/">Nyxt</a> for a while. Nyxt is a novel browser
+written in Common Lisp. Think of an Emacs that instead of edit text
+surfs the Internet. How cool is that?
+</p>
+
+<p>
+Recently the smart Atlas engineers have achieved version 2 of this
+little jewel. I told myself that this was a great time to try. So I
+downloaded all their <a href="https://nyxt.atlas.engineer/articles">blog posts</a> on my ereader, and after a nice
+weekend morning of discovery I started hacking my way through.
+</p>
+
+<p>
+Installing on Ubuntu is easy.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">sudp apt install nyxt
+</pre>
+</div>
+
+<p>
+With that you can start browsing in Common Lisp!
+</p>
+
+<p>
+You can query the commands by doing <code>C-&lt;space&gt;</code>. If you want to get
+Emacs binding, you want to run <code>emacs-mode</code>. Now instead of
+<code>C-&lt;space&gt;</code>, you can use <code>M-x</code> for commands. This will work only for
+the current buffer though, you need some setup to have that globally
+(I do not know yet how!).
+</p>
+
+<p>
+Anyway, use the command <code>set-url</code> to open your first browsing tab.
+Once you type/select the url and press enter, you are on the Internet
+via Common Lisp!!! How cool are you?!?
+</p>
+
+<p>
+Naturally, that was not enough for me. I want to integrate this browser in my Emacs workflow.
+</p>
+
+<p>
+In the blogs I read they said this was possible via slime. So first I
+run the Nyxt command <code>start-swank</code>, which starts the Common Lisp
+server. Then I try to connect to it via a Slime REPL from Emacs.
+</p>
+
+<p>
+If you do not have Slime installed, look into how to get this wonderful mode:
+<a href="https://github.com/slime/slime">https://github.com/slime/slime</a>.
+</p>
+
+<p>
+Naturally, from Ubuntu this will not work. You will most likely get
+some strange incompatibility error if you try. After banging my head a
+little, I decided to ask the wise community:
+<a href="https://www.reddit.com/r/Nyxt/comments/njh04d/how_to_connect_200_to_slime/">https://www.reddit.com/r/Nyxt/comments/njh04d/how_to_connect_200_to_slime/</a>.
+</p>
+
+<p>
+The problem is due to dependency hell: Atlas engineers likely use BSD
+that ship with the latest version of the SBCL, the Common Lisp
+compiler that they use to build Nyxt.
+</p>
+
+<p>
+The kind person that replied to my question suggested to use Guix.
+This is a pure functional package manager. I used NixOS as my main OS
+for years, so I understand what Guix tries to do: in short to help
+people with the headache of dependency management!
+</p>
+
+<p>
+These are the steps to make Emacs-Nyxt communication work.
+</p>
+
+<ol class="org-ol">
+<li><p>
+install Guix
+</p>
+<div class="org-src-container">
+<pre class="src src-sh">cd /tmp
+wget https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh
+chmod +x guix-install.sh
+sudo ./guix-install.sh
+</pre>
+</div></li>
+
+<li>logout and login again from your OS session</li>
+
+<li>remove your old Nyxt</li>
+
+<li><p>
+install nyxt via Guix
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">guix install nyxt
+</pre>
+</div></li>
+
+<li><p>
+export the Guix path so you can access Nyxt
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">export PATH="~/.guix-profile/bin"
+</pre>
+</div></li>
+</ol>
+
+
+<p>
+Now you can run Nyxt again, and run <code>start-swank</code>. When you connect
+Slime to localhost:4006, your REPL will show Nyxt!!!
+</p>
+
+<p>
+If you now type <code>(list-buffers)</code>, you shall see that Nyxt changed: you
+have just commanded Nyxt from Emacs.
+</p>
+
+<p>
+Let me show you, if you do not have time to do this yourself.
+</p>
+
+<p>
+<a href="/assets/blog/2021/05/30/browsing-in-common-lisp-nyxt-and-emacs/EmacsCommandsNyxt.mp4">/assets/blog/2021/05/30/browsing-in-common-lisp-nyxt-and-emacs/EmacsCommandsNyxt.mp4</a>
+</p>
+
+<p>
+Can you see the sea of possibilities? My next step is to integrate
+<a href="https://github.com/hrs/engine-mode">engine-mode</a> and Nyxt!
+</p>
+
+<p>
+Happy Browsing!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-05-30</span>
+        <span title="last modification date" class="post-info">2021-06-03</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
