@@ -21,7 +21,7 @@ weekend morning of discovery I started hacking my way through.
 Installing on Ubuntu is easy.
 
 #+begin_src sh :noeval
-sudp apt install nyxt
+sudo apt install nyxt
 #+end_src
 
 With that you can start browsing in Common Lisp!
