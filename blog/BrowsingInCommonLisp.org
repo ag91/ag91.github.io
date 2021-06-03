@@ -1,0 +1,102 @@
+#+TITLE:       Browsing in Common Lisp: Nyxt and Emacs
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-05-30 Sun
+#+URI:         /blog/%y/%m/%d/browsing-in-common-lisp-nyxt-and-emacs
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Emacs can communicate with the Nyxt browser via Swank ans Slime!
+
+I have kept an eye on [[https://nyxt.atlas.engineer/][Nyxt]] for a while. Nyxt is a novel browser
+written in Common Lisp. Think of an Emacs that instead of edit text
+surfs the Internet. How cool is that?
+
+Recently the smart Atlas engineers have achieved version 2 of this
+little jewel. I told myself that this was a great time to try. So I
+downloaded all their [[https://nyxt.atlas.engineer/articles][blog posts]] on my ereader, and after a nice
+weekend morning of discovery I started hacking my way through.
+
+Installing on Ubuntu is easy.
+
+#+begin_src sh :noeval
+sudp apt install nyxt
+#+end_src
+
+With that you can start browsing in Common Lisp!
+
+You can query the commands by doing =C-<space>=. If you want to get
+Emacs binding, you want to run =emacs-mode=. Now instead of
+=C-<space>=, you can use =M-x= for commands. This will work only for
+the current buffer though, you need some setup to have that globally
+(I do not know yet how!).
+
+Anyway, use the command =set-url= to open your first browsing tab.
+Once you type/select the url and press enter, you are on the Internet
+via Common Lisp!!! How cool are you?!?
+
+Naturally, that was not enough for me. I want to integrate this browser in my Emacs workflow.
+
+In the blogs I read they said this was possible via slime. So first I
+run the Nyxt command =start-swank=, which starts the Common Lisp
+server. Then I try to connect to it via a Slime REPL from Emacs.
+
+If you do not have Slime installed, look into how to get this wonderful mode:
+https://github.com/slime/slime.
+
+Naturally, from Ubuntu this will not work. You will most likely get
+some strange incompatibility error if you try. After banging my head a
+little, I decided to ask the wise community:
+https://www.reddit.com/r/Nyxt/comments/njh04d/how_to_connect_200_to_slime/.
+
+The problem is due to dependency hell: Atlas engineers likely use BSD
+that ship with the latest version of the SBCL, the Common Lisp
+compiler that they use to build Nyxt.
+
+The kind person that replied to my question suggested to use Guix.
+This is a pure functional package manager. I used NixOS as my main OS
+for years, so I understand what Guix tries to do: in short to help
+people with the headache of dependency management!
+
+These are the steps to make Emacs-Nyxt communication work.
+
+1. install Guix
+  #+begin_src sh :noeval
+  cd /tmp
+  wget https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh
+  chmod +x guix-install.sh
+  sudo ./guix-install.sh
+  #+end_src
+
+2. logout and login again from your OS session
+
+3. remove your old Nyxt 
+
+4. install nyxt via Guix
+
+   #+begin_src sh :noeval
+   guix install nyxt
+   #+end_src
+
+5. export the Guix path so you can access Nyxt
+
+   #+begin_src sh :noeval
+   export PATH="~/.guix-profile/bin"
+   #+end_src
+
+
+Now you can run Nyxt again, and run =start-swank=. When you connect
+Slime to localhost:4006, your REPL will show Nyxt!!!
+
+If you now type =(list-buffers)=, you shall see that Nyxt changed: you
+have just commanded Nyxt from Emacs.
+
+Let me show you, if you do not have time to do this yourself.
+
+[[file:EmacsCommandsNyxt.mp4]]
+
+Can you see the sea of possibilities? My next step is to integrate
+[[https://github.com/hrs/engine-mode][engine-mode]] and Nyxt!
+
+Happy Browsing!
