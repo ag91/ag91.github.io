@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs, Nyxt and Engine-mode: how to browse URLs via Nyxt and Slime - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A little hack to search via Nyxt from Emacs and setup Emacs integration with Nyxt" />
+    <meta name="keywords" content="emacs, nyxt, elisp" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs, Nyxt and Engine-mode: how to browse URLs via Nyxt and Slime</h1>
+
+<div id="outline-container-org136d400" class="outline-2">
+<h2 id="org136d400">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org136d400">
+<p>
+Emacs can browse the web via Nyxt. Here we make a <code>browse-url-nyxt</code>
+function using Slime. We can use that with <a href="https://github.com/hrs/engine-mode">engine-mode</a> to search the
+web! You can find the code at <a href="https://github.com/ag91/emacs-with-nyxt">https://github.com/ag91/emacs-with-nyxt</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org28c68ad" class="outline-2">
+<h2 id="org28c68ad">The problem</h2>
+<div class="outline-text-2" id="text-org28c68ad">
+<p>
+<a href="https://ag91.github.io/blog/2021/05/30/browsing-in-common-lisp-nyxt-and-emacs">In my last blog</a>, we saw how to leverage Guix to start using Nyxt. We
+also discovered how easy is to command Nyxt via Common Lisp. The
+problem is that I am too lazy to run this by hand every time. Also, I
+would rather focus on testing out how good Nyxt really is. (And pick
+up some Common Lisp in the process!)
+</p>
+
+<p>
+My main issue is that all the setting up of Swank and <a href="//common-lisp.net/project/slime/">Slime</a>
+connections distracts me from what I really want. For a start, I would like
+Emacs to use Nyxt as any other browser. Emacs has a nice
+interface for this: the <code>browse-url</code> functions.
+</p>
+
+<p>
+Still, the communication between Emacs and Nyxt is not the terminal,
+but a CL REPL! Is the <code>browse-url-nyxt</code> function doable?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org80a57f1" class="outline-2">
+<h2 id="org80a57f1">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org80a57f1">
+<p>
+To have a <code>browse-url-nyxt</code> is useful. It is the standard Emacs way to
+search online. And there is a nice little mode that makes searches a
+breeze: engine-mode. This allows you to define your own search engines
+to use via Emacs. For example my DuckDuckGo search engine looks like
+the following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defengine duckduckgo
+  "https://duckduckgo.com/?q=%s"
+  :keybinding "D"
+  :browser 'browse-url-chromium)
+</pre>
+</div>
+
+<p>
+Here I specify the query url for DuckDuckGo. Can you see that <code>%s</code> at
+the end of the URL? When I use this, engine-mode will ask me for a
+search string and it will embed it there. The <code>:keybinding</code> defines
+the key I have to press to use this search. And the <code>:browser</code>
+defines what browser to use for it.
+</p>
+
+<p>
+How cool would it be to simply add Nyxt in the browser section?! It
+would allow to do our searches in Common Lisp!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga8675f2" class="outline-2">
+<h2 id="orga8675f2">And there is a solution</h2>
+<div class="outline-text-2" id="text-orga8675f2">
+<p>
+Be ready for another hack of mine. The first challenge we face is to
+automate the start of the Nyxt browser. We want to call an Emacs
+command and have a Nyxt open and listen to us from a REPL. We need to
+run the browser, and to connect Swank and Slime. This is how it looks in
+Elisp.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/start-and-connect-to-nyxt (&amp;optional no-maximize)
+  "Start Nyxt with swank capabilities."
+  (interactive)
+  (async-shell-command (format "nyxt -e \"(nyxt-user::start-swank)\""))
+  (sleep-for my/slime-nyxt-delay)
+  (my/slime-connect "localhost" "4006")
+  (unless no-maximize (my/slime-repl-send-string "(toggle-fullscreen)")))
+</pre>
+</div>
+
+<p>
+First, we run asynchronously Nyxt with a Lisp expression that starts
+the Swank connection. Then we wait a little for the connection to be
+ready. At this point we can connect Slime. Finally, we command Nyxt to
+go full screen (unless we don't want to). Note by the way: we just
+used a CL namespace! We need that <code>nyxt-user::</code> because Nyxt evaluates
+a Common Lisp but does not import its package. How cool are we?
+</p>
+
+<p>
+We need the delays because both Nyxt and Slime take some time to run.
+</p>
+
+<p>
+The <code>my/slime-connect</code> function is a bit ugly because my local version
+of Slime is different from the Swank version of Guix.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/slime-connect (host port)
+  (defun true (&amp;rest args) 't)
+  (advice-add 'slime-check-version :override #'true)
+  (slime-connect host port)
+  (sleep-for my/slime-nyxt-delay)
+  (advice-remove 'slime-check-version #'true))
+</pre>
+</div>
+
+<p>
+You can see how I have to "advice" <code>slime-check-version</code> to stop
+asking me: "is it alright if versions mismatch?".
+</p>
+
+<p>
+Similarly, <code>my/slime-repl-send-string</code> needs the same trick.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/slime-repl-send-string (sexp)
+  (defun true (&amp;rest args) 't)
+  (advice-add 'slime-check-version :override #'true)  
+  (if (slime-connected-p)
+      (slime-repl-send-string sexp)
+    (error "Slime is not connected to Nyxt. Run `my/start-and-connect-to-nyxt' first."))
+  (sleep-for my/slime-nyxt-delay)
+  (advice-remove 'slime-check-version #'true))
+</pre>
+</div>
+
+<p>
+This function simply sends a string to the current Slime connection.
+For now I am using strings, but it would be much more Lispy to make
+this a macro. That way we could just input lists and make strings in
+the macro.
+</p>
+
+<p>
+Next challenge is to browse the url we want. We just need to know the
+right command for this. Then we can send it via
+<code>my/slime-repl-send-string</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/browse-url-nyxt (url &amp;optional buffer-title)
+  (interactive "sURL: ")
+  (my/slime-repl-send-string
+   (format
+    "(buffer-load \"%s\" %s)"
+    url
+    (if buffer-title (format ":buffer (make-buffer :title \"%s\")" buffer-title) ""))))
+</pre>
+</div>
+
+<p>
+<code>buffer-load</code> is the Nyxt function we need. The optional argument lets
+us open a new link in another "tab"/buffer of the browser.
+</p>
+
+<p>
+At this point we have all we need to make <code>browse-url-nyxt</code>!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun browse-url-nyxt (url &amp;optional new-window)
+  (interactive "sURL: ")
+  (unless (slime-connected-p) (my/start-and-connect-to-nyxt))
+  (my/browse-url-nyxt url url))
+</pre>
+</div>
+
+<p>
+This looks line any other browse-url function. If we miss the Slime
+connection to Nyxt, we create one. The we just try to browse through
+Nyxt.
+</p>
+
+<p>
+Cherry on the cake: our new engine-mode definition!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defengine duckduckgo
+  "https://duckduckgo.com/?q=%s"
+  :keybinding "n"
+  :browser 'browse-url-nyxt)
+</pre>
+</div>
+
+<p>
+You can find the entire code <a href="https://github.com/ag91/emacs-with-nyxt">here</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf563b0d" class="outline-2">
+<h2 id="orgf563b0d">Conclusion</h2>
+<div class="outline-text-2" id="text-orgf563b0d">
+<p>
+This was our first integration of Emacs and Nyxt! You saw also that we
+learned some Common Lisp in the process. This is just great!
+</p>
+
+<p>
+All you need to try this is to follow the installation steps for Nyxt
+<a href="https://ag91.github.io/blog/2021/05/30/browsing-in-common-lisp-nyxt-and-emacs">in my previous post</a>, and grab my code at <a href="https://github.com/ag91/emacs-with-nyxt">https://github.com/ag91/emacs-with-nyxt</a>.
+</p>
+
+<p>
+Feel free to get in touch if you start Nyxting: we can learn together!
+</p>
+
+<p>
+Happy browsing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-06-08</span>
+        <span title="last modification date" class="post-info">2021-06-08</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/nyxt/">nyxt</a>, <a href="/tags/elisp/">elisp</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
