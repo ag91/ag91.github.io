@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: how to explore JSON via Elisp - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to explore JSON via molds" />
+    <meta name="keywords" content="moldable-emacs, moldable development" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: how to explore JSON via Elisp</h1>
+
+<div id="outline-container-orgd86af39" class="outline-2">
+<h2 id="orgd86af39">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgd86af39">
+<p>
+You may need to explore JSON data: a mold can help you with that! You
+can view what you need with a bit of Elisp.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf2674cf" class="outline-2">
+<h2 id="orgf2674cf">The problem</h2>
+<div class="outline-text-2" id="text-orgf2674cf">
+<p>
+Sometimes I have some JSON I want to explore. Often I read its
+contents in the browser view or in an Emacs buffer. Every so often I
+fell into <a href="https://github.com/stedolan/jq">jq</a>. <a href="https://ag91.github.io/blog/2021/05/26/moldable-emacs-make-everything-moldable-through-lisp/">As we learned before</a>, we would be better off by having a
+view to extract only the contents we need. That would make our reading
+faster and nicer.
+</p>
+
+<p>
+For example, what should I do to see all the official descriptions of
+Ghibli's movies?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8dae266" class="outline-2">
+<h2 id="org8dae266">And there is a solution</h2>
+<div class="outline-text-2" id="text-org8dae266">
+<p>
+Naturally I have a mold for that! The presentation is rather raw for
+now, so I will show you also what <a href="https://gtoolkit.com/">GlamorousToolkit</a> can do to let you
+compare where we could get to.
+</p>
+
+<p>
+First let me show the data with <a href="https://ghibliapi.herokuapp.com/#tag/Films%2Fpaths%2F~1films%2Fget">the Ghibli API</a>. The Ghibli studio made
+available information about their movies via an open API. For example,
+if you want to get the films they produced so far, we will have just
+to run the request that follows.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">curl -X GET -H "Content-Type: application/json" https://ghibliapi.herokuapp.com/films
+</pre>
+</div>
+
+<p>
+This returns a list that looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-json">[
+  {
+    "id": "2baf70d1-42bb-4437-b551-e5fed5a87abe",
+    "title": "Castle in the Sky",
+    "original_title": "天空の城ラピュタ",
+    "original_title_romanised": "Tenkū no shiro Rapyuta",
+    "description": "The orphan Sheeta inherited a mysterious crystal that links her to the mythical sky-kingdom of Laputa. With the help of resourceful Pazu and a rollicking band of sky pirates, she makes her way to the ruins of the once-great civilization. Sheeta and Pazu must outwit the evil Muska, who plans to use Laputa's science to make himself ruler of the world.",
+    "director": "Hayao Miyazaki",
+    "producer": "Isao Takahata",
+    "release_date": "1986",
+    "running_time": "124",
+    "rt_score": "95",
+    "people": [
+      "https://ghibliapi.herokuapp.com/people/"
+    ],
+    "species": [
+      "https://ghibliapi.herokuapp.com/species/af3910a6-429f-4c74-9ad5-dfe1c4aa04f2"
+    ],
+    "locations": [
+      "https://ghibliapi.herokuapp.com/locations/"
+    ],
+    "vehicles": [
+      "https://ghibliapi.herokuapp.com/vehicles/"
+    ],
+    "url": "https://ghibliapi.herokuapp.com/films/2baf70d1-42bb-4437-b551-e5fed5a87abe"
+  }
+  ...
+]
+</pre>
+</div>
+
+<p>
+Our aim is to get all the movie =description=s to give them a look.
+</p>
+
+<p>
+Let me show how this works with my <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>.
+</p>
+
+<p>
+First, we download the JSON and load <code>json-mode</code> in that buffer.
+</p>
+
+<p>
+<a href="/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/curl2Json.mp4">/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/curl2Json.mp4</a>
+</p>
+
+<p>
+Now we transform the JSON in a flattened tree of elements parsed with
+tree-sitter JSON gramma.
+</p>
+
+<p>
+<a href="/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/JSON2Tree.mp4">/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/JSON2Tree.mp4</a>
+</p>
+
+<p>
+Now if we were interested only in an entry description (because we are
+exploring), we could do the following.
+</p>
+
+<p>
+<a href="/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/JSON2Entry.mp4">/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/JSON2Entry.mp4</a>
+</p>
+
+<p>
+Note that in the tree view I can always jump back to the original JSON
+buffer with the <code>me/open-at-point</code> command.
+</p>
+
+<p>
+Anyway, that was not our goal! Instead from the original JSON, let's
+get all the descriptions with a <code>Playground</code>. This mold has available
+the flattened tree of the previous buffer in a variable called <code>self</code>.
+</p>
+
+<p>
+<a href="/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/JSON2Descriptions.mp4">/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/JSON2Descriptions.mp4</a>
+</p>
+
+<p>
+We just needed a couple of filters to get all pairs. Of those we got
+only the ones containing descriptions.
+</p>
+
+<p>
+I used the following code for reference.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--map
+ (plist-get it :text)
+ (--filter (s-starts-with-p "\"description" (plist-get it :text)) (me/by-type 'pair self)))
+</pre>
+</div>
+
+<p>
+Note that this kind of code is meant to throw away. If you keep
+repeating it, you can store it in a function. If you bet this is
+something others would find useful, be generous and open a PR to my
+repo (or share in a fork). For example, <code>me/by-type</code> is just a
+shortcut for filtering the flattened tree by the <code>:type</code> field: I used
+it so many times I found that shortcut useful.
+</p>
+
+<p>
+Anyway you saw that in a few steps we could get to what we needed.
+</p>
+
+<p>
+Now that I think of it, I could easily add a <code>Playground</code> mold that
+does not use Lisp. For example, a <code>Playground In Python</code> or
+<code>Playground In JS</code>. Well, I did not need that yet, so let me know if
+you wish one.
+</p>
+
+<p>
+This is what I needed so far for my workflow in <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>. Let me
+show you how Glamorous people make developers explore JSON.
+</p>
+
+<p>
+<a href="/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/gtJSON.mp4">/assets/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp/gtJSON.mp4</a>
+</p>
+
+<p>
+I did not become familiar enough with Pharo to show you how to collect
+only descriptions fields. Still it is much more beautiful and
+accessible than what I got in moldable-emacs.
+</p>
+
+<p>
+The Pharo code I used for convenience.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">json := ZnClient new get: 'https://ghibliapi.herokuapp.com/films'
+dictionary := STON fromString: json. 
+</pre>
+</div>
+
+<p>
+You can see that there is much more humane ways to present the
+information!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2dded90" class="outline-2">
+<h2 id="org2dded90">Conclusion</h2>
+<div class="outline-text-2" id="text-org2dded90">
+<p>
+Again this is just a way to use moldable-emacs to your needs. With
+this you can explore data with programming in Lisp from within your
+editor. If you want to try the code is available at
+<a href="https://github.com/ag91/moldable-emacs">https://github.com/ag91/moldable-emacs</a>. If you have troubles running
+this, please ping me! At the moment I have a story for letting the
+user discover the dependencies they need for a mold, but I kept
+postponing it (because I got the dependencies already installed XD).
+</p>
+
+<p>
+Hope this made curious and you will have fun with this extension.
+</p>
+
+<p>
+Happy exploring!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-06-18</span>
+        <span title="last modification date" class="post-info">2021-06-18</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/moldable-development/">moldable development</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
