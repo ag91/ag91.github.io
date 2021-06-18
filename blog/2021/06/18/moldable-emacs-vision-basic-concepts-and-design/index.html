@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: vision, basic concepts and design - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Design ideas behind my experimenting with moldable development and Emacs" />
+    <meta name="keywords" content="moldable-emacs, moldable development" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: vision, basic concepts and design</h1>
+
+<div id="outline-container-org33035da" class="outline-2">
+<h2 id="org33035da">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org33035da">
+<p>
+This is the vision statement of my efforts to make Emacs a moldable
+environment. I share the design ideas guiding me. Also a bit of code
+to have a glimpse of what I got so far.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgee313b5" class="outline-2">
+<h2 id="orgee313b5">The vision</h2>
+<div class="outline-text-2" id="text-orgee313b5">
+<p>
+The ambition is to make Emacs a moldable environment. My guide is the
+vision behind <a href="https://gtoolkit.com/">GlamorousToolkit</a>: we want to handle our system
+complexity by letting the system explain itself. <a href="https://www.youtube.com/watch?v=klTjiXjqHrQ">Bret Victor makes the
+rationale for this clear</a>: today we can achieve marvellous things by
+trial and error, but we lack the tools to understand in depth the
+things we created. We create a thing, then time passes and somebody
+else (even us!) has no clue how the thing we created works. This same
+destiny will befall upon your smartphone and your bank's "ancient"
+COBOL system.
+</p>
+
+<p>
+The turning point is to create a system to explain systems. This must
+explain itself to the user.
+</p>
+
+<p>
+Emacs has good roots because its creators were wise to require to
+provide self documentation. That is only part of it though. For
+example, GlamorousToolkit focuses on telling stories, because that is
+the way people understand the world around them. This is why you will
+see a lot of given-when-then notation in the current implementation of
+the <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> mode: I want to give Emacs a story telling spin.
+</p>
+
+<p>
+So again, our system needs to be able to explain systems. The
+explanation changes according to the context. This means that our
+system needs to be malleable. It must allow to tell the same story in
+the best way for the system at hand. For instance, we need different
+ways to explain how software like Pandoc, Org Mode or Datomic work.
+And we would need different ways for each of these if the audience
+changes.
+</p>
+
+<p>
+This is why we will work with views: we have some structured text and
+we want to produce quickly the best view to extract meaning from that.
+The meaning depends on what we are looking for. That also changes, so
+we need highly customizable views. We need to make up views on the
+fly!
+</p>
+
+<p>
+Our Emacs extension must let us explain the system at hand. The
+explanation we come up with should ease us in understanding the part
+of the system we care about at this moment. Our mode needs to
+facilitate this so that we spend minimal effort in automating the
+explanation.
+</p>
+
+<p>
+Essentially the vision of this mode is to make you a better story
+teller. I aim to make you (and myself) focus on making better tools to
+explain the systems we create or stumbled into. That way we will
+surely make it easier for ourselves and our future generations to
+understand what great and useful things we made.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3b0deba" class="outline-2">
+<h2 id="org3b0deba">The design</h2>
+<div class="outline-text-2" id="text-org3b0deba">
+<p>
+The whole extension I am proposing revolves around the concept of
+views. In this mode I call views "molds". I made this up inspired by
+moldable development. Molds let you take a buffer (data) and transform
+it into another buffer (other data). For example, I want to transform
+an Org Mode buffer into a buffer containing its first Org table. The
+story for this mold is as simple as: "given a document, then I want to
+focus on the first table". Again a mold takes a buffer and produces
+another buffer. We define how to transform things via Elisp. This is
+important because we can change Emacs with it. Changing Emacs you can
+change our extension. This makes our system fractal and powerful.
+</p>
+
+<p>
+There is more. Bret Victor's has great ideas on how to define a
+programming environment:
+</p>
+
+<ol class="org-ol">
+<li>read the vocabulary</li>
+<li>follow the flow</li>
+<li>see the state</li>
+<li>create by reacting</li>
+<li>start concrete (abstraction)</li>
+</ol>
+
+<p>
+And a programming language:
+</p>
+
+<ul class="org-ul">
+<li>identity and metaphor (to understand environment concepts by similitude)</li>
+<li>decomposition</li>
+<li>recomposition</li>
+<li>readability (explaining the vocabulary)</li>
+</ul>
+
+<p>
+I tried to give an answer to these in my extension (I am a novice of
+these ideas, so don't tell Bret Victor what I am doing otherwise <a href="http://worrydream.com/LearnableProgramming/">I may
+end up being told off as Khan Academy</a>). (By the way, learning from
+GlamorousToolkit and playing with Bret Victor's ideas made me pretty
+excited about this side project.)
+</p>
+
+<p>
+"Read the vocabulary" is about the system's self explanation, so we
+will need a mold that explains how <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> works. Since all
+code of moldable-emacs shows in buffers, we can make a mold for
+that.
+</p>
+
+<p>
+"Follow the flow" is about knowing what is happening while you are
+using the system. Any mold you run has a before and after buffer, and
+I already made some utility to navigate this history. You could even
+make a mold to make the history easy to observe (and replay?).
+</p>
+
+<p>
+"See the state" is about knowing what our system is doing. You can
+think of debugging here, where you can peek into the variables that
+your program is using. The fun fact is that I am following a pretty
+functional (as in programming) approach. You could have a mold that
+shows the parameters used by the mold you are using!
+</p>
+
+<p>
+"Create by reacting" is about starting making something cool by just
+some initial scratches. Think of a story teller that sees a cloud in
+the sky and starts building up a fabulous adventure from a shape she
+saw. Using a mold should inspire the usage of more molds. By the way,
+each mold checks that the context is right for its usage, so you
+cannot go wrong with composition here. For example the mold that finds
+the first table can run only in an Org Mode buffer that contains at
+least a table. You cannot use it in all other cases.
+</p>
+
+<p>
+"Start concrete" then generalize is about abstraction. Our system has
+to ease the making of molds to the point that we can throw them away
+without remorse. If we find out we keep creating the same
+made-on-the-fly mold, we can register it and give it a name.
+</p>
+
+<p>
+Although Bret Victor meant the next set of design principles for a
+programming language, I will give it a go anyway!
+</p>
+
+<p>
+"Identity and metaphor" is basically view information in a more
+effective and resonating way for the context you come from: that is
+just the aim of molds!
+</p>
+
+<p>
+"Decomposition" is about breaking your thoughts in something
+manageable. Making small on-the-fly molds, or having those already
+available lets you formulate the story you want to tell in a flow.
+</p>
+
+<p>
+"Recomposition" is about take those broken thoughts and compose them
+in a coherent story. This principle inspired me to do something I am
+happy with: I made an utility to compose molds from existing one and
+naming them. This also inspired a way to both testing them,
+checking their composability and documenting them!
+</p>
+
+<p>
+"Readability" is about explaining what our system components are
+about. In the context of our extension, each mold must come with at
+least an example. This is the mechanism I mentioned above. An example
+shows the before and after state of using a mold. It also helps as
+documentation. You can form an idea of what a mold produces.
+</p>
+
+<p>
+Likely all of this is a bit of a stretch of what Bret Victor meant,
+but I still wanted to try merging his and moldable development ideas.
+Adding examples to molds inspired me with many useful features. For
+the records, I got the importance of examples from GlamorousToolkit:
+<a href="https://feenk.com/">Feenk</a>'s people changed unit tests to return the objects under tests
+and use those as examples.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org428ba8f" class="outline-2">
+<h2 id="org428ba8f">The current implementation</h2>
+<div class="outline-text-2" id="text-org428ba8f">
+<p>
+A mold looks like this in Elisp:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(
+ :key "Playground"
+ :given (lambda nil 't)
+ :then (lambda nil (let (... ...) (with-current-buffer buffer ... ... ... buffer) buffer))
+ :docs "You can write any Elisp here. 
+Then you can evaluate with `EvalSexp'. 
+This mold saves structured data of the previous buffer 
+in the local variable `self'."
+ :examples ((
+             :name "Empty file"
+             :given (:type file :name "/tmp/test.txt" :mode text-mode :contents "")
+             :then (:type buffer :name ... :mode emacs-lisp-mode :contents ""))))
+</pre>
+</div>
+
+<p>
+A mold needs the following.
+</p>
+
+<dl class="org-dl">
+<dt>a key</dt><dd>the unique name of the mold used to find it;</dd>
+<dt>a given clause</dt><dd>this is a predicate for the preconditions needed for this mold;</dd>
+<dt>a then clause</dt><dd>the transformation this mold will apply, this has to return a buffer;</dd>
+<dt>some docs</dt><dd>a line to explain what this does;</dd>
+<dt>some examples</dt><dd>this is a minimal usage of the mold, so users can have an idea of what it does.</dd>
+</dl>
+
+<p>
+Documentation and examples are optional because I am
+designing/developing a way for making it trivial for the user to
+provide these while using molds. Examples are fundamental to me
+because they tell useful stories (and with those I can do very cool
+things in terms of usability and validation).
+</p>
+
+<p>
+The core of the mode is the function that uses this information to
+execute molds: <code>me/mold</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun me/mold ()
+  "Propose a list of available molds for the current context."
+  (interactive)
+  (run-hooks 'me/mold-before-hook)
+  (let* ((molds (--filter
+                 (funcall (plist-get it :given))
+                 me/available-molds))
+         (keys (--map (plist-get it :key) molds)))
+    (--&gt; keys
+      (completing-read
+       "Pick the mold you need:"
+       it)
+      (-find
+       (lambda (x)
+         (string=
+          (plist-get x :key)
+          it))
+       molds)
+      (funcall
+       (lambda (mold)
+         (--each
+             me/mold-before-mold-runs-hook
+           (funcall it mold))
+         mold)
+       it)
+      (plist-get it :then)
+      funcall
+      switch-to-buffer-other-window)
+    (run-hooks 'me/mold-after-hook))
+</pre>
+</div>
+
+<p>
+In short, this function does the following.
+</p>
+
+<ol class="org-ol">
+<li>find molds that satisfy your situation (the <code>:given</code></li>
+</ol>
+<p>
+clause)
+</p>
+<ol class="org-ol">
+<li>let you pick one of these</li>
+<li>open the new buffer (generated with the <code>:then</code> clause) on the
+side.</li>
+</ol>
+
+<p>
+The hooks allow to integrate some extra functionality. For example I
+currently support history to jump back and forth in the list of
+generated buffers. I happen to get my molding wrong and I can quickly
+return to the previous buffer to try again with a keybinding.
+</p>
+
+<p>
+Last thing I want to mention here is that the current implementation
+already supports composition with <code>me/mold-compose-molds</code>! 
+</p>
+
+<p>
+For example, I have a mold to produce a graph from the first Org Table in the buffer.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me/register-mold-by-key
+ "FirstOrgTableToBarChart"
+ (me/mold-compose
+  (me/mold-compose "FirstOrgTable"  "OrgTableToCSV")
+  "CSVToBarChart"))
+</pre>
+</div>
+
+<p>
+Here I transform an Org Mode buffer to an Org Mode buffer with a
+single table. Then the table to a CSV buffer. Then the CSV to a bar
+chart. The function <code>me/mold-compose</code> composes existing molds by
+looking for their key and feeding these to <code>me/mold-compose-molds</code>.
+Then <code>me/register-mold-by-key</code> assigns a key to this composed mold and
+adds it to the register. I may provide a macro soon to make
+composition more readable.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga2b8616" class="outline-2">
+<h2 id="orga2b8616">Final thoughts</h2>
+<div class="outline-text-2" id="text-orga2b8616">
+<p>
+This is more or less a short summary of the core of what is letting
+mold my software world (from Emacs).
+</p>
+
+<p>
+I have already about 40ish molds that I found so valuable to add to my
+mold register. I am still looking for a good story about mold
+contribution: looking at how GlamorousToolkit is evolving I guess I
+should provide a set of core molds (like Playground) and a set of
+contributed ones. Some molds that would be cool to have are for
+maneuvering external APIs (for example the one of <a href="https://www.jenkins.io/">Jenkins</a>).
+</p>
+
+<p>
+Something that also interests me is integrating Emacs and
+GlamorousToolkit. Emacs currently focuses mostly on text and molds are
+most powerful when you get useful information without reading. I
+looked in the potential of widgets in Emacs, but it seems too
+expensive for me. I would rather go towards integrating with external
+tools for getting amazing visual features.
+</p>
+
+<p>
+All in all, this mode is just exciting to develop! I feel a bit like a
+bee that cross-pollinates ideas from various communities: I learn a
+lot and hopefully I make something valuable for others in the process.
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-06-18</span>
+        <span title="last modification date" class="post-info">2021-06-18</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/moldable-development/">moldable development</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

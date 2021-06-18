@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 08 Jun 2021 22:31:19 CEST</pubDate>
-    <lastBuildDate>Tue, 08 Jun 2021 22:31:19 CEST</lastBuildDate>
+    <pubDate>Fri, 18 Jun 2021 22:04:01 CEST</pubDate>
+    <lastBuildDate>Fri, 18 Jun 2021 22:04:01 CEST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: vision, basic concepts and design</title>
+      <link>http://ag91.github.io/blog/2021/06/18/moldable-emacs-vision-basic-concepts-and-design</link>
+      <description><![CDATA[Design ideas behind my experimenting with moldable development and Emacs]]></description>
+      <pubDate>2021-06-18</pubDate>
+      <guid>http://ag91.github.io/blog/2021/06/18/moldable-emacs-vision-basic-concepts-and-design</guid>
+    </item>
+    <item>
       <title>Emacs, Nyxt and Engine-mode: how to browse URLs via Nyxt and Slime</title>
       <link>http://ag91.github.io/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime</link>
-      <description><![CDATA[A little hack to search via Nyxt from Emacs and setup Emacs integration with Nyxt]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-06-08</pubDate>
       <guid>http://ag91.github.io/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-04-04</pubDate>
       <guid>http://ag91.github.io/blog/2021/04/04/have-you-editing-to-do-edit-a-little-edit-every-day-and-let-emacs-be-your-coach</guid>
-    </item>
-    <item>
-      <title>Emacs as your code-compass: a gentle trigger for maintenance</title>
-      <link>http://ag91.github.io/blog/2021/03/26/emacs-as-your-code-compass-a-gentle-trigger-for-maintenance</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-03-26</pubDate>
-      <guid>http://ag91.github.io/blog/2021/03/26/emacs-as-your-code-compass-a-gentle-trigger-for-maintenance</guid>
     </item>
   </channel>
 </rss>
