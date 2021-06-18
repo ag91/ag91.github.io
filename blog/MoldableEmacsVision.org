@@ -1,0 +1,303 @@
+#+TITLE:       Moldable Emacs: vision, basic concepts and design
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-06-18 Fri
+#+URI:         /blog/%y/%m/%d/moldable-emacs-vision-basic-concepts-and-design
+#+KEYWORDS:    moldable-emacs, moldable development
+#+TAGS:        moldable-emacs, moldable development
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Design ideas behind my experimenting with moldable development and Emacs
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       c182509f-dabd-44a9-a3cf-f44fcb103193
+:END:
+
+This is the vision statement of my efforts to make Emacs a moldable
+environment. I share the design ideas guiding me. Also a bit of code
+to have a glimpse of what I got so far.
+
+* The vision
+:PROPERTIES:
+:CREATED:  [2021-05-31 Mon 23:43]
+:ID:       b6bcafa4-680d-4c28-8032-e2bd084ff6e4
+:END:
+
+The ambition is to make Emacs a moldable environment. My guide is the
+vision behind [[https://gtoolkit.com/][GlamorousToolkit]]: we want to handle our system
+complexity by letting the system explain itself. [[https://www.youtube.com/watch?v=klTjiXjqHrQ][Bret Victor makes the
+rationale for this clear]]: today we can achieve marvellous things by
+trial and error, but we lack the tools to understand in depth the
+things we created. We create a thing, then time passes and somebody
+else (even us!) has no clue how the thing we created works. This same
+destiny will befall upon your smartphone and your bank's "ancient"
+COBOL system.
+
+The turning point is to create a system to explain systems. This must
+explain itself to the user.
+
+Emacs has good roots because its creators were wise to require to
+provide self documentation. That is only part of it though. For
+example, GlamorousToolkit focuses on telling stories, because that is
+the way people understand the world around them. This is why you will
+see a lot of given-when-then notation in the current implementation of
+the [[https://github.com/ag91/moldable-emacs][moldable-emacs]] mode: I want to give Emacs a story telling spin.
+
+So again, our system needs to be able to explain systems. The
+explanation changes according to the context. This means that our
+system needs to be malleable. It must allow to tell the same story in
+the best way for the system at hand. For instance, we need different
+ways to explain how software like Pandoc, Org Mode or Datomic work.
+And we would need different ways for each of these if the audience
+changes.
+
+This is why we will work with views: we have some structured text and
+we want to produce quickly the best view to extract meaning from that.
+The meaning depends on what we are looking for. That also changes, so
+we need highly customizable views. We need to make up views on the
+fly!
+
+Our Emacs extension must let us explain the system at hand. The
+explanation we come up with should ease us in understanding the part
+of the system we care about at this moment. Our mode needs to
+facilitate this so that we spend minimal effort in automating the
+explanation.
+
+Essentially the vision of this mode is to make you a better story
+teller. I aim to make you (and myself) focus on making better tools to
+explain the systems we create or stumbled into. That way we will
+surely make it easier for ourselves and our future generations to
+understand what great and useful things we made.
+
+* The design
+:PROPERTIES:
+:CREATED:  [2021-05-31 Mon 23:44]
+:ID:       c23b7cac-7f67-4a22-ade6-5957ba213556
+:END:
+
+The whole extension I am proposing revolves around the concept of
+views. In this mode I call views "molds". I made this up inspired by
+moldable development. Molds let you take a buffer (data) and transform
+it into another buffer (other data). For example, I want to transform
+an Org Mode buffer into a buffer containing its first Org table. The
+story for this mold is as simple as: "given a document, then I want to
+focus on the first table". Again a mold takes a buffer and produces
+another buffer. We define how to transform things via Elisp. This is
+important because we can change Emacs with it. Changing Emacs you can
+change our extension. This makes our system fractal and powerful.
+
+There is more. Bret Victor's has great ideas on how to define a
+programming environment:
+
+1) read the vocabulary
+2) follow the flow
+3) see the state
+4) create by reacting
+5) start concrete (abstraction)
+
+And a programming language:
+
+- identity and metaphor (to understand environment concepts by similitude)
+- decomposition
+- recomposition
+- readability (explaining the vocabulary)
+
+I tried to give an answer to these in my extension (I am a novice of
+these ideas, so don't tell Bret Victor what I am doing otherwise [[http://worrydream.com/LearnableProgramming/][I may
+end up being told off as Khan Academy]]). (By the way, learning from
+GlamorousToolkit and playing with Bret Victor's ideas made me pretty
+excited about this side project.)
+
+"Read the vocabulary" is about the system's self explanation, so we
+will need a mold that explains how [[https://github.com/ag91/moldable-emacs][moldable-emacs]] works. Since all
+code of moldable-emacs shows in buffers, we can make a mold for
+that.
+
+"Follow the flow" is about knowing what is happening while you are
+using the system. Any mold you run has a before and after buffer, and
+I already made some utility to navigate this history. You could even
+make a mold to make the history easy to observe (and replay?).
+
+"See the state" is about knowing what our system is doing. You can
+think of debugging here, where you can peek into the variables that
+your program is using. The fun fact is that I am following a pretty
+functional (as in programming) approach. You could have a mold that
+shows the parameters used by the mold you are using!
+
+"Create by reacting" is about starting making something cool by just
+some initial scratches. Think of a story teller that sees a cloud in
+the sky and starts building up a fabulous adventure from a shape she
+saw. Using a mold should inspire the usage of more molds. By the way,
+each mold checks that the context is right for its usage, so you
+cannot go wrong with composition here. For example the mold that finds
+the first table can run only in an Org Mode buffer that contains at
+least a table. You cannot use it in all other cases.
+
+"Start concrete" then generalize is about abstraction. Our system has
+to ease the making of molds to the point that we can throw them away
+without remorse. If we find out we keep creating the same
+made-on-the-fly mold, we can register it and give it a name.
+
+Although Bret Victor meant the next set of design principles for a
+programming language, I will give it a go anyway!
+
+"Identity and metaphor" is basically view information in a more
+effective and resonating way for the context you come from: that is
+just the aim of molds!
+
+"Decomposition" is about breaking your thoughts in something
+manageable. Making small on-the-fly molds, or having those already
+available lets you formulate the story you want to tell in a flow.
+
+"Recomposition" is about take those broken thoughts and compose them
+in a coherent story. This principle inspired me to do something I am
+happy with: I made an utility to compose molds from existing one and
+naming them. This also inspired a way to both testing them,
+checking their composability and documenting them!
+
+"Readability" is about explaining what our system components are
+about. In the context of our extension, each mold must come with at
+least an example. This is the mechanism I mentioned above. An example
+shows the before and after state of using a mold. It also helps as
+documentation. You can form an idea of what a mold produces.
+
+Likely all of this is a bit of a stretch of what Bret Victor meant,
+but I still wanted to try merging his and moldable development ideas.
+Adding examples to molds inspired me with many useful features. For
+the records, I got the importance of examples from GlamorousToolkit:
+[[https://feenk.com/][Feenk]]'s people changed unit tests to return the objects under tests
+and use those as examples.
+
+* The current implementation
+:PROPERTIES:
+:CREATED:  [2021-05-31 Mon 23:44]
+:ID:       0f25329d-72a8-4475-92ca-f7a1c8dbd484
+:END:
+
+A mold looks like this in Elisp:
+
+#+begin_src emacs-lisp
+(
+ :key "Playground"
+ :given (lambda nil 't)
+ :then (lambda nil (let (... ...) (with-current-buffer buffer ... ... ... buffer) buffer))
+ :docs "You can write any Elisp here. 
+Then you can evaluate with `EvalSexp'. 
+This mold saves structured data of the previous buffer 
+in the local variable `self'."
+ :examples ((
+             :name "Empty file"
+             :given (:type file :name "/tmp/test.txt" :mode text-mode :contents "")
+             :then (:type buffer :name ... :mode emacs-lisp-mode :contents ""))))
+#+end_src
+
+A mold needs the following.
+
+- a key :: the unique name of the mold used to find it;
+- a given clause :: this is a predicate for the preconditions needed for this mold;
+- a then clause :: the transformation this mold will apply, this has to return a buffer;
+- some docs :: a line to explain what this does;
+- some examples :: this is a minimal usage of the mold, so users can have an idea of what it does.
+
+Documentation and examples are optional because I am
+designing/developing a way for making it trivial for the user to
+provide these while using molds. Examples are fundamental to me
+because they tell useful stories (and with those I can do very cool
+things in terms of usability and validation).
+
+The core of the mode is the function that uses this information to
+execute molds: =me/mold=.
+
+#+begin_src elisp
+(defun me/mold ()
+  "Propose a list of available molds for the current context."
+  (interactive)
+  (run-hooks 'me/mold-before-hook)
+  (let* ((molds (--filter
+                 (funcall (plist-get it :given))
+                 me/available-molds))
+         (keys (--map (plist-get it :key) molds)))
+    (--> keys
+      (completing-read
+       "Pick the mold you need:"
+       it)
+      (-find
+       (lambda (x)
+         (string=
+          (plist-get x :key)
+          it))
+       molds)
+      (funcall
+       (lambda (mold)
+         (--each
+             me/mold-before-mold-runs-hook
+           (funcall it mold))
+         mold)
+       it)
+      (plist-get it :then)
+      funcall
+      switch-to-buffer-other-window)
+    (run-hooks 'me/mold-after-hook))
+#+end_src
+
+In short, this function does the following.
+
+1. find molds that satisfy your situation (the =:given=
+clause)
+2. let you pick one of these
+3. open the new buffer (generated with the =:then= clause) on the
+   side.
+
+The hooks allow to integrate some extra functionality. For example I
+currently support history to jump back and forth in the list of
+generated buffers. I happen to get my molding wrong and I can quickly
+return to the previous buffer to try again with a keybinding.
+
+Last thing I want to mention here is that the current implementation
+already supports composition with =me/mold-compose-molds=! 
+
+For example, I have a mold to produce a graph from the first Org Table in the buffer.
+
+#+begin_src elisp
+(me/register-mold-by-key
+ "FirstOrgTableToBarChart"
+ (me/mold-compose
+  (me/mold-compose "FirstOrgTable"  "OrgTableToCSV")
+  "CSVToBarChart"))
+#+end_src
+
+Here I transform an Org Mode buffer to an Org Mode buffer with a
+single table. Then the table to a CSV buffer. Then the CSV to a bar
+chart. The function =me/mold-compose= composes existing molds by
+looking for their key and feeding these to =me/mold-compose-molds=.
+Then =me/register-mold-by-key= assigns a key to this composed mold and
+adds it to the register. I may provide a macro soon to make
+composition more readable.
+
+* Final thoughts
+:PROPERTIES:
+:CREATED:  [2021-06-03 Thu 12:50]
+:ID:       9e2c341a-2034-4008-b195-b0b90e0ca2c6
+:END:
+
+This is more or less a short summary of the core of what is letting
+mold my software world (from Emacs).
+
+I have already about 40ish molds that I found so valuable to add to my
+mold register. I am still looking for a good story about mold
+contribution: looking at how GlamorousToolkit is evolving I guess I
+should provide a set of core molds (like Playground) and a set of
+contributed ones. Some molds that would be cool to have are for
+maneuvering external APIs (for example the one of [[https://www.jenkins.io/][Jenkins]]).
+
+Something that also interests me is integrating Emacs and
+GlamorousToolkit. Emacs currently focuses mostly on text and molds are
+most powerful when you get useful information without reading. I
+looked in the potential of widgets in Emacs, but it seems too
+expensive for me. I would rather go towards integrating with external
+tools for getting amazing visual features.
+
+All in all, this mode is just exciting to develop! I feel a bit like a
+bee that cross-pollinates ideas from various communities: I learn a
+lot and hopefully I make something valuable for others in the process.
