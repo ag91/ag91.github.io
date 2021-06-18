@@ -1,0 +1,168 @@
+#+TITLE:       Moldable Emacs: how to explore JSON via Elisp
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-06-18 Fri
+#+URI:         /blog/%y/%m/%d/moldable-emacs-how-to-explore-json-via-elisp
+#+KEYWORDS:    moldable-emacs, moldable development
+#+TAGS:        moldable-emacs, moldable development
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to explore JSON via molds
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       34a9f4e2-7135-423e-ad70-b8024bdaac48
+:END:
+
+You may need to explore JSON data: a mold can help you with that! You
+can view what you need with a bit of Elisp.
+
+* The problem
+:PROPERTIES:
+:ID:       1fdfbbd6-625e-4082-8438-5b065e5a27d9
+:END:
+
+Sometimes I have some JSON I want to explore. Often I read its
+contents in the browser view or in an Emacs buffer. Every so often I
+fell into [[https://github.com/stedolan/jq][jq]]. [[https://ag91.github.io/blog/2021/05/26/moldable-emacs-make-everything-moldable-through-lisp/][As we learned before]], we would be better off by having a
+view to extract only the contents we need. That would make our reading
+faster and nicer.
+
+For example, what should I do to see all the official descriptions of
+Ghibli's movies?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       c2be978a-1689-44e7-afe1-4985ddbda4a0
+:END:
+
+Naturally I have a mold for that! The presentation is rather raw for
+now, so I will show you also what [[https://gtoolkit.com/][GlamorousToolkit]] can do to let you
+compare where we could get to.
+
+First let me show the data with [[https://ghibliapi.herokuapp.com/#tag/Films%2Fpaths%2F~1films%2Fget][the Ghibli API]]. The Ghibli studio made
+available information about their movies via an open API. For example,
+if you want to get the films they produced so far, we will have just
+to run the request that follows.
+
+#+begin_src sh :noeval
+curl -X GET -H "Content-Type: application/json" https://ghibliapi.herokuapp.com/films
+#+end_src
+
+This returns a list that looks like:
+
+#+begin_src json
+[
+  {
+    "id": "2baf70d1-42bb-4437-b551-e5fed5a87abe",
+    "title": "Castle in the Sky",
+    "original_title": "天空の城ラピュタ",
+    "original_title_romanised": "Tenkū no shiro Rapyuta",
+    "description": "The orphan Sheeta inherited a mysterious crystal that links her to the mythical sky-kingdom of Laputa. With the help of resourceful Pazu and a rollicking band of sky pirates, she makes her way to the ruins of the once-great civilization. Sheeta and Pazu must outwit the evil Muska, who plans to use Laputa's science to make himself ruler of the world.",
+    "director": "Hayao Miyazaki",
+    "producer": "Isao Takahata",
+    "release_date": "1986",
+    "running_time": "124",
+    "rt_score": "95",
+    "people": [
+      "https://ghibliapi.herokuapp.com/people/"
+    ],
+    "species": [
+      "https://ghibliapi.herokuapp.com/species/af3910a6-429f-4c74-9ad5-dfe1c4aa04f2"
+    ],
+    "locations": [
+      "https://ghibliapi.herokuapp.com/locations/"
+    ],
+    "vehicles": [
+      "https://ghibliapi.herokuapp.com/vehicles/"
+    ],
+    "url": "https://ghibliapi.herokuapp.com/films/2baf70d1-42bb-4437-b551-e5fed5a87abe"
+  }
+  ...
+]
+#+end_src
+
+Our aim is to get all the movie =description=s to give them a look.
+
+Let me show how this works with my [[https://github.com/ag91/moldable-emacs][moldable-emacs]].
+
+First, we download the JSON and load =json-mode= in that buffer.
+
+[[file:curl2Json.mp4]]
+
+Now we transform the JSON in a flattened tree of elements parsed with
+tree-sitter JSON gramma.
+
+[[file:JSON2Tree.mp4]]
+
+Now if we were interested only in an entry description (because we are
+exploring), we could do the following.
+
+[[file:JSON2Entry.mp4]]
+
+Note that in the tree view I can always jump back to the original JSON
+buffer with the =me/open-at-point= command.
+
+Anyway, that was not our goal! Instead from the original JSON, let's
+get all the descriptions with a =Playground=. This mold has available
+the flattened tree of the previous buffer in a variable called =self=.
+
+[[file:JSON2Descriptions.mp4]]
+
+We just needed a couple of filters to get all pairs. Of those we got
+only the ones containing descriptions.
+
+I used the following code for reference.
+
+#+begin_src elisp :noeval
+(--map
+ (plist-get it :text)
+ (--filter (s-starts-with-p "\"description" (plist-get it :text)) (me/by-type 'pair self)))
+#+end_src
+
+Note that this kind of code is meant to throw away. If you keep
+repeating it, you can store it in a function. If you bet this is
+something others would find useful, be generous and open a PR to my
+repo (or share in a fork). For example, =me/by-type= is just a
+shortcut for filtering the flattened tree by the =:type= field: I used
+it so many times I found that shortcut useful.
+
+Anyway you saw that in a few steps we could get to what we needed.
+
+Now that I think of it, I could easily add a =Playground= mold that
+does not use Lisp. For example, a =Playground In Python= or
+=Playground In JS=. Well, I did not need that yet, so let me know if
+you wish one.
+
+This is what I needed so far for my workflow in [[https://github.com/ag91/moldable-emacs][moldable-emacs]]. Let me
+show you how Glamorous people make developers explore JSON.
+
+[[file:gtJSON.mp4]]
+
+I did not become familiar enough with Pharo to show you how to collect
+only descriptions fields. Still it is much more beautiful and
+accessible than what I got in moldable-emacs.
+
+The Pharo code I used for convenience.
+
+#+begin_src text
+json := ZnClient new get: 'https://ghibliapi.herokuapp.com/films'
+dictionary := STON fromString: json. 
+#+end_src
+
+You can see that there is much more humane ways to present the
+information!
+
+* Conclusion
+
+Again this is just a way to use moldable-emacs to your needs. With
+this you can explore data with programming in Lisp from within your
+editor. If you want to try the code is available at
+https://github.com/ag91/moldable-emacs. If you have troubles running
+this, please ping me! At the moment I have a story for letting the
+user discover the dependencies they need for a mold, but I kept
+postponing it (because I got the dependencies already installed XD).
+
+Hope this made curious and you will have fun with this extension.
+
+Happy exploring!
