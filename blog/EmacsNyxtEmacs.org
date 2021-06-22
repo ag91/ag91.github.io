@@ -1,0 +1,212 @@
+#+TITLE:       Back to Emacs while in Nyxt: how to edit the web in a Lispy editor
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-06-22 Tue
+#+URI:         /blog/%y/%m/%d/back-to-emacs-while-in-nyxt-how-to-edit-the-web-in-a-lispy-editor
+#+KEYWORDS:    nyxt, emacs
+#+TAGS:        nyxt, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Example of going back and forth from Emacs to Nyxt
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       341f5d25-2339-460b-b62c-a1efb18b5eef
+:END:
+
+Nyxt can call Emacs via =emacsclient=. Here we learn two things: how
+to edit web forms with Emacs from Nyxt and how to write Nyxt commands
+that run Emacs functions!
+
+* The problem
+:PROPERTIES:
+:ID:       b4e35dc8-14b0-49f6-9ac8-b0f16aac8063
+:END:
+
+[[https://ag91.github.io/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime/][In an earlier post I have shown how to call Nyxt from Emacs]]. In that
+way you can explore the web via Nyxt, by simply telling Emacs: "open
+this page with Nyxt". The main advantage is that exploring the web
+(with full browser functionality) becomes part of your Emacs workflow.
+
+A new problem arises once you are in Nyxt though. Say you have a form
+on an HTML page. Then you remember that you have the perfect
+skeleton/snippet in your Emacs for that.
+
+How great would it be if you could use Emacs to fill that form,
+instead of doing some copy-pasting?
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       2e516dc7-00c0-48c7-9566-6e74506745d0
+:END:
+
+Actually that is just the tip of the iceberg! What if we could start a
+ping-pong between Emacs and Nyxt to complete our workflows? Let me
+explain.
+
+Say you have finished writing a blog post with Emacs, you publish it
+locally and use Nyxt to read it. Then you find an error.
+
+Would not be cool if with a keystroke you could open the source file
+in Emacs? Once you fix the problem, you do another keystroke and you
+are back in Nyxt at the point were you stopped before.
+
+How far are we from achieving that?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       45675d2d-3ca8-4669-b67d-e75b0c41cbdc
+:END:
+
+Let's start simple. Nyxt allows you to set an editor with which to
+complete forms. This is how I configure Nyxt to achieve that.
+
+#+begin_src lisp :noeval
+(DEFINE-CONFIGURATION (BUFFER WEB-BUFFER)
+  ((DEFAULT-MODES (APPEND '(EMACS-MODE) %SLOT-DEFAULT))))
+(DEFINE-CONFIGURATION BROWSER
+  ((EXTERNAL-EDITOR-PROGRAM "/usr/bin/emacsclient")))
+#+end_src
+
+The first bit is about having Emacs keybindings in Nyxt. The second
+expression sets =emacsclient= as the default external editor.
+
+Add these lines in your auto-config path. That is located at
+=~/.config/nyxt/auto-config.lisp= on Linux.
+
+When you are on the input of a form, you just have to use =C-x '=
+(like for Org Mode source blocks) and you will open Emacs. At that
+point insert the text you need and use =C-x #=. You shall be back in
+Nyxt.
+
+A word of caution: [[https://github.com/atlas-engineer/nyxt/blob/master/source/external-editor.lisp#L26][this works only for forms for now. Not sure why
+this limitation]], I am eventually going to ask the devs. It would be
+cool to have this for anything. Imagine if we could set also the
+fittest Emacs mode (I am thinking of editing GitHub files online with
+Emacs)!
+
+Actually we may not even need the help of Nyxt devs for that! We can
+change Nyxt at run time with Slime, remember?
+
+For now let's go easy again. I assume you have Nyxt running. Also you
+should have a nice Slime REPL available to edit it on the run.
+
+Let's start from letting Nyxt speak to Emacs. Building over [[https://nyxt.atlas.engineer/article/emacs-hacks.org][Pierre
+Neidhards' Emacs Hacks]], you can use the following.
+
+#+begin_src lisp :noeval
+(defun replace-all (string part replacement &key (test #'char=))
+  "Returns a new string in which all the occurences of the part 
+is replaced with replacement."
+  (with-output-to-string (out)
+    (loop with part-length = (length part)
+          for old-pos = 0 then (+ pos part-length)
+          for pos = (search part string
+                            :start2 old-pos
+                            :test test)
+          do (write-string string out
+                           :start old-pos
+                           :end (or pos (length string)))
+          when pos do (write-string replacement out)
+            while pos)))
+
+(defun eval-in-emacs (&rest s-exps)
+  "Evaluate S-EXPS with emacsclient."
+  (let ((s-exps-string (replace-all
+                        (write-to-string
+                         `(progn ,@s-exps) :case :downcase)
+                        ;; Discard the package prefix.
+                        "nyxt::" "")))
+    (format *error-output* "Sending to Emacs:~%~a~%" s-exps-string)
+    (uiop:run-program
+     (list "emacsclient" "--eval" s-exps-string))))
+#+end_src
+
+The function =eval-in-emacs= allows you to send Elisp code to
+=emacsclient=.
+
+If you managed to run that in your Slime, then try to run also this.
+
+#+begin_src lisp :noeval
+(define-command my/playing-around ()
+     "Query ."
+     (eval-in-emacs
+        `(message "hello from Nyxt!")))
+#+end_src
+
+If you do that, you will find a new command in Nyxt! This will pop a
+message in your Emacs!! Nyxt has just called Emacs: how cool are we?!?
+
+Now let's try something fancier. What about jumping from a GitHub page
+opened in Nyxt to our local source file and back?
+
+Say I am on
+https://github.com/ag91/writer-word-goals/blob/master/wwg.el and I
+want to visit a line of it in Emacs.
+
+This is the function I need for Nyxt.
+
+#+begin_src lisp :noeval
+(define-command my/display-wwg-selection ()
+     "Something else."
+     (let ((selection (%copy)))
+       (eval-in-emacs
+        `(find-file "~/workspace/writer-word-goals/wwg.el")
+        `(goto-char (point-min))
+        `(search-forward ,selection))))
+#+end_src
+
+Now if I select some text in the page that belongs to the file, I will
+open the file in Emacs at that point.
+
+What about jumping back from Emacs to Nyxt then?
+
+This was a bit tougher to make it work due to my Common Lisp basic
+skills, but [[https://discourse.atlas.engineer/t/how-do-i-search-a-buffer-via-lisp/164][thanks to the amazing Atlas community I found out how]].
+
+We need to search a Nyxt buffer. This is already possible, but only
+via Nyxt's prompt. We need to do a search via CL: is the Nyxt so
+programmable then?
+
+The following is the CL code we need.
+
+#+begin_src lisp :noeval
+(nyxt/web-mode::highlight-selected-hint
+ :link-hint
+ (car
+  (nyxt/web-mode::matches-from-json
+   (nyxt/web-mode::query-buffer :query "someString")))
+ :scroll 't)
+#+end_src
+
+These are a few lines of Common Lisp that highlight and scroll to the
+first match over the query string. The function
+=nyxt/web-mode::query-buffer= is finding all the matches. The function
+=nyxt/web-mode::matches-from-json= converts matches to a Lisp format.
+Finally, =highlight-selected-hint= is running some JavaScript
+(compiled from [[https://common-lisp.net/project/parenscript/][ParensScript]]!) to select the match on the page.
+
+Using our [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]] infrastructure, we can get an Elisp function
+for jumping back to Nyxt from Emacs.
+
+#+begin_src elisp :noeval
+(defun emacs-with-nyxt-search-first-in-nyxt-current-buffer (string)
+  "Search current Nyxt buffer for STRING."
+  (interactive "sString to search: ")
+  (unless (slime-connected-p) (emacs-with-nyxt-start-and-connect-to-nyxt))
+  (emacs-with-nyxt-slime-repl-send-string
+   (format "(nyxt/web-mode::highlight-selected-hint :link-hint (car (nyxt/web-mode::matches-from-json (nyxt/web-mode::query-buffer :query \"%s\"))) :scroll 't)" string)))
+#+end_src
+
+That was an example of what is achievable! I found this promising
+given that I started using Nyxt a couple of weeks ago. And I am also
+becoming familiar with Common Lisp!!!
+
+* Conclusion
+:PROPERTIES:
+:ID:       ade3c776-4344-4717-9543-92e1497a1889
+:END:
+
+This was our first ping-pong between Emacs and Nyxt! As you could see
+the mix of these two tools has powerful potential. Give it a try and
+let me know how it does feel for you!
