@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Back to Emacs while in Nyxt: how to edit the web in a Lispy editor - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Example of going back and forth from Emacs to Nyxt" />
+    <meta name="keywords" content="nyxt, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Back to Emacs while in Nyxt: how to edit the web in a Lispy editor</h1>
+
+<div id="outline-container-org916101f" class="outline-2">
+<h2 id="org916101f">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org916101f">
+<p>
+Nyxt can call Emacs via <code>emacsclient</code>. Here we learn two things: how
+to edit web forms with Emacs from Nyxt and how to write Nyxt commands
+that run Emacs functions!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3c3460c" class="outline-2">
+<h2 id="org3c3460c">The problem</h2>
+<div class="outline-text-2" id="text-org3c3460c">
+<p>
+<a href="https://ag91.github.io/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime/">In an earlier post I have shown how to call Nyxt from Emacs</a>. In that
+way you can explore the web via Nyxt, by simply telling Emacs: "open
+this page with Nyxt". The main advantage is that exploring the web
+(with full browser functionality) becomes part of your Emacs workflow.
+</p>
+
+<p>
+A new problem arises once you are in Nyxt though. Say you have a form
+on an HTML page. Then you remember that you have the perfect
+skeleton/snippet in your Emacs for that.
+</p>
+
+<p>
+How great would it be if you could use Emacs to fill that form,
+instead of doing some copy-pasting?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc1d501f" class="outline-2">
+<h2 id="orgc1d501f">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgc1d501f">
+<p>
+Actually that is just the tip of the iceberg! What if we could start a
+ping-pong between Emacs and Nyxt to complete our workflows? Let me
+explain.
+</p>
+
+<p>
+Say you have finished writing a blog post with Emacs, you publish it
+locally and use Nyxt to read it. Then you find an error.
+</p>
+
+<p>
+Would not be cool if with a keystroke you could open the source file
+in Emacs? Once you fix the problem, you do another keystroke and you
+are back in Nyxt at the point were you stopped before.
+</p>
+
+<p>
+How far are we from achieving that?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd453087" class="outline-2">
+<h2 id="orgd453087">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgd453087">
+<p>
+Let's start simple. Nyxt allows you to set an editor with which to
+complete forms. This is how I configure Nyxt to achieve that.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(DEFINE-CONFIGURATION (BUFFER WEB-BUFFER)
+  ((DEFAULT-MODES (APPEND '(EMACS-MODE) %SLOT-DEFAULT))))
+(DEFINE-CONFIGURATION BROWSER
+  ((EXTERNAL-EDITOR-PROGRAM "/usr/bin/emacsclient")))
+</pre>
+</div>
+
+<p>
+The first bit is about having Emacs keybindings in Nyxt. The second
+expression sets <code>emacsclient</code> as the default external editor.
+</p>
+
+<p>
+Add these lines in your auto-config path. That is located at
+<code>~/.config/nyxt/auto-config.lisp</code> on Linux.
+</p>
+
+<p>
+When you are on the input of a form, you just have to use <code>C-x '</code>
+(like for Org Mode source blocks) and you will open Emacs. At that
+point insert the text you need and use <code>C-x #</code>. You shall be back in
+Nyxt.
+</p>
+
+<p>
+A word of caution: <a href="https://github.com/atlas-engineer/nyxt/blob/master/source/external-editor.lisp#L26">this works only for forms for now. Not sure why
+this limitation</a>, I am eventually going to ask the devs. It would be
+cool to have this for anything. Imagine if we could set also the
+fittest Emacs mode (I am thinking of editing GitHub files online with
+Emacs)!
+</p>
+
+<p>
+Actually we may not even need the help of Nyxt devs for that! We can
+change Nyxt at run time with Slime, remember?
+</p>
+
+<p>
+For now let's go easy again. I assume you have Nyxt running. Also you
+should have a nice Slime REPL available to edit it on the run.
+</p>
+
+<p>
+Let's start from letting Nyxt speak to Emacs. Building over <a href="https://nyxt.atlas.engineer/article/emacs-hacks.org">Pierre
+Neidhards' Emacs Hacks</a>, you can use the following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(defun replace-all (string part replacement &amp;key (test #'char=))
+  "Returns a new string in which all the occurences of the part 
+is replaced with replacement."
+  (with-output-to-string (out)
+    (loop with part-length = (length part)
+          for old-pos = 0 then (+ pos part-length)
+          for pos = (search part string
+                            :start2 old-pos
+                            :test test)
+          do (write-string string out
+                           :start old-pos
+                           :end (or pos (length string)))
+          when pos do (write-string replacement out)
+            while pos)))
+
+(defun eval-in-emacs (&amp;rest s-exps)
+  "Evaluate S-EXPS with emacsclient."
+  (let ((s-exps-string (replace-all
+                        (write-to-string
+                         `(progn ,@s-exps) :case :downcase)
+                        ;; Discard the package prefix.
+                        "nyxt::" "")))
+    (format *error-output* "Sending to Emacs:~%~a~%" s-exps-string)
+    (uiop:run-program
+     (list "emacsclient" "--eval" s-exps-string))))
+</pre>
+</div>
+
+<p>
+The function <code>eval-in-emacs</code> allows you to send Elisp code to
+<code>emacsclient</code>.
+</p>
+
+<p>
+If you managed to run that in your Slime, then try to run also this.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(define-command my/playing-around ()
+     "Query ."
+     (eval-in-emacs
+        `(message "hello from Nyxt!")))
+</pre>
+</div>
+
+<p>
+If you do that, you will find a new command in Nyxt! This will pop a
+message in your Emacs!! Nyxt has just called Emacs: how cool are we?!?
+</p>
+
+<p>
+Now let's try something fancier. What about jumping from a GitHub page
+opened in Nyxt to our local source file and back?
+</p>
+
+<p>
+Say I am on
+<a href="https://github.com/ag91/writer-word-goals/blob/master/wwg.el">https://github.com/ag91/writer-word-goals/blob/master/wwg.el</a> and I
+want to visit a line of it in Emacs.
+</p>
+
+<p>
+This is the function I need for Nyxt.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(define-command my/display-wwg-selection ()
+     "Something else."
+     (let ((selection (%copy)))
+       (eval-in-emacs
+        `(find-file "~/workspace/writer-word-goals/wwg.el")
+        `(goto-char (point-min))
+        `(search-forward ,selection))))
+</pre>
+</div>
+
+<p>
+Now if I select some text in the page that belongs to the file, I will
+open the file in Emacs at that point.
+</p>
+
+<p>
+What about jumping back from Emacs to Nyxt then?
+</p>
+
+<p>
+This was a bit tougher to make it work due to my Common Lisp basic
+skills, but <a href="https://discourse.atlas.engineer/t/how-do-i-search-a-buffer-via-lisp/164">thanks to the amazing Atlas community I found out how</a>.
+</p>
+
+<p>
+We need to search a Nyxt buffer. This is already possible, but only
+via Nyxt's prompt. We need to do a search via CL: is the Nyxt so
+programmable then?
+</p>
+
+<p>
+The following is the CL code we need.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(nyxt/web-mode::highlight-selected-hint
+ :link-hint
+ (car
+  (nyxt/web-mode::matches-from-json
+   (nyxt/web-mode::query-buffer :query "someString")))
+ :scroll 't)
+</pre>
+</div>
+
+<p>
+These are a few lines of Common Lisp that highlight and scroll to the
+first match over the query string. The function
+<code>nyxt/web-mode::query-buffer</code> is finding all the matches. The function
+<code>nyxt/web-mode::matches-from-json</code> converts matches to a Lisp format.
+Finally, <code>highlight-selected-hint</code> is running some JavaScript
+(compiled from <a href="https://common-lisp.net/project/parenscript/">ParensScript</a>!) to select the match on the page.
+</p>
+
+<p>
+Using our <a href="https://github.com/ag91/emacs-with-nyxt">emacs-with-nyxt</a> infrastructure, we can get an Elisp function
+for jumping back to Nyxt from Emacs.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun emacs-with-nyxt-search-first-in-nyxt-current-buffer (string)
+  "Search current Nyxt buffer for STRING."
+  (interactive "sString to search: ")
+  (unless (slime-connected-p) (emacs-with-nyxt-start-and-connect-to-nyxt))
+  (emacs-with-nyxt-slime-repl-send-string
+   (format "(nyxt/web-mode::highlight-selected-hint :link-hint (car (nyxt/web-mode::matches-from-json (nyxt/web-mode::query-buffer :query \"%s\"))) :scroll 't)" string)))
+</pre>
+</div>
+
+<p>
+That was an example of what is achievable! I found this promising
+given that I started using Nyxt a couple of weeks ago. And I am also
+becoming familiar with Common Lisp!!!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga53380e" class="outline-2">
+<h2 id="orga53380e">Conclusion</h2>
+<div class="outline-text-2" id="text-orga53380e">
+<p>
+This was our first ping-pong between Emacs and Nyxt! As you could see
+the mix of these two tools has powerful potential. Give it a try and
+let me know how it does feel for you!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-06-22</span>
+        <span title="last modification date" class="post-info">2021-06-22</span>
+        <span title="tags" class="post-info"><a href="/tags/nyxt/">nyxt</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
