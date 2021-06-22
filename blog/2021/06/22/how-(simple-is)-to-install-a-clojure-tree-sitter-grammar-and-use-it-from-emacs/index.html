@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>How (simple is) to install a Clojure tree-sitter grammar and use it from Emacs - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to install the Clojure tree-sitter for emacs-tree-sitter" />
+    <meta name="keywords" content="moldable development, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>How (simple is) to install a Clojure tree-sitter grammar and use it from Emacs</h1>
+<p>
+I am a fan of <a href="https://github.com/tree-sitter/tree-sitter">tree-sitter</a> because it is opening a world of
+possibilities for my <a href="https://github.com/ag91/moldable-emacs">little Emacs extension</a> for <a href="https://moldabledevelopment.com/">moldable development</a>.
+</p>
+
+<p>
+<a href="https://emacsconf.org/2020/talks/23/">During last EmacsConf Tuấn-Anh Nguyễn showed us</a> how to make
+tree-sitter and Emacs work together with his package
+<a href="https://github.com/ubolonton/emacs-tree-sitter">emacs-tree-sitter</a>.
+</p>
+
+<p>
+Since I am a fan of Clojure and I am going to work with it soon, I
+thought it was the right time to try integrating a grammar for Clojure
+in my workflow. Thanks to <code>sogaiu</code> for his <a href="https://github.com/sogaiu/tree-sitter-clojure">nice little grammar</a>, I
+could get to something to share!
+</p>
+
+<p>
+There is not much to share actually because everybody documented
+things nicely! I will just summarize what I understood so far.
+</p>
+
+<p>
+The <code>emacs-tree-sitter</code> <a href="https://github.com/ubolonton/tree-sitter-langs/tree/5d362ce98dcf656d7a55fcad6ae21c0a2caca861">package comes with some grammars by default</a> to
+avoid users the installation of all the most common grammars. Anyway,
+tree-sitter grammars are NPM packages at the end of the day. So
+anytime you run <code>npm install</code> in a grammar, it becomes available also
+to <code>emacs=tree-sitter</code>.
+</p>
+
+<p>
+So I first just followed <code>sogaiu</code>'s instructions, which boil down to:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">git clone https://github.com/sogaiu/tree-sitter-clojure
+cd tree-sitter-clojure
+
+# create `node_modules` and populate with dependencies
+npm install
+
+# create `src` and populate with tree-sitter .c goodness
+npx tree-sitter generate
+
+# create `build` and populate with 
+npx node-gyp configure
+
+# create `build/Release` and build `tree_sitter_clojure_binding.node`
+npx node-gyp rebuild
+</pre>
+</div>
+
+<p>
+Please be careful that the requirement for this is a recent version of
+NodeJS. (I found how to upgrade in Ubuntu here
+<a href="https://askubuntu.com/questions/426750/how-can-i-update-my-nodejs-to-the-latest-version">https://askubuntu.com/questions/426750/how-can-i-update-my-nodejs-to-the-latest-version</a>#)
+</p>
+
+<p>
+Anyway, once you run the commands above, you just need to run the
+following Elisp snippet in Emacs.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(add-to-list
+ 'tree-sitter-major-mode-language-alist
+ '(clojure-mode . clojure))
+</pre>
+</div>
+
+<p>
+With that you should be able to parse the following code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(ns my-project.core
+  (:gen-class))
+
+(defn -main
+  "I don't do a whole lot ... yet."
+  [&amp; args]
+  (println "Hello, World!"))
+</pre>
+</div>
+
+<p>
+And obtain the following syntax tree with the interactive Emacs
+function <code>tree-sitter-debug-mode</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">source:
+  list_lit:
+    sym_lit:
+    sym_lit:
+    list_lit:
+      kwd_lit:
+  list_lit:
+    sym_lit:
+    sym_lit:
+    str_lit:
+    vec_lit:
+      sym_lit:
+      sym_lit:
+    list_lit:
+      sym_lit:
+      str_lit:
+</pre>
+</div>
+
+<p>
+It is basic but still quite useful for my mode nonetheless! I hope to
+have time to learn how to contribute to this grammar later. It already
+recognizes all the basic Clojure data structures like maps, sets and
+vectors, so it is very valuable to me.
+</p>
+
+<p>
+Hope this is useful for your workflow as well!
+</p>
+
+<p>
+Happy coding!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-06-22</span>
+        <span title="last modification date" class="post-info">2021-06-22</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-development/">moldable development</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
