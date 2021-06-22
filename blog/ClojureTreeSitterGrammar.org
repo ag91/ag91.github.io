@@ -1,0 +1,106 @@
+#+TITLE:       How (simple is) to install a Clojure tree-sitter grammar and use it from Emacs
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-06-22 Tue
+#+URI:         /blog/%y/%m/%d/how-(simple-is)-to-install-a-clojure-tree-sitter-grammar-and-use-it-from-emacs
+#+KEYWORDS:    moldable development, emacs
+#+TAGS:        moldable development, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to install the Clojure tree-sitter for emacs-tree-sitter
+
+I am a fan of [[https://github.com/tree-sitter/tree-sitter][tree-sitter]] because it is opening a world of
+possibilities for my [[https://github.com/ag91/moldable-emacs][little Emacs extension]] for [[https://moldabledevelopment.com/][moldable development]].
+
+[[https://emacsconf.org/2020/talks/23/][During last EmacsConf Tuấn-Anh Nguyễn showed us]] how to make
+tree-sitter and Emacs work together with his package
+[[https://github.com/ubolonton/emacs-tree-sitter][emacs-tree-sitter]].
+
+Since I am a fan of Clojure and I am going to work with it soon, I
+thought it was the right time to try integrating a grammar for Clojure
+in my workflow. Thanks to =sogaiu= for his [[https://github.com/sogaiu/tree-sitter-clojure][nice little grammar]], I
+could get to something to share!
+
+There is not much to share actually because everybody documented
+things nicely! I will just summarize what I understood so far.
+
+The =emacs-tree-sitter= [[https://github.com/ubolonton/tree-sitter-langs/tree/5d362ce98dcf656d7a55fcad6ae21c0a2caca861][package comes with some grammars by default]] to
+avoid users the installation of all the most common grammars. Anyway,
+tree-sitter grammars are NPM packages at the end of the day. So
+anytime you run =npm install= in a grammar, it becomes available also
+to =emacs=tree-sitter=.
+
+So I first just followed =sogaiu='s instructions, which boil down to:
+
+#+begin_src sh :noeval
+git clone https://github.com/sogaiu/tree-sitter-clojure
+cd tree-sitter-clojure
+
+# create `node_modules` and populate with dependencies
+npm install
+
+# create `src` and populate with tree-sitter .c goodness
+npx tree-sitter generate
+
+# create `build` and populate with 
+npx node-gyp configure
+
+# create `build/Release` and build `tree_sitter_clojure_binding.node`
+npx node-gyp rebuild
+#+end_src
+
+Please be careful that the requirement for this is a recent version of
+NodeJS. (I found how to upgrade in Ubuntu here
+https://askubuntu.com/questions/426750/how-can-i-update-my-nodejs-to-the-latest-version#)
+
+Anyway, once you run the commands above, you just need to run the
+following Elisp snippet in Emacs.
+
+#+begin_src elisp :noeval
+(add-to-list
+ 'tree-sitter-major-mode-language-alist
+ '(clojure-mode . clojure))
+#+end_src
+
+With that you should be able to parse the following code.
+
+#+begin_src clojure :noeval
+(ns my-project.core
+  (:gen-class))
+
+(defn -main
+  "I don't do a whole lot ... yet."
+  [& args]
+  (println "Hello, World!"))
+#+end_src
+
+And obtain the following syntax tree with the interactive Emacs
+function =tree-sitter-debug-mode=.
+
+#+begin_src text
+source:
+  list_lit:
+    sym_lit:
+    sym_lit:
+    list_lit:
+      kwd_lit:
+  list_lit:
+    sym_lit:
+    sym_lit:
+    str_lit:
+    vec_lit:
+      sym_lit:
+      sym_lit:
+    list_lit:
+      sym_lit:
+      str_lit:
+#+end_src
+
+It is basic but still quite useful for my mode nonetheless! I hope to
+have time to learn how to contribute to this grammar later. It already
+recognizes all the basic Clojure data structures like maps, sets and
+vectors, so it is very valuable to me.
+
+Hope this is useful for your workflow as well!
+
+Happy coding!
