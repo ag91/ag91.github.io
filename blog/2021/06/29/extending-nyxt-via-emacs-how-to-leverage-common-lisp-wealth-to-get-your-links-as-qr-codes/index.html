@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Extending Nyxt via Emacs: how to leverage Common Lisp wealth to get your links as QR codes - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to make QR codes with Common Lisp from your Lispy browser and editor!" />
+    <meta name="keywords" content="nyxt, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Extending Nyxt via Emacs: how to leverage Common Lisp wealth to get your links as QR codes</h1>
+
+<div id="outline-container-orge8db2ae" class="outline-2">
+<h2 id="orge8db2ae">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orge8db2ae">
+<p>
+Common Lispers are amazing people! There are a lot of elegant
+libraries around. You can extend Nyxt with those. Here you can learn
+how to make a QR code of the URL you are currently visiting with the
+amazing <a href="https://quickref.common-lisp.net/cl-qrencode.html">cl-qrencode</a> library.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf5fcc0f" class="outline-2">
+<h2 id="orgf5fcc0f">The problem</h2>
+<div class="outline-text-2" id="text-orgf5fcc0f">
+<p>
+I already knew that Common Lisp has an amazing package manager:
+<a href="https://www.quicklisp.org/beta/#loading">Quicklisp</a>. That is a trove of treasures! I had been wondering how to
+inject that tool in Nyxt. Just today <a href="https://www.reddit.com/r/Nyxt/comments/oa69oe/whats_preventing_you_from_using_nyxt_as_your/">I was checking new posts about
+Nyxt, and I found out that the user <code>publicvoit</code> likes to make QR code
+of the page he is visiting to navigate it with his phone</a>.
+</p>
+
+<p>
+I became curious and I went looking if Common Lisp had something for
+that and I found the library cl-qrencode!
+</p>
+
+<p>
+Then I wondered again: how easy would be to inject that in Nyxt and
+make <code>publicvoit</code> happy?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org48261b0" class="outline-2">
+<h2 id="org48261b0">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org48261b0">
+<p>
+The main issue here is how to welcome the fantastic features and
+libraries of Common Lisp in Nyxt. How amazing would it be to have <a href="https://www.common-lisp.net/libraries">this
+vast treasure-box</a> available to extend our browser? (Oh my, Natural
+Language Processing for your open tabs!)
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgae88016" class="outline-2">
+<h2 id="orgae88016">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgae88016">
+<p>
+Then let's discover how difficult is to make a QR code of the page we
+are visiting at the moment.
+</p>
+
+<p>
+First, I assume you installed Quicklisp already. If not, <a href="https://www.quicklisp.org/beta/#installation">here is how
+to do that</a>.
+</p>
+
+<p>
+After the installation you should have this file:
+<code>~/quicklisp/setup.lisp</code>.
+</p>
+
+<p>
+Second, I assume you can run Slime connected to Nyxt. If not, <a href="https://github.com/ag91/emacs-with-nyxt">give a
+look at my repo for instructions</a>.
+</p>
+
+<p>
+Then we are ready to extend!
+</p>
+
+<p>
+We start from loading Quicklisp in our Nyxt REPL!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(load "~/quicklisp/setup.lisp")
+</pre>
+</div>
+
+<p>
+That is so simple that I cannot believe it. Quicklisp is too cool! Let
+me show why. We want to transform the URL we are navigating in a QR
+code, right? I have not yet learned how to make a QR code, but
+somebody implemented a library for Common Lisp for that: cl-qrencode!
+</p>
+
+<p>
+Let's use it!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(ql:quickload "cl-qrencode")
+</pre>
+</div>
+
+<p>
+After running that, you will have this library available for hacking
+in the Slime's REPL! You can test the production of QR codes running the
+following code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(cl-qrencode:encode-png "some text")
+</pre>
+</div>
+
+<p>
+You should now have the path to the image that contains your text.
+</p>
+
+<p>
+Now all that we are left with is to find the URL of the current page!
+Nyxt uses CLOS to implement things, which is Object Oriented
+Programming added to Common Lisp. That translates in buffers being
+objects. So a buffer owns functions and attributes! One of the
+attributes is the URL we are interested in!
+</p>
+
+<p>
+So after navigating to a web page in Nyxt, you can get the Common Lisp
+URI of the page with the following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(url (current-buffer))
+</pre>
+</div>
+
+<p>
+This code accesses the attribute (or slot) <code>url</code> for the object
+returned by <code>current-buffer</code>.
+</p>
+
+<p>
+This returns an URI object to make easier to query components like the
+domain or parameter list. We don't need this now, so we will get just
+the string. So the overall code is this.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(cl-qrencode:encode-png (quri:render-uri (url (current-buffer))))
+</pre>
+</div>
+
+<p>
+This is all we need to make a QR code as a png for the URL of the
+current open page!
+</p>
+
+<p>
+Here an image with my experimenting to show how fun it was.
+</p>
+
+
+<div id="orgfaaf5c4" class="figure">
+<p><img src="/assets/blog/2021/06/29/extending-nyxt-via-emacs-how-to-leverage-common-lisp-wealth-to-get-your-links-as-qr-codes/screen-2021-06-29-19-13-01.jpg" alt="/assets/blog/2021/06/29/extending-nyxt-via-emacs-how-to-leverage-common-lisp-wealth-to-get-your-links-as-qr-codes/screen-2021-06-29-19-13-01.jpg" />
+</p>
+</div>
+
+<p>
+Ah, and if you need a Nyxt command, this wraps our code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(define-command-global my/make-current-url-qr-code ()
+  "Something else."
+  (when (equal (mode-name (current-buffer)) 'web-buffer))
+  (cl-qrencode:encode-png (quri:render-uri (url (current-buffer))) :fpath "/tmp/qrcode.png"))
+</pre>
+</div>
+
+<p>
+Finally, you can do all of this from Emacs!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun emacs-with-nyxt-make-qr-code-of-current-url ()
+  "Open QR code of current url."
+  (interactive)
+  (if (file-exists-p "~/quicklisp/setup.lisp")
+      (progn
+        (unless (slime-connected-p) (emacs-with-nyxt-start-and-connect-to-nyxt))
+        (emacs-with-nyxt-slime-repl-send-sexps
+         '(ql:quickload "cl-qrencode")
+         '(ql:quickload "cl-qrencode")
+         '(cl-qrencode:encode-png (quri:render-uri (url (current-buffer))) :fpath "/tmp/qrcode.png"))
+        (find-file "/tmp/qrcode.png")
+        (auto-revert-mode))
+    (error "You cannot use this until you have Quicklisp installed! Check how to do that at: https://www.quicklisp.org/beta/#installation")))
+</pre>
+</div>
+
+<p>
+(I just added that to my repo.)
+</p>
+
+<p>
+How easy was that?!? I cannot believe I waited so long to try. This is
+definitely the start of something amazing for me!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org407c544" class="outline-2">
+<h2 id="org407c544">Conclusion</h2>
+<div class="outline-text-2" id="text-org407c544">
+<p>
+So refresh your Quicklisp and start integrating the amazing Common
+Lisp culture in Nyxt. If you have been following <a href="https://ag91.github.io/tags/nyxt/">the other blogs I
+wrote about this</a>, you should reproduce this pretty easily!
+</p>
+
+<p>
+Happy QR-coding!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-06-29</span>
+        <span title="last modification date" class="post-info">2021-06-29</span>
+        <span title="tags" class="post-info"><a href="/tags/nyxt/">nyxt</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

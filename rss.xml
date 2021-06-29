@@ -4,10 +4,17 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 22 Jun 2021 23:27:20 CEST</pubDate>
-    <lastBuildDate>Tue, 22 Jun 2021 23:27:20 CEST</lastBuildDate>
+    <pubDate>Tue, 29 Jun 2021 22:36:03 BST</pubDate>
+    <lastBuildDate>Tue, 29 Jun 2021 22:36:03 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
+    <item>
+      <title>Extending Nyxt via Emacs: how to leverage Common Lisp wealth to get your links as QR codes</title>
+      <link>http://ag91.github.io/blog/2021/06/29/extending-nyxt-via-emacs-how-to-leverage-common-lisp-wealth-to-get-your-links-as-qr-codes</link>
+      <description><![CDATA[How to make QR codes with Common Lisp from your Lispy browser and editor!]]></description>
+      <pubDate>2021-06-29</pubDate>
+      <guid>http://ag91.github.io/blog/2021/06/29/extending-nyxt-via-emacs-how-to-leverage-common-lisp-wealth-to-get-your-links-as-qr-codes</guid>
+    </item>
     <item>
       <title>How (simple is) to install a Clojure tree-sitter grammar and use it from Emacs</title>
       <link>http://ag91.github.io/blog/2021/06/22/how-(simple-is)-to-install-a-clojure-tree-sitter-grammar-and-use-it-from-emacs</link>
@@ -18,7 +25,7 @@
     <item>
       <title>Back to Emacs while in Nyxt: how to edit the web in a Lispy editor</title>
       <link>http://ag91.github.io/blog/2021/06/22/back-to-emacs-while-in-nyxt-how-to-edit-the-web-in-a-lispy-editor</link>
-      <description><![CDATA[Example of going back and forth from Emacs to Nyxt]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-06-22</pubDate>
       <guid>http://ag91.github.io/blog/2021/06/22/back-to-emacs-while-in-nyxt-how-to-edit-the-web-in-a-lispy-editor</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-05-03</pubDate>
       <guid>http://ag91.github.io/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit</guid>
-    </item>
-    <item>
-      <title>Sustainable software with Moldable Development</title>
-      <link>http://ag91.github.io/blog/2021/04/26/sustainable-software-with-moldable-development</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-04-26</pubDate>
-      <guid>http://ag91.github.io/blog/2021/04/26/sustainable-software-with-moldable-development</guid>
     </item>
   </channel>
 </rss>
