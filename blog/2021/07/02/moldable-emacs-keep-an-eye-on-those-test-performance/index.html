@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: keep an eye on those test performance! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to visualize running performance of test cases with a mold" />
+    <meta name="keywords" content="moldable-emacs, emacs, programming" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: keep an eye on those test performance!</h1>
+
+<div id="outline-container-org91d5762" class="outline-2">
+<h2 id="org91d5762">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org91d5762">
+<p>
+Quick feedback is essential to enjoy learning. Here I show how we can
+view how fast our unit tests are (in Clojure, although also I used
+this also for Scala (and I guess Java works fine too)).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8bc5006" class="outline-2">
+<h2 id="org8bc5006">The problem</h2>
+<div class="outline-text-2" id="text-org8bc5006">
+<p>
+I read somewhere that surgeons feel their job is the best ever. During
+a surgery, any action they take changes the health of their patient.
+If they succeed, the patient lives. If they fail, the patient dies.
+The result of their action is always visible to them. When they fail,
+they learn instantly.
+</p>
+
+<p>
+In software that should be similar. For example, when I program I test
+my ideas in a REPL. In that case, the computer shows in an instant
+when something is wrong. When I work on systems, I write test cases,
+and I am usually as happy as surgeons.
+</p>
+
+<p>
+It happens often though that we keep adding tests to be confident
+about correctness. The we pass an invisible tipping point and our
+feedback becomes slow.
+</p>
+
+<p>
+This slowness happens so often that <a href="https://benjiweber.co.uk/blog/2021/01/23/latency-numbers-every-team-should-know/">Benji Weber felt like summarize
+his ideal latency times</a>.
+</p>
+
+<p>
+How cool would it be if we could see the test performance to ensure we
+keep them fast enough?
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org744c225" class="outline-2">
+<h2 id="org744c225">And there is a solution</h2>
+<div class="outline-text-2" id="text-org744c225">
+<p>
+Moldable development to the rescue! Here we want to view the
+performance of test cases. Our aim is to see when a test takes too
+long to run.
+</p>
+
+<p>
+Let me show first where we will get to with a picture.
+</p>
+
+
+<div id="org278775b" class="figure">
+<p><img src="/assets/blog/2021/07/02/moldable-emacs-keep-an-eye-on-those-test-performance/screen-2021-06-22-00-46-57.jpg" alt="/assets/blog/2021/07/02/moldable-emacs-keep-an-eye-on-those-test-performance/screen-2021-06-22-00-46-57.jpg" />
+</p>
+</div>
+
+
+<p>
+In the above picture you see that we have a Clojure test file and a
+buffer with some timing stats. Note that the <code>slow-test</code> is in red. In
+the code of that test I added a second of delay on purpose. The mold I
+built shows me that information immediately via an Org table.
+</p>
+
+<p>
+Now the moldable folks may think: "Cannot we make that even more
+immediate with some visuals?". Sure, here comes another picture.
+</p>
+
+
+<div id="orgad60f47" class="figure">
+<p><img src="/assets/blog/2021/07/02/moldable-emacs-keep-an-eye-on-those-test-performance/screen-2021-06-22-00-53-54.jpg" alt="/assets/blog/2021/07/02/moldable-emacs-keep-an-eye-on-those-test-performance/screen-2021-06-22-00-53-54.jpg" />
+</p>
+</div>
+
+
+<p>
+Let me explain now. <a href="https://ag91.github.io/blog/2021/06/18/moldable-emacs-vision-basic-concepts-and-design">As I wrote about in my vision blog</a>, molds should
+compose well to achieve amazing things.
+</p>
+
+<p>
+The first picture shows you a mold that takes a test file (with test
+stats in XML format in a /target/test-reports directory) and produces
+an Org Table. The second picture shows you a composite mold that takes
+an Org table and produces a graph (both bar and line charts are
+available, I am showing the latter).
+</p>
+
+<p>
+The funny thing is that I did not plan to compose these molds. I just
+called the <code>me/mold</code> interactive function to see what molds I had
+available! The bar/line chart gives a much better intuition to me of
+how much slower is <code>slow-test</code> than the other tests.
+</p>
+
+<p>
+(Indeed, there is a mold for visualizing a CSV buffer as graphs. The
+mold to graph Org tables is something I created because I knew that
+Org tables can easily be translated to CSV and I liked the idea to
+make graphs out of my tables.)
+</p>
+
+<p>
+Still the coloring of the table by time helps in a quick evaluation of
+test speed. Note that you can also navigate the cells of the <code>Test
+Case</code> column to go to the test definition. This is useful to me when I
+have a lot of test cases available.
+</p>
+
+<p>
+If you want to try this with Clojure, all you have to do is to run the following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">lein new app my-app
+</pre>
+</div>
+
+<p>
+Change the project.clj in the <code>my-app</code> folder as follows.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defproject my-project "0.1.0-SNAPSHOT"
+  :description "FIXME: write description"
+  :url "http://example.com/FIXME"
+  :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
+            :url "https://www.eclipse.org/legal/epl-2.0/"}
+  :dependencies [[org.clojure/clojure "1.10.0"]]
+  :main ^:skip-aot my-project.core
+  :target-path "target/%s"
+  :test2junit-output-dir "target/test-reports" ;; we need this!
+  :profiles {:uberjar {:aot :all}
+             :dev {:plugins [[test2junit "1.4.2"]]}}) ;; we need this!
+</pre>
+</div>
+
+<p>
+This is adding the <a href="https://github.com/ruedigergad/test2junit">test2junit</a> plugin which makes <a href="https://github.com/technomancy/leiningen">Leiningen</a> produce XML
+reports in JUnit style. Then you just have to produce the XML stats.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">lein test test2junit
+</pre>
+</div>
+
+<p>
+If you now visit the <code>core_test.clj</code> file and call <code>me/mold</code>, you
+should see the mold you need.
+</p>
+
+<p>
+Let's get in the details now!
+</p>
+
+<p>
+The function that decides how to color the Org table cells is the
+following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun me/highlight-unit-test-time (time-as-string)
+  "Highlight TIME-AS-STRING according to unit tests."
+  (and (ignore-errors (string-to-number time-as-string))
+       (let* ((time (string-to-number time-as-string))
+              (color (cond
+                      ((&gt;= time (/ 10.0 1000)) "red")
+                      ((&gt;= time (/ 2.0 1000)) "orange")
+                      ('otherwise "green"))))
+         (me/color-string time-as-string color))))
+</pre>
+</div>
+
+<p>
+The <code>cond</code> defines the cases. I am assuming that our total time budget
+is 100 milliseconds, following Benjamin's suggestions. So, if a test
+uses a tenth of the whole budget or more I mark it in red (because I
+usually write more than 10 tests per file). I guessed I should start
+worrying if a test goes over 2 milliseconds. Then it would show in
+orange.
+</p>
+
+<p>
+For the curious, <code>me/color-string</code> is a hack that colors (inserted)
+string background even in Org tables.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun me/color-string (str color)
+  (propertize
+   str
+   'display
+   (propertize
+    str
+    'face
+    (list :background color))))
+</pre>
+</div>
+
+<p>
+And if you got so far in the post, I guess you can peek in the body of
+the mold as well.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(lambda ()
+  (let* (...
+         (self (with-file
+                (me/find-relative-test-report (buffer-file-name))
+                (libxml-parse-html-region (point-min) (point-max))))
+         (testcases (esxml-query-all "testcase" self))
+         (buffer (get-buffer-create (concat "Test Stats For" buffername))))
+    (with-current-buffer buffer
+      ...
+      (me/insert-org-table
+       `(...
+         ("Time (s)" .
+          (:extractor
+           (lambda (obj) (--&gt; obj
+                           cdr
+                           car
+                           (alist-get 'time it)))
+           :handler
+           (lambda (s) (me/highlight-unit-test-time s)))))
+       testcases)
+      ...
+      buffer)))
+</pre>
+</div>
+
+<p>
+I have elided some code with <code>...</code>. I just want to show you that we
+extract data from the XML stats in the <code>let</code> bindings for <code>self</code> and
+<code>testcases</code> (BTW <a href="https://github.com/tali713/esxml">esxml</a> is amazing). And that we make a table with
+<code>me/insert-org-table</code>. That function may be useful to you if you ever
+want to write a mold yourself. You just have to define a column name.
+Then you can add an <code>:extractor</code> which extracts a string out of the
+values (in this cases <code>testcases</code> which is a list of XML objects in a
+s-expression format). I decided to have an <code>:handler</code> function for
+clarity: this just modifies the string you extracted with
+<code>:extractor</code>. In our case we just highlight the string with our
+latency strategy.
+</p>
+
+<p>
+With this little code we can immediately see that our tests are
+getting slow. This mold works at a file level.
+</p>
+
+<p>
+In the future, I want to make molds that operate at
+package/project/cluster-of-project level. That way you could see how
+slower the tests in a package are becoming. Or tests of a whole
+projects. Or even tests in a cluster of projects!
+</p>
+
+<p>
+Once you can see that and have latency strategies in place, you can
+easily define and check <a href="https://www.thoughtworks.com/radar/techniques/architectural-fitness-function">architectural fitness functions</a> with molds!
+(For an idea of how fitness functions happen <a href="https://medium.com/feenk/expressing-architectural-constraints-for-a-java-system-in-glamorous-toolkit-3b45b7eb2573">in GlamorousToolkit you
+can look at this article.</a>)
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8a66a5a" class="outline-2">
+<h2 id="org8a66a5a">Conclusion</h2>
+<div class="outline-text-2" id="text-org8a66a5a">
+<p>
+This shows you how amazing can molds make you focus on the information
+you need. If you are working on a project that can produce XML test
+stats in JUnit style, you can use this mold to show how slow your
+tests are. And you saw how easy is to compose molds to produce even
+more value. If you want to have a try but things do not work out, open
+an issue in the project. I am still working on documentation :)
+</p>
+
+<p>
+Happy testing!
+</p>
+
+<p>
+P.S.: the name of the mold is currently "TestRunningStats", although I
+think I should change names to become more readable soon. So do not
+cling to names yet, this project is too young!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-07-02</span>
+        <span title="last modification date" class="post-info">2021-07-02</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/programming/">programming</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
