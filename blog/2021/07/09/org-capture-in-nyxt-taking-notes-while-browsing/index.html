@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Org capture in Nyxt: taking notes while browsing - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Capturing notes while browsing" />
+    <meta name="keywords" content="nyxt, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Org capture in Nyxt: taking notes while browsing</h1>
+
+<div id="outline-container-orga9b5d4e" class="outline-2">
+<h2 id="orga9b5d4e">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orga9b5d4e">
+<p>
+You can add Org notes while you are browsing in Nyxt. Here we look at
+the basics of how to store a link to read later.
+</p>
+
+<p>
+Disclaimer: this blog aims to be an updated version of
+<a href="https://nyxt.atlas.engineer/article/emacs-hacks.org">https://nyxt.atlas.engineer/article/emacs-hacks.org</a>. Thanks a lot
+Pierre Neidhardt!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8b0733e" class="outline-2">
+<h2 id="org8b0733e">The problem</h2>
+<div class="outline-text-2" id="text-org8b0733e">
+<p>
+I like to open a lot of web pages while I am browsing. I get a lot of
+open tabs in the browser. Then one by one, I skim through and select
+those that I would like to read later. In order to do that, I copy the
+tabs with a browser extension (Firefox's Copy All Tabs) and usually
+convert to an Epub.
+</p>
+
+<p>
+For those I cannot download as an Epub, I manually copy the URL in a
+Org note. I know there is org-protocol, but I never found the wish to
+make it work.
+</p>
+
+<p>
+But now that I use a Lispy browser as Nyxt, should not there be a more
+direct way to save notes?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3be0db4" class="outline-2">
+<h2 id="org3be0db4">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org3be0db4">
+<p>
+You can do marvellous things with Org mode capturing. The basic this
+is managing your TODO list. You can also build a contact repository
+(org-contacts). Or you can build a knowledge base (org-roam).
+</p>
+
+<p>
+So if we managed to make Nyxt create a Org note for us while browsing,
+we would also open a world of integration!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf3915de" class="outline-2">
+<h2 id="orgf3915de">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgf3915de">
+<p>
+There was already proof that Nyxt could do Org notes. <a href="https://nyxt.atlas.engineer/article/emacs-hacks.org">Pierre Neidhardt
+shared how in one of the earliest blog about Nyxt</a>. That article
+started my interest in Nyxt. When I tried the Org mode integration
+today a few things had changed. So here I am going to just update what
+he wrote.
+</p>
+
+<p>
+<a href="https://ag91.github.io/blog/2021/06/22/back-to-emacs-while-in-nyxt-how-to-edit-the-web-in-a-lispy-editor">Earlier I shared how to tell Emacs to do things from Nyxt</a>. Now it is
+just a matter of putting that to good use.
+</p>
+
+<p>
+Note: all that I share here is available if you load
+<a href="https://github.com/ag91/emacs-with-nyxt/blob/master/emacs-with-nyxt.el">https://github.com/ag91/emacs-with-nyxt/blob/master/emacs-with-nyxt.el</a>.
+</p>
+
+<p>
+As a recap, we need the following to be loaded in Nyxt.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(defun replace-all (string part replacement &amp;key (test #'char=))
+  "Return a new string in which all the occurences of the part is replaced with replacement."
+  (with-output-to-string (out)
+    (loop with part-length = (length part)
+          for old-pos = 0 then (+ pos part-length)
+          for pos = (search part string
+                            :start2 old-pos
+                            :test test)
+          do (write-string string out
+                           :start old-pos
+                           :end (or pos (length string)))
+          when pos do (write-string replacement out)
+            while pos)))
+
+(defun eval-in-emacs (&amp;rest s-exps)
+  "Evaluate S-EXPS with emacsclient."
+  (let ((s-exps-string (replace-all
+                        (write-to-string
+                         `(progn ,@s-exps) :case :downcase)
+                        ;; Discard the package prefix.
+                        "nyxt::" "")))
+    (format *error-output* "Sending to Emacs:~%~a~%" s-exps-string)
+    (uiop:run-program
+     (list "emacsclient" "--eval" s-exps-string))))
+</pre>
+</div>
+
+<p>
+This code allows us to send expressions to Emacs (you need to run
+Emacs in server mode though: so <code>(server-start)</code> in your init file).
+</p>
+
+<p>
+Given your Nyxt can speak with Emacs, we just need an Org Capture
+template.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(add-to-list
+ 'org-capture-templates
+ `("wN" "Web link" entry (file+headline ,(car org-agenda-files) "Links to read later")
+   "* %?%a \nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"Fri\"))\n"
+   :immediate-finish t :empty-lines 2))
+</pre>
+</div>
+
+<p>
+Above the template I use. Two things to note: I like to read on
+Friday, so I set the SCHEDULED date on the next Friday from now with
+<code>(org-read-date nil t \"Fri\")</code>; also I make sure that Emacs saves the
+Org note without any input from me with <code>:immediate-finish</code>. Ah! Maybe
+another thing: this stores a note in your first <code>org-agenda-files</code>,
+and adds a <code>Links</code> heading.
+</p>
+
+<p>
+Now let's get into the Nyxt command: <code>org-capture</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(define-command-global org-capture ()
+  "Org-capture current page."
+  (eval-in-emacs
+   `(org-link-set-parameters
+     "nyxt"
+     :store (lambda ()
+              (org-store-link-props
+               :type "nyxt"
+               :link ,(quri:render-uri (url (current-buffer)))
+               :description ,(title (current-buffer)))))
+   `(org-capture nil "wN"))
+  (echo "Note stored!"))
+</pre>
+</div>
+
+<p>
+This calls <code>org-capture</code> using the template above (via they key "wN").
+It also emits a little "Note stored!" in the Nyxt minibuffer after
+storage. Pretty easy!
+</p>
+
+<p>
+And to give an extra Emacs vibe to our Nyxt, let's define a keybinding!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(define-configuration nyxt/web-mode:web-mode
+  ;; Bind org-capture to C-o-c, but only in emacs-mode.
+  ((keymap-scheme (let ((scheme %slot-default%))
+                    (keymap:define-key (gethash scheme:emacs scheme)
+                      "C-c o c" 'org-capture)
+                    scheme))))
+</pre>
+</div>
+
+<p>
+That is my preferred keybinding, you can modify that for yourself.
+Note this key is only available when you are using Nyxt's
+<code>emacs-mode</code>.
+</p>
+
+<p>
+Now we can store links! And we opened the doors to much more!!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8b1c78a" class="outline-2">
+<h2 id="org8b1c78a">Conclusion</h2>
+<div class="outline-text-2" id="text-org8b1c78a">
+<p>
+Again you can try this out by just loading
+<a href="https://github.com/ag91/emacs-with-nyxt/blob/master/emacs-with-nyxt.el">https://github.com/ag91/emacs-with-nyxt/blob/master/emacs-with-nyxt.el</a>.
+That will load also other useful things (you may not need). Still,
+have fun storing notes while you are browsing!
+</p>
+
+<p>
+Happy browsing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-07-09</span>
+        <span title="last modification date" class="post-info">2021-07-09</span>
+        <span title="tags" class="post-info"><a href="/tags/nyxt/">nyxt</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
