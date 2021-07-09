@@ -1,0 +1,163 @@
+#+TITLE:       Org capture in Nyxt: taking notes while browsing
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-07-09 Fri
+#+URI:         /blog/%y/%m/%d/org-capture-in-nyxt-taking-notes-while-browsing
+#+KEYWORDS:    nyxt, emacs
+#+TAGS:        nyxt, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Capturing notes while browsing
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       217c6e36-9ea2-4851-8c73-57f9b354af79
+:END:
+
+You can add Org notes while you are browsing in Nyxt. Here we look at
+the basics of how to store a link to read later.
+
+Disclaimer: this blog aims to be an updated version of
+https://nyxt.atlas.engineer/article/emacs-hacks.org. Thanks a lot
+Pierre Neidhardt!
+
+* The problem
+
+I like to open a lot of web pages while I am browsing. I get a lot of
+open tabs in the browser. Then one by one, I skim through and select
+those that I would like to read later. In order to do that, I copy the
+tabs with a browser extension (Firefox's Copy All Tabs) and usually
+convert to an Epub.
+
+For those I cannot download as an Epub, I manually copy the URL in a
+Org note. I know there is org-protocol, but I never found the wish to
+make it work.
+
+But now that I use a Lispy browser as Nyxt, should not there be a more
+direct way to save notes?
+
+* It is a problem indeed
+
+You can do marvellous things with Org mode capturing. The basic this
+is managing your TODO list. You can also build a contact repository
+(org-contacts). Or you can build a knowledge base (org-roam).
+
+So if we managed to make Nyxt create a Org note for us while browsing,
+we would also open a world of integration!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       b5ba2de8-a5c1-4fce-aff6-6ce9205de236
+:END:
+
+There was already proof that Nyxt could do Org notes. [[https://nyxt.atlas.engineer/article/emacs-hacks.org][Pierre Neidhardt
+shared how in one of the earliest blog about Nyxt]]. That article
+started my interest in Nyxt. When I tried the Org mode integration
+today a few things had changed. So here I am going to just update what
+he wrote.
+
+[[https://ag91.github.io/blog/2021/06/22/back-to-emacs-while-in-nyxt-how-to-edit-the-web-in-a-lispy-editor][Earlier I shared how to tell Emacs to do things from Nyxt]]. Now it is
+just a matter of putting that to good use.
+
+Note: all that I share here is available if you load
+https://github.com/ag91/emacs-with-nyxt/blob/master/emacs-with-nyxt.el.
+
+As a recap, we need the following to be loaded in Nyxt.
+
+#+begin_src lisp
+(defun replace-all (string part replacement &key (test #'char=))
+  "Return a new string in which all the occurences of the part is replaced with replacement."
+  (with-output-to-string (out)
+    (loop with part-length = (length part)
+          for old-pos = 0 then (+ pos part-length)
+          for pos = (search part string
+                            :start2 old-pos
+                            :test test)
+          do (write-string string out
+                           :start old-pos
+                           :end (or pos (length string)))
+          when pos do (write-string replacement out)
+            while pos)))
+
+(defun eval-in-emacs (&rest s-exps)
+  "Evaluate S-EXPS with emacsclient."
+  (let ((s-exps-string (replace-all
+                        (write-to-string
+                         `(progn ,@s-exps) :case :downcase)
+                        ;; Discard the package prefix.
+                        "nyxt::" "")))
+    (format *error-output* "Sending to Emacs:~%~a~%" s-exps-string)
+    (uiop:run-program
+     (list "emacsclient" "--eval" s-exps-string))))
+#+end_src
+
+This code allows us to send expressions to Emacs (you need to run
+Emacs in server mode though: so =(server-start)= in your init file).
+
+Given your Nyxt can speak with Emacs, we just need an Org Capture
+template.
+
+#+begin_src elisp :noeval
+(add-to-list
+ 'org-capture-templates
+ `("wN" "Web link" entry (file+headline ,(car org-agenda-files) "Links to read later")
+   "* %?%a \nSCHEDULED: %(org-insert-time-stamp (org-read-date nil t \"Fri\"))\n"
+   :immediate-finish t :empty-lines 2))
+#+end_src
+
+Above the template I use. Two things to note: I like to read on
+Friday, so I set the SCHEDULED date on the next Friday from now with
+=(org-read-date nil t \"Fri\")=; also I make sure that Emacs saves the
+Org note without any input from me with =:immediate-finish=. Ah! Maybe
+another thing: this stores a note in your first =org-agenda-files=,
+and adds a =Links= heading.
+
+Now let's get into the Nyxt command: =org-capture=.
+
+#+begin_src lisp
+(define-command-global org-capture ()
+  "Org-capture current page."
+  (eval-in-emacs
+   `(org-link-set-parameters
+     "nyxt"
+     :store (lambda ()
+              (org-store-link-props
+               :type "nyxt"
+               :link ,(quri:render-uri (url (current-buffer)))
+               :description ,(title (current-buffer)))))
+   `(org-capture nil "wN"))
+  (echo "Note stored!"))
+#+end_src
+
+This calls =org-capture= using the template above (via they key "wN").
+It also emits a little "Note stored!" in the Nyxt minibuffer after
+storage. Pretty easy!
+
+And to give an extra Emacs vibe to our Nyxt, let's define a keybinding!
+
+#+begin_src lisp
+(define-configuration nyxt/web-mode:web-mode
+  ;; Bind org-capture to C-o-c, but only in emacs-mode.
+  ((keymap-scheme (let ((scheme %slot-default%))
+                    (keymap:define-key (gethash scheme:emacs scheme)
+                      "C-c o c" 'org-capture)
+                    scheme))))
+#+end_src
+
+That is my preferred keybinding, you can modify that for yourself.
+Note this key is only available when you are using Nyxt's
+=emacs-mode=.
+
+Now we can store links! And we opened the doors to much more!!
+
+* Conclusion
+:PROPERTIES:
+:ID:       c805aaad-c7cf-40b4-99c0-f5b890138a5c
+:END:
+
+Again you can try this out by just loading
+https://github.com/ag91/emacs-with-nyxt/blob/master/emacs-with-nyxt.el.
+That will load also other useful things (you may not need). Still,
+have fun storing notes while you are browsing!
+
+Happy browsing!
