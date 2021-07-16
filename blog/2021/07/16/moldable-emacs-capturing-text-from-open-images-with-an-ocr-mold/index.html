@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: capturing text from open images with an OCR mold - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to get text from images" />
+    <meta name="keywords" content="moldable-emacs, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: capturing text from open images with an OCR mold</h1>
+
+<div id="outline-container-org9cf5f25" class="outline-2">
+<h2 id="org9cf5f25">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org9cf5f25">
+<p>
+Extract text from images with a mold! A mold is available to use
+<a href="https://github.com/Arthelon/imgclip">imgclip</a> to transform an image in the text it contains.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4b3ff7f" class="outline-2">
+<h2 id="org4b3ff7f">The problem</h2>
+<div class="outline-text-2" id="text-org4b3ff7f">
+<p>
+I have been reading <a href="file:///home/andrea/workspace/agenda/notes/20210621130744_the_humane_interface_by_jef_raskin.html">The Humane Interface by Jef Raskin</a>. Tudor Girba
+mentioned this book in one of his talks about GT. It is an inspiring
+book, very recommended! In explaining the ideal user interface, the
+author takes as an example the extraction of text from images. He
+basically says that a good interface would be contextual: it would act
+according to the object at hand. For example, if you have an image
+with text at your pointer, it should be easy for you to get its text.
+</p>
+
+<p>
+Now, how difficult would be to make a mold for this?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9c431b6" class="outline-2">
+<h2 id="org9c431b6">And there is a solution</h2>
+<div class="outline-text-2" id="text-org9c431b6">
+<p>
+Not difficult at all! First I looked for some OCR library that can
+extract text reliably. A result that seemed good is <a href="https://github.com/Arthelon/imgclip">imgclip</a>, which you
+can install with an <code>npm install -g imgclip</code>.
+</p>
+
+<p>
+Now say that I take a picture of this text while I am writing it and I
+open it in Emacs. When I call <code>me/mold</code> on the buffer with the image,
+this is the new mold I find!
+</p>
+
+
+<div id="org75c0b92" class="figure">
+<p><img src="/assets/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold/screen-2021-06-23-19-29-07.jpg" alt="screen-2021-06-23-19-29-07.jpg" />
+</p>
+</div>
+
+<p>
+And this shows the result I get from extracting the text.
+</p>
+
+
+<div id="orgc8197a2" class="figure">
+<p><img src="/assets/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold/screen-2021-06-23-19-17-48.jpg" alt="screen-2021-06-23-19-17-48.jpg" />
+</p>
+</div>
+
+<p>
+The text is imperfect! There are a lot of wrong words: for example "I"
+gets translated as "1" (the number). Still, it is cool to get text out
+of an (unsearchable) image!
+</p>
+
+<p>
+Also it was simple to implement the mold.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me/register-mold
+ :key "Image To Text"
+ :docs "Extracts text from the image using `imageclip'."
+ :given (lambda () (and
+                    (eq major-mode 'image-mode)
+                    (executable-find "imgclip")))
+ :then (lambda ()
+         (let* ((buffername (buffer-name))
+                (self nil) ;; TODO what here?
+                (buffer (get-buffer-create (format "Text from %s" buffername)))
+                (_ (async-map
+                    `(lambda (s)
+                       (shell-command-to-string
+                        (format "imgclip -p '%s' --lang eng" s)))
+                    (list (or (buffer-file-name)
+                              (let ((path (concat "/tmp/" buffername)))
+                                (write-region (point-min) (point-max) path)
+                                path)))
+                    `(lambda ()
+                       (with-current-buffer ,buffer
+                         (erase-buffer)
+                         (clipboard-yank))))))
+           (with-current-buffer buffer
+             (erase-buffer)
+             (insert "Loading text from image..."))
+           buffer)))
+
+</pre>
+</div>
+
+<p>
+This mold works only if the buffer is an image, and <code>imgclip</code> is
+available. When you run it, it translates the result via <code>imgclip</code> and
+displays a "Loading text from image..." while it is busy extracting
+text. <span class="underline">Notice that I instructed <code>imgclip</code> to recognize English  (<code>--lang
+eng</code>): you can redefine the mold for the language you need</span>.
+</p>
+
+<p>
+And now that I think about it, a natural extension of this mold is when
+you open a PDF with text you cannot select. It should be easy to
+extract an image of the page you are viewing and compose this mold on
+that. The UNIX saying is just true: worse is better!
+</p>
+
+<p>
+Edit: I actually tried that! If you use <a href="https://github.com/politza/pdf-tools">pdf-tools</a> this is just too
+easy. You want to call the interactive function
+<code>pdf-view-extract-region-image</code>. This generates a png view of the
+current PDF page. Then you can call our OCR mold!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7ca1322" class="outline-2">
+<h2 id="org7ca1322">Conclusion</h2>
+<div class="outline-text-2" id="text-org7ca1322">
+<p>
+The mold is in my package <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>: grab it and try it out
+(after installing <code>imgclip</code>)! The installation is already a bit easier
+because a nice user ("Tekakutli") started trying it out, which
+inspired me to put at least some effort in making my extension
+accessible to others.
+</p>
+
+<p>
+So extract (imperfect) text from images with a mold if you wish!
+</p>
+
+<p>
+Happy texting!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-07-16</span>
+        <span title="last modification date" class="post-info">2021-07-16</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
