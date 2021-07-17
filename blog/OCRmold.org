@@ -30,6 +30,9 @@ with text at your pointer, it should be easy for you to get its text.
 Now, how difficult would be to make a mold for this?
 
 * And there is a solution
+:PROPERTIES:
+:ID:       bdc0d79b-8fec-48c7-86b4-3759d76d7564
+:END:
 
 Not difficult at all! First I looked for some OCR library that can
 extract text reliably. A result that seemed good is [[https://github.com/Arthelon/imgclip][imgclip]], which you
@@ -1773,7 +1776,7 @@ KKKKACiiigAooooA/9k=")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/screen-2021-06-23-19-29-07.jpg]]
+[[file:screen-2021-06-23-19-29-07.jpg]]
 
 And this shows the result I get from extracting the text.
 
@@ -5381,7 +5384,7 @@ I5qHT7yz0238jTtMt7SDOfLgAjXPrgDFAFXRc/8ACx/E3lf6r7LZ+b/10/efrt2/pXW1y2lzwaa9
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/screen-2021-06-23-19-17-48.jpg]]
+[[file:screen-2021-06-23-19-17-48.jpg]]
 
 The text is imperfect! There are a lot of wrong words: for example "I"
 gets translated as "1" (the number). Still, it is cool to get text out
