@@ -19,7 +19,7 @@ Extract text from images with a mold! A mold is available to use
 :ID:       a03269bc-bcb2-4384-9221-0ba446af8632
 :END:
 
-I have been reading [[file:/home/andrea/workspace/agenda/notes/20210621130744_the_humane_interface_by_jef_raskin.org][The Humane Interface by Jef Raskin]]. Tudor Girba
+I have been reading [[https://www.goodreads.com/book/show/344726.The_Humane_Interface?from_search=true&from_srp=true&qid=XvevpyjbYN&rank=1][The Humane Interface by Jef Raskin]]. Tudor Girba
 mentioned this book in one of his talks about GT. It is an inspiring
 book, very recommended! In explaining the ideal user interface, the
 author takes as an example the extraction of text from images. He
