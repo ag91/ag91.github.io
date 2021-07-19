@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 17 Jul 2021 15:27:16 BST</pubDate>
-    <lastBuildDate>Sat, 17 Jul 2021 15:27:16 BST</lastBuildDate>
+    <pubDate>Mon, 19 Jul 2021 19:31:05 BST</pubDate>
+    <lastBuildDate>Mon, 19 Jul 2021 19:31:05 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: capture links from HTML with Playground</title>
+      <link>http://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground</link>
+      <description><![CDATA[Transforming HTML to your needs with the Playground mold]]></description>
+      <pubDate>2021-07-19</pubDate>
+      <guid>http://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: capturing text from open images with an OCR mold</title>
       <link>http://ag91.github.io/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold</link>
-      <description><![CDATA[How to get text from images]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-07-17</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-06-08</pubDate>
       <guid>http://ag91.github.io/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime</guid>
-    </item>
-    <item>
-      <title>Browsing in Common Lisp: Nyxt and Emacs</title>
-      <link>http://ag91.github.io/blog/2021/05/30/browsing-in-common-lisp-nyxt-and-emacs</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-06-03</pubDate>
-      <guid>http://ag91.github.io/blog/2021/05/30/browsing-in-common-lisp-nyxt-and-emacs</guid>
     </item>
   </channel>
 </rss>

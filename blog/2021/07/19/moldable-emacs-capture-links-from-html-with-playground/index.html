@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: capture links from HTML with Playground - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Transforming HTML to your needs with the Playground mold" />
+    <meta name="keywords" content="moldable-emacs, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: capture links from HTML with Playground</h1>
+
+<div id="outline-container-org8e53acf" class="outline-2">
+<h2 id="org8e53acf">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org8e53acf">
+<p>
+There is a simple way in <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> to grab a list of links from
+an HTML page. This shows you one more way of using the Playground.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc14fdba" class="outline-2">
+<h2 id="orgc14fdba">The problem</h2>
+<div class="outline-text-2" id="text-orgc14fdba">
+<p>
+I like to read blogs on my ebook reader. And I have spent too much
+time <a href="https://addons.mozilla.org/en-US/firefox/addon/snaplinksplus/?utm_source=addons.mozilla.org&amp;utm_medium=referral&amp;utm_content=search">selecting rectangles on my screen to grab a bunch of links</a>. It is
+cool, but often these links are in a HTML list: it would be so easy to
+grab them. If only I could make HTML something I know how to navigate.
+Something like a Lisp list. Wait! Wouldn't that be possible?!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0151964" class="outline-2">
+<h2 id="org0151964">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org0151964">
+<p>
+There is a more generic problem here. We are prisoners of the way we
+present data. When our (<a href="https://nyxt.atlas.engineer/">typical</a>) browser shows an HTML page, you can
+only search that view. If you want to grab a list of links you need to
+rely on an extension.
+</p>
+
+<p>
+Rather than forced to consume a pre-chewed view, I would like a
+language that allows me to query the data. This makes me an explorer.
+This gives me a thrill to learn the language in depth. I am becoming a
+more evolved user and I can extract novel and unexpected value from
+the provided data. (I guess I should also be able to pick the language
+I like most, so we get the benefits of (bio-)diversity, but that is
+for another blog.)
+</p>
+
+<p>
+Can we already achieve that in the marvellous Emacs somehow?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org10c7fda" class="outline-2">
+<h2 id="org10c7fda">And there is a solution</h2>
+<div class="outline-text-2" id="text-org10c7fda">
+<p>
+If we are familiar with Lisp, we could already grab links. I was not
+doing that because there is friction: you have to jump from the web to
+an Emacs scratch file, then hack your way through. The browser
+extension way seemed fairly easier.
+</p>
+
+<p>
+After I made a little Elisp-Pandoc script to make Epub files, I
+started feeling the pain.
+</p>
+
+<p>
+Now let's assume I want to download Nyxt blog posts:
+<a href="https://nyxt.atlas.engineer/articles">https://nyxt.atlas.engineer/articles</a>. There are a lot of links there.
+</p>
+
+<p>
+If we use Emacs' <code>url-retrieve-synchronously</code> to get the HTML in a
+buffer, we will need the following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(progn
+  (switch-to-buffer (url-retrieve-synchronously "https://nyxt.atlas.engineer/articles"))
+  (goto-char (point-min))
+  (delete-region (point-min) url-http-end-of-headers)
+  (html-mode))
+</pre>
+</div>
+
+<p>
+We would get some HTML like this.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-html">&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"&gt;&lt;html&gt;&lt;title&gt;Nyxt&lt;/title&gt;&lt;head&gt;&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;&lt;meta charset="UTF-8"&gt;&lt;link rel="stylesheet" type="text/css" media="screen" href="/static/css/pure-min.css"&gt;&lt;/link&gt;&lt;link rel="stylesheet" type="text/css" media="screen" href="/static/css/grids-responsive-min.css"&gt;&lt;/link&gt;&lt;link rel="stylesheet" type="text/css" media="screen" href="/static/css/main.css"&gt;&lt;/link&gt;&lt;/head&gt;&lt;body&gt;&lt;header&gt;&lt;div class="pure-menu pure-menu-horizontal"&gt;&lt;ul class="pure-menu-list"&gt;&lt;li class="pure-menu-heading menu-brand"&gt;&lt;a href="/"&gt;&lt;img src="/image/nyxt_128x128.png" /&gt;&lt;/a&gt;&lt;/li&gt;&lt;li class="pure-menu-item"&gt;&lt;a href="/applications" class="pure-menu-link"&gt;Applications&lt;/a&gt;&lt;/li&gt;&lt;li class="pure-menu-item pure-menu-selected"&gt;&lt;a href="/articles" class="pure-menu-link"&gt;Articles&lt;/a&gt;&lt;/li&gt;&lt;li class="pure-menu-item"&gt;&lt;a href="/download" class="pure-menu-link"&gt;Download&lt;/a&gt;&lt;/li&gt;&lt;li class="pure-menu-item"&gt;&lt;a href="/faq" class="pure-menu-link"&gt;FAQ&lt;/a&gt;&lt;/li&gt;&lt;li class="pure-menu-item"&gt;&lt;a href="https://discourse.atlas.engineer/" class="pure-menu-link"&gt;Forum&lt;/a&gt;&lt;/li&gt;&lt;li class="pure-menu-item"&gt;&lt;a href="https://kiwiirc.com/nextclient/irc.libera.chat/nyxt" class="pure-menu-link"&gt;Chat&lt;/a&gt;&lt;/li&gt;&lt;li class="pure-menu-item"&gt;&lt;a href="https://github.com/atlas-engineer/nyxt" class="pure-menu-link"&gt;Source&lt;/a&gt;&lt;/li&gt;&lt;li class="pure-menu-item"&gt;&lt;a..                                                                                                                .
+</pre>
+</div>
+
+<p>
+We just went to a illegible structured data view of our web-page. At
+this point it may seem we regressed our situation.
+</p>
+
+<p>
+I shall prove the contrary with <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>!
+</p>
+
+<p>
+Given you have installed <a href="https://github.com/ubolonton/emacs-tree-sitter">emacs-tree-sitter</a> and the basic languages
+it supports, let me show what happens when you call <code>me/mold</code> and call
+the mold <code>CodeAsTree</code> on this HTML buffer.
+</p>
+
+
+<div id="org1dfd2ef" class="figure">
+<p><img src="/assets/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/screen-2021-06-25-01-33-02.jpg" alt="/assets/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/screen-2021-06-25-01-33-02.jpg" />
+</p>
+</div>
+
+<p>
+The buffer on the left is a flattened list representing all the HTML
+data. There is an entry and an entry that the first includes.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">...
+(:type attribute :text "class=\"pure-menu-link\"" :begin 8260 :end 8282 :buffer " *http nyxt.atlas.engineer:443*-432463" :buffer-file nil)
+ (:type attribute_name :text "class" :begin 8260 :end 8265 :buffer " *http nyxt.atlas.engineer:443*-432463" :buffer-file nil)
+...
+</pre>
+</div>
+
+<p>
+This view flattens all the data at our feet. I usually exploit the
+<code>:type</code> to filter the information I need. I first search the tree for
+the type of information I want. In this case I am looking for the
+articles. One article is "Superuser batch downloading", so I search
+the smallest element of the list that contains this data. (At some
+point I may decide to make a function to speed up this search.)
+</p>
+
+<p>
+I find the following entry.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(:type element :text "&lt;li&gt;&lt;a href=\"/article/sharing-files.org\"&gt;Superuser batch downloading&lt;/a&gt; &lt;small&gt;(2021-04-05)&lt;/small&gt;&lt;/li&gt;" :begin 2609 :end 2714 :buffer " *http nyxt.atlas.engineer:443*-432463" :buffer-file nil)
+</pre>
+</div>
+
+<p>
+This reminds me that I want the link though! So now I search for
+"/article/sharing-files.org".
+</p>
+
+<p>
+I find this.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(:type attribute_value :text "/article/sharing-files.org" :begin 2622 :end 2648 :buffer " *http nyxt.atlas.engineer:443*-432463" :buffer-file nil)
+</pre>
+</div>
+
+<p>
+So we can infer that the links I want need to have an org
+extension and have <code>:type</code> <code>attribute_value</code>.
+</p>
+
+<p>
+This is the moment to call <code>me/mold</code> again and select Playground!
+</p>
+
+<p>
+Let me show how it looks before explaining what I did.
+</p>
+
+
+<div id="orgf391449" class="figure">
+<p><img src="/assets/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/screen-2021-06-25-01-47-03.jpg" alt="/assets/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/screen-2021-06-25-01-47-03.jpg" />
+</p>
+</div>
+
+<p>
+You can see I got my list of links. Let's look at my throwaway code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt; (me/by-type 'attribute_value self)
+  (--map (plist-get it :text) it)
+  (--filter
+   (s-ends-with? ".org" it)
+   it)
+  (--map
+   (concat
+    "https://nyxt.atlas.engineer"
+    it)
+   it))
+</pre>
+</div>
+
+<p>
+First, the flattened tree is in the buffer variable <code>self</code>. So when I
+use <code>me/by-type</code>, I am filtering only the <code>:type</code> field matching
+<code>attribute_value</code>. Then I get the text of those entries and pick only
+the ones ending by "org". Cherry on the cake, I add the prefix link
+because the Nyxt folks are using relative links.
+</p>
+
+<p>
+I like to evaluate while I develop the code (REPL &lt;3), that is why you
+see the code appearing in the Playground buffer (I shall share my code
+for that, totally inspired/copied from <a href="http://endlessparentheses.com/eval-result-overlays-in-emacs-lisp.html?source=rss">Malabarba post</a>).
+</p>
+
+<p>
+Now let's evaluate with another mold <code>EvalSexp</code>.
+</p>
+
+
+<div id="org1291caa" class="figure">
+<p><img src="/assets/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/screen-2021-06-25-01-54-39.jpg" alt="/assets/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/screen-2021-06-25-01-54-39.jpg" />
+</p>
+</div>
+
+<p>
+The list of links is there now.
+</p>
+
+<p>
+You can still use the old <code>Playground</code> if you want to download those!
+That is an Elisp buffer so you can evaluate what you like.
+</p>
+
+<p>
+Do you see? Now the data is available to us. Most structured data
+becomes available because we use <a href="https://github.com/tree-sitter/tree-sitter">tree-sitter</a>. (<a href="https://ag91.github.io/blog/2021/06/22/how-(simple-is)-to-install-a-clojure-tree-sitter-grammar-and-use-it-from-emacs/">Even Clojure programs</a>!)
+</p>
+
+<p>
+Once the data is available and moldable, you can create your own view.
+For example, you can use a Playground mold to make a list. And then a
+mold that transform that list in a CSV buffer. And you can plot that
+with another mold. Or bake your own visualization!
+</p>
+
+<p>
+This is how you can <a href="https://moldabledevelopment.com/">mold your tools and world</a> to enable fantastic
+explorations.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org09b9d89" class="outline-2">
+<h2 id="org09b9d89">Conclusion</h2>
+<div class="outline-text-2" id="text-org09b9d89">
+<p>
+Transform views in data and make views that suite you best. With
+<a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> this becomes simple. Load that in your Emacs and start
+exploring your structure data. Once you start with it, you will see
+data everywhere. Ah and let me know if you have trouble running it,
+this mode is still in a very early release.
+</p>
+
+<p>
+Happy exploring!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-07-19</span>
+        <span title="last modification date" class="post-info">2021-07-19</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
