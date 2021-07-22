@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Nyxt to mold HTML: the first mix of moldable-emacs and browsing - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Move HTML source to Emacs via Nyxt" />
+    <meta name="keywords" content="emacs, nyxt, moldable-emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Nyxt to mold HTML: the first mix of moldable-emacs and browsing</h1>
+
+<div id="outline-container-orgd25b8f1" class="outline-2">
+<h2 id="orgd25b8f1">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgd25b8f1">
+<p>
+Move the HTML of the page you are browsing to your Emacs without
+leaving your browser. Then you can mold the information it stores!
+This blog explains how easy that is by using the <a href="https://github.com/atlas-engineer/nyxt">Nyxt</a> browser.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4e48a27" class="outline-2">
+<h2 id="org4e48a27">The problem</h2>
+<div class="outline-text-2" id="text-org4e48a27">
+<p>
+<a href="https://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/">I have recently shown how to mold HTML to extract useful information</a>.
+The idea is to bend HTML to your needs with your Emacs programming
+skills. We are still missing a fluid jump from browser to Emacs. For
+me it is pretty boring to copy the link or the HTML by hand and bring
+it to Emacs. These small actions disrupt my flow and I don't like that!
+</p>
+
+<p>
+How cool would it be if the browser could send the HTML of the page we
+are looking at to Emacs with a click?
+</p>
+
+<p>
+Actually, the problem is even bigger: how do we feed Emacs the
+information in the web? HTML is just a way to encapsulate useful
+knowledge so that is available to many people via a browser. Emacs
+users could mold that universe of information to their needs with
+their editor instead!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5bef7b5" class="outline-2">
+<h2 id="org5bef7b5">And there is a solution</h2>
+<div class="outline-text-2" id="text-org5bef7b5">
+<p>
+To approach the bigger problem we have just to solve the small one
+first. So how do we get our HTML? Well, I say <a href="https://github.com/atlas-engineer/nyxt">Nyxt</a>. I say that just
+because you can edit this browser to your needs in an Emacsy way. <a href="https://ag91.github.io/tags/nyxt/">I
+have already written about it</a>, so I will not repeat myself. Let me
+show how easy it is to do what I need.
+</p>
+
+<p>
+By building up on what we had in <a href="https://github.com/ag91/emacs-with-nyxt">emacs-with-nyxt</a>, we can add a new command.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(define-command-global my/open-html-in-emacs ()
+      "Open buffer html in Emacs."
+      (when (equal (mode-name (current-buffer)) 'web-buffer))
+      (with-open-file
+       (file "/tmp/temp-nyxt.html" :direction :output
+                                     :if-exists :supersede
+                                     :if-does-not-exist :create)
+       (write-string (ffi-buffer-get-document (current-buffer)) file))
+      (eval-in-emacs
+       `(progn
+          (switch-to-buffer (get-buffer-create ,(render-url (url (current-buffer)))))
+          (erase-buffer)
+          (insert-file-contents-literally "/tmp/temp-nyxt.html")
+          (html-mode)
+          (indent-region (point-min) (point-max))))
+      (delete-file "/tmp/temp-nyxt.html"))
+</pre>
+</div>
+
+<p>
+Running this in Nyxt's <code>lisp-repl</code> buffer (just invoke that command or
+you can also use Slime's REPL) produces a buffer in your Emacs with
+the raw HTML for the page.
+</p>
+
+<p>
+In short we create a temporary HTML file, we fill it with the HTML we
+are looking at in Nyxt, and we open that in an Emacs buffer (finally
+we delete the file).
+</p>
+
+<p>
+Once we have that, we can jump directly in <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>! That way we
+can start bending the information of the web to our needs. And this is
+just the first step. If we can get HTML to Emacs we can get HTML to
+Nyxt, no? Then we should be able to make our data interactive (for the
+happiness of the data scientists among us)! Stay tuned for that :)
+</p>
+
+<p>
+Edit: Actually, just while publishing this I found the nice people at
+the Atlas discourse found a more generic way of doing this (if you
+want to use some other editors than Emacs):
+<a href="https://discourse.atlas.engineer/t/opening-page-source-in-external-editor/221">https://discourse.atlas.engineer/t/opening-page-source-in-external-editor/221</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1234911" class="outline-2">
+<h2 id="org1234911">Conclusion</h2>
+<div class="outline-text-2" id="text-org1234911">
+<p>
+You can send HTML to Emacs with Nyxt and bend it to your needs with
+moldable-emacs. Grab <a href="https://github.com/ag91/emacs-with-nyxt">emacs-with-nyxt</a>, take inspiration and see if you
+can mold the information sealed in the HTML!
+</p>
+
+<p>
+Happy exploring!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-07-22</span>
+        <span title="last modification date" class="post-info">2021-07-22</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/nyxt/">nyxt</a>, <a href="/tags/moldable-emacs/">moldable-emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

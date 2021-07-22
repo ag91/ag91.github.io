@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 22 Jul 2021 14:32:08 BST</pubDate>
-    <lastBuildDate>Thu, 22 Jul 2021 14:32:08 BST</lastBuildDate>
+    <pubDate>Thu, 22 Jul 2021 18:59:29 BST</pubDate>
+    <lastBuildDate>Thu, 22 Jul 2021 18:59:29 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Nyxt to mold HTML: the first mix of moldable-emacs and browsing</title>
+      <link>http://ag91.github.io/blog/2021/07/22/nyxt-to-mold-html-the-first-mix-of-moldable-emacs-and-browsing</link>
+      <description><![CDATA[Move HTML source to Emacs via Nyxt]]></description>
+      <pubDate>2021-07-22</pubDate>
+      <guid>http://ag91.github.io/blog/2021/07/22/nyxt-to-mold-html-the-first-mix-of-moldable-emacs-and-browsing</guid>
+    </item>
+    <item>
       <title>Find Org Roam notes via their relations</title>
       <link>http://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations</link>
-      <description><![CDATA[Find notes via relations.]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-07-21</pubDate>
       <guid>http://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-06-18</pubDate>
       <guid>http://ag91.github.io/blog/2021/06/18/moldable-emacs-how-to-explore-json-via-elisp</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: vision, basic concepts and design</title>
-      <link>http://ag91.github.io/blog/2021/06/18/moldable-emacs-vision-basic-concepts-and-design</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-06-18</pubDate>
-      <guid>http://ag91.github.io/blog/2021/06/18/moldable-emacs-vision-basic-concepts-and-design</guid>
     </item>
   </channel>
 </rss>
