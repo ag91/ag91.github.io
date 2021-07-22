@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 19 Jul 2021 19:31:05 BST</pubDate>
-    <lastBuildDate>Mon, 19 Jul 2021 19:31:05 BST</lastBuildDate>
+    <pubDate>Thu, 22 Jul 2021 14:32:08 BST</pubDate>
+    <lastBuildDate>Thu, 22 Jul 2021 14:32:08 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Find Org Roam notes via their relations</title>
+      <link>http://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations</link>
+      <description><![CDATA[Find notes via relations.]]></description>
+      <pubDate>2021-07-21</pubDate>
+      <guid>http://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: capture links from HTML with Playground</title>
       <link>http://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground</link>
-      <description><![CDATA[Transforming HTML to your needs with the Playground mold]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-07-19</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-06-18</pubDate>
       <guid>http://ag91.github.io/blog/2021/06/18/moldable-emacs-vision-basic-concepts-and-design</guid>
-    </item>
-    <item>
-      <title>Emacs, Nyxt and Engine-mode: how to browse URLs via Nyxt and Slime</title>
-      <link>http://ag91.github.io/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-06-08</pubDate>
-      <guid>http://ag91.github.io/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime</guid>
     </item>
   </channel>
 </rss>
