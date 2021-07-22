@@ -1,0 +1,89 @@
+#+TITLE:       Nyxt to mold HTML: the first mix of moldable-emacs and browsing
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-07-22 Thu
+#+URI:         /blog/%y/%m/%d/nyxt-to-mold-html-the-first-mix-of-moldable-emacs-and-browsing
+#+KEYWORDS:    emacs, nyxt, moldable-emacs
+#+TAGS:        emacs, nyxt, moldable-emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Move HTML source to Emacs via Nyxt
+
+* Too long; didn't read
+
+Move the HTML of the page you are browsing to your Emacs without
+leaving your browser. Then you can mold the information it stores!
+This blog explains how easy that is by using the [[https://github.com/atlas-engineer/nyxt][Nyxt]] browser.
+
+* The problem
+
+[[https://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/][I have recently shown how to mold HTML to extract useful information]].
+The idea is to bend HTML to your needs with your Emacs programming
+skills. We are still missing a fluid jump from browser to Emacs. For
+me it is pretty boring to copy the link or the HTML by hand and bring
+it to Emacs. These small actions disrupt my flow and I don't like that!
+
+How cool would it be if the browser could send the HTML of the page we
+are looking at to Emacs with a click?
+
+Actually, the problem is even bigger: how do we feed Emacs the
+information in the web? HTML is just a way to encapsulate useful
+knowledge so that is available to many people via a browser. Emacs
+users could mold that universe of information to their needs with
+their editor instead!
+
+* And there is a solution
+
+To approach the bigger problem we have just to solve the small one
+first. So how do we get our HTML? Well, I say [[https://github.com/atlas-engineer/nyxt][Nyxt]]. I say that just
+because you can edit this browser to your needs in an Emacsy way. [[https://ag91.github.io/tags/nyxt/][I
+have already written about it]], so I will not repeat myself. Let me
+show how easy it is to do what I need.
+
+By building up on what we had in [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]], we can add a new command.
+
+#+begin_src lisp
+(define-command-global my/open-html-in-emacs ()
+      "Open buffer html in Emacs."
+      (when (equal (mode-name (current-buffer)) 'web-buffer))
+      (with-open-file
+       (file "/tmp/temp-nyxt.html" :direction :output
+                                     :if-exists :supersede
+                                     :if-does-not-exist :create)
+       (write-string (ffi-buffer-get-document (current-buffer)) file))
+      (eval-in-emacs
+       `(progn
+          (switch-to-buffer (get-buffer-create ,(render-url (url (current-buffer)))))
+          (erase-buffer)
+          (insert-file-contents-literally "/tmp/temp-nyxt.html")
+          (html-mode)
+          (indent-region (point-min) (point-max))))
+      (delete-file "/tmp/temp-nyxt.html"))
+#+end_src
+
+Running this in Nyxt's =lisp-repl= buffer (just invoke that command or
+you can also use Slime's REPL) produces a buffer in your Emacs with
+the raw HTML for the page.
+
+In short we create a temporary HTML file, we fill it with the HTML we
+are looking at in Nyxt, and we open that in an Emacs buffer (finally
+we delete the file).
+
+Once we have that, we can jump directly in [[https://github.com/ag91/moldable-emacs][moldable-emacs]]! That way we
+can start bending the information of the web to our needs. And this is
+just the first step. If we can get HTML to Emacs we can get HTML to
+Nyxt, no? Then we should be able to make our data interactive (for the
+happiness of the data scientists among us)! Stay tuned for that :)
+
+Edit: Actually, just while publishing this I found the nice people at
+the Atlas discourse found a more generic way of doing this (if you
+want to use some other editors than Emacs):
+https://discourse.atlas.engineer/t/opening-page-source-in-external-editor/221
+
+* Conclusion
+
+You can send HTML to Emacs with Nyxt and bend it to your needs with
+moldable-emacs. Grab [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]], take inspiration and see if you
+can mold the information sealed in the HTML!
+
+Happy exploring!
