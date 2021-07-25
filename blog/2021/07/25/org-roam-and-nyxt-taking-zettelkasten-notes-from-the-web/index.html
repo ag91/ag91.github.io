@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Org Roam and Nyxt: taking Zettelkasten notes from the web - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Taking Zettelkasten notes directly from the web with your Nyxt browser!" />
+    <meta name="keywords" content="emacs, nyxt, org-roam, org-mode" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Org Roam and Nyxt: taking Zettelkasten notes from the web</h1>
+
+<div id="outline-container-org841b440" class="outline-2">
+<h2 id="org841b440">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org841b440">
+<p>
+Org Roam V2 came out recently and it is time to take notes directly
+from the web (via Nyxt).
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcf541c7" class="outline-2">
+<h2 id="orgcf541c7">The problem</h2>
+<div class="outline-text-2" id="text-orgcf541c7">
+<p>
+Sometimes I get an idea while I browse the web. <a href="https://blog.jethro.dev/posts/how_to_take_smart_notes_org/">Earlier on I
+discovered</a> how much I like managing notes with the Zettelkasten
+method. So given I got this idea while using a web browser, I would
+need to fire my Emacs, copy the link, then copy the quote, finally
+write my idea about what I read. Each time, I would lose the flow of
+my reading. Org Roam people would say I could set up org-protocol for
+that, but, <a href="https://ag91.github.io/blog/2021/07/09/org-capture-in-nyxt-taking-notes-while-browsing/">again</a>, that is a bit cumbersome for me.
+</p>
+
+<p>
+How difficult is to take an Org Roam note directly from my browser?
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org8a92afb" class="outline-2">
+<h2 id="org8a92afb">And there is a solution</h2>
+<div class="outline-text-2" id="text-org8a92afb">
+<p>
+Nyxt is the solution really! A browser that feels as malleable as
+Emacs. <a href="https://ag91.github.io/tags/nyxt/">In previous blogs</a> I have shown <a href="https://ag91.github.io/blog/2021/06/22/back-to-emacs-while-in-nyxt-how-to-edit-the-web-in-a-lispy-editor/">how to make Nyxt speak to Emacs</a>
+and even <a href="https://ag91.github.io/blog/2021/07/09/org-capture-in-nyxt-taking-notes-while-browsing/">how to capture Org notes</a>. If that is possible, we should be
+able to capture an Org Roam note as well.
+</p>
+
+<p>
+Nyxt comes with a nice prompt system to request text from the user. So
+I decided to make a function to ask for the title of the note and its
+contents. My aim is to take a note on the fly, so I expect to write no
+more than a line. That is why the prompt space should be enough to
+draft out what I have in mind.
+</p>
+
+<p>
+Well let me show you how this looks before we get into the implementation details.
+</p>
+
+<p>
+<a href="/assets/blog/2021/07/25/org-roam-and-nyxt-taking-zettelkasten-notes-from-the-web/NyxtOrgRoamCapture.mp4">/assets/blog/2021/07/25/org-roam-and-nyxt-taking-zettelkasten-notes-from-the-web/NyxtOrgRoamCapture.mp4</a>
+</p>
+
+<p>
+This is the snippet you can add to your Nyxt configuration that makes
+it happen.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(define-command-global org-roam-capture ()
+  "Org-roam-capture current page."
+  (let ((quote (%copy))
+        (title (prompt
+                :input (title (current-buffer))
+                :prompt "Title of note:"
+                :sources (list (make-instance 'prompter:raw-source)))) 
+        (text (prompt
+               :input ""
+               :prompt "Note to take:"
+               :sources (list (make-instance 'prompter:raw-source)))))
+    (eval-in-emacs
+     `(let ((file (on/make-filepath ,(car title) (current-time))))
+        (on/insert-org-roam-file
+         file
+         ,(car title)
+         nil
+         (list ,(render-url (url (current-buffer))))
+         ,(car text)
+         ,quote)
+        (find-file file)
+        (org-id-get-create)))
+    (echo "Org Roam Note stored!")))
+</pre>
+</div>
+
+<p>
+You can see how we used the prompts. The prompt returns a list of
+values, that is why we need <code>(car title)</code>. If you select some text,
+that will be inserted as well in the new note (<code>(%copy)</code>). I also open
+the note in Emacs as a reminder that I need to rework it later
+(<code>(find-file file)</code>).
+</p>
+
+<p>
+Actually, you can see that we use two functions here
+<code>on/insert-org-roam-file</code> and <code>on/make-filepath</code>. These need to be
+available in your Emacs.
+</p>
+
+<p>
+This is how they look.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun on/slug-string (title)  (let ((slug-trim-chars '(;; Combining Diacritical Marks https://www.unicode.org/charts/PDF/U0300.pdf
+                                   768 ; U+0300 COMBINING GRAVE ACCENT
+                                   769 ; U+0301 COMBINING ACUTE ACCENT
+                                   770 ; U+0302 COMBINING CIRCUMFLEX ACCENT
+                                   771 ; U+0303 COMBINING TILDE
+                                   772 ; U+0304 COMBINING MACRON
+                                   774 ; U+0306 COMBINING BREVE
+                                   775 ; U+0307 COMBINING DOT ABOVE
+                                   776 ; U+0308 COMBINING DIAERESIS
+                                   777 ; U+0309 COMBINING HOOK ABOVE
+                                   778 ; U+030A COMBINING RING ABOVE
+                                   780 ; U+030C COMBINING CARON
+                                   795 ; U+031B COMBINING HORN
+                                   803 ; U+0323 COMBINING DOT BELOW
+                                   804 ; U+0324 COMBINING DIAERESIS BELOW
+                                   805 ; U+0325 COMBINING RING BELOW
+                                   807 ; U+0327 COMBINING CEDILLA
+                                   813 ; U+032D COMBINING CIRCUMFLEX ACCENT BELOW
+                                   814 ; U+032E COMBINING BREVE BELOW
+                                   816 ; U+0330 COMBINING TILDE BELOW
+                                   817 ; U+0331 COMBINING MACRON BELOW
+                                   )))
+            (cl-flet* ((nonspacing-mark-p (char)
+                                          (memq char slug-trim-chars))
+                       (strip-nonspacing-marks (s)
+                                               (ucs-normalize-NFC-string
+                                                (apply #'string (seq-remove #'nonspacing-mark-p
+                                                                            (ucs-normalize-NFD-string s)))))
+                       (cl-replace (title pair)
+                                   (replace-regexp-in-string (car pair) (cdr pair) title)))
+              (let* ((pairs `(("[^[:alnum:][:digit:]]" . "_") ;; convert anything not alphanumeric
+                              ("__*" . "_") ;; remove sequential underscores
+                              ("^_" . "") ;; remove starting underscore
+                              ("_$" . ""))) ;; remove ending underscore
+                     (slug (-reduce-from #'cl-replace (strip-nonspacing-marks title) pairs)))
+                (downcase slug)))))
+
+(defun on/make-filepath (title now &amp;optional zone)
+  "Make filename from note TITLE and NOW time (assumed in the current time ZONE)."
+  (concat
+   org-roam-directory
+   (format-time-string "%Y%m%d%H%M%S_" now (or zone (current-time-zone)))
+   (s-truncate 70 (on/slug-string title) "")
+   ".org"))
+
+(defun on/insert-org-roam-file (file-path title &amp;optional links sources text quote)
+  "Insert org roam file in FILE-PATH with TITLE, LINKS, SOURCES, TEXT, QUOTE."
+  (with-temp-file file-path
+    (insert
+     "* " title "\n"
+     "\n"
+     "- tags :: " (--reduce (concat acc ", " it) links) "\n"
+     (if sources (concat "- source :: " (--reduce (concat acc ", " it) sources) "\n") "")
+     "\n"
+     (if text text "")
+     "\n"
+     "\n"
+     (if quote
+         (concat "#+begin_src text \n"
+     quote "\n"
+     "#+end_src")
+       "")))
+   (with-file file-path
+              (org-id-get-create)
+              (save-buffer)))
+</pre>
+</div>
+
+<p>
+These functions use my note template. A note with my template looks
+like the following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* some note.
+
+- tags :: ??
+- source :: some-link
+
+Idea.
+
+#+begin_src text
+Some quote
+#+end_src
+</pre>
+</div>
+
+<p>
+You may not like that, so please edit <code>on/insert-org-roam-file</code> as you
+like (I attempted to go through <code>org-roam-capture</code> for this, but it
+still does not seem program friendly). Note also that <code>on/slug-string</code>
+is reusing the (latest at the time of writing) <code>org-roam</code> code to make
+a file path.
+</p>
+
+<p>
+And like that we have opened a world of note taking from our browser!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7f091ef" class="outline-2">
+<h2 id="org7f091ef">Conclusion</h2>
+<div class="outline-text-2" id="text-org7f091ef">
+<p>
+Here you go: note taking on the web! If you want a ready made solution
+for this, check out (and load) my hacks at <a href="https://github.com/ag91/emacs-with-nyxt">emacs-with-nyxt</a>. It will
+provide this command by default. Hope you will capture amazing ideas!
+</p>
+
+<p>
+Happy note taking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-07-25</span>
+        <span title="last modification date" class="post-info">2021-07-25</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/nyxt/">nyxt</a>, <a href="/tags/org-roam/">org-roam</a>, <a href="/tags/org-mode/">org-mode</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
