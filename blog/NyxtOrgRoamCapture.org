@@ -1,8 +1,8 @@
-#+TITLE:       Org Roam and Nyxt: taking Zettelkasten notes from the web - post.
+#+TITLE:       Org Roam and Nyxt: taking Zettelkasten notes from the web
 #+AUTHOR:      Andrea
 #+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2021-07-25 Sun
-#+URI:         /blog/%y/%m/%d/org-roam-and-nyxt-taking-zettelkasten-notes-from-the-web---post
+#+URI:         /blog/%y/%m/%d/org-roam-and-nyxt-taking-zettelkasten-notes-from-the-web
 #+KEYWORDS:    emacs, nyxt, org-roam, org-mode
 #+TAGS:        emacs, nyxt, org-roam, org-mode
 #+LANGUAGE:    en
