@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: finding examples of Clojure functions (with tests) - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Gather examples for your Clojure function at point" />
+    <meta name="keywords" content="moldable-emacs, emacs, clojure, org-mode, elisp" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: finding examples of Clojure functions (with tests)</h1>
+
+<div id="outline-container-org6898a65" class="outline-2">
+<h2 id="org6898a65">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org6898a65">
+<p>
+Check how to use the Clojure function under your cursor. Here we peek
+into the tests and render examples in an Org mode buffer.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbec39a6" class="outline-2">
+<h2 id="orgbec39a6">The problem</h2>
+<div class="outline-text-2" id="text-orgbec39a6">
+<p>
+I love good docs for functions! At my previous job, engineers followed
+the principle of keeping comments to a minimum. The idea is that tests
+should document usage. So, I needed to make the best of Emacs'
+navigation. I would both look at tests and the implementation of a
+symbol. The best tools for doing that in Scala projects were
+<a href="https://github.com/bbatsov/projectile">projectile</a> and <a href="https://github.com/emacs-lsp/lsp-metals">lsp-metals</a>. Now I am about to start a new Clojure job
+(excited), and I have already polished my <a href="https://github.com/clojure-emacs/cider">cider</a> and <a href="https://github.com/liebke/cljr">cljr</a> skills.
+Still, I thought: how could I make my gathering of examples simple?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf7dfef9" class="outline-2">
+<h2 id="orgf7dfef9">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgf7dfef9">
+<p>
+Actually, having a way to gather examples easily would be ideal for
+any programming I do. This was true for Scala work, Elisp editing and
+any language I worked with. About always, it helps me to read the name
+of a function and a series of assertions like <code>(x 1 2) = 3, (x 3 2) =
+5</code> to guess what the function does. Wouldn't be amazing if we could
+turn Emacs in an example giver for any language?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgea05769" class="outline-2">
+<h2 id="orgea05769">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgea05769">
+<p>
+This sounds material for a mold! We look at a function and want to see
+only its examples. This problem is about transforming the (Clojure)
+project in data we can filter to get what we need.
+</p>
+
+<p>
+Here I will show only a naive way to solve this. This satisfies me for
+now, but I bet I will improve it later (e.g., using metadata and
+docs).
+</p>
+
+<p>
+Anyway, let's start! Here a video to show you what I got to.
+</p>
+
+<p>
+<a href="/assets/blog/2021/07/27/moldable-emacs-finding-examples-of-clojure-functions-(with-tests)/ExamplesClojureMold.mp4">/assets/blog/2021/07/27/moldable-emacs-finding-examples-of-clojure-functions-(with-tests)/ExamplesClojureMold.mp4</a>
+</p>
+
+<p>
+When my cursor is on a Clojure function, I can search for all the
+examples in the respective test file. I can then pick the one I need
+and navigate to the test file (if I wish to). The example project I am
+using is the awesome <a href="https://github.com/adamtornhill/code-maat">code-maat</a>.
+</p>
+
+<p>
+First, how do you find a "respective test file"? Easy: projectile!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(projectile-find-matching-test (buffer-file-name))
+</pre>
+</div>
+
+<p>
+If there is a test file for the current open file, this will find (as
+long as your language is supported by projectile).
+</p>
+
+<p>
+Next we want to find the name of the function at point.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt; (list-at-point)
+     (when (and it (&gt; (length it) 3) (equal (nth 0 it) 'defn)) (nth 1 it))
+     (symbol-name it))
+</pre>
+</div>
+
+<p>
+The <code>list-at-point</code> works for all Lisps! Here I filter for only public
+Clojure functions (so no <code>defn-</code>). I could so generalize this, but
+maybe later (and if anybody needs it).
+</p>
+
+<p>
+Finally how do you get the examples? Well <a href="https://github.com/ubolonton/emacs-tree-sitter">emacs-tree-sitter</a> to the rescue!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt; (me/by-type 'list_lit self)
+  (--filter (and
+             (s-starts-with-p "(is(=" (s-replace " " "" (plist-get it :text)))
+             (s-contains-p "of-module" (plist-get it :text)))
+            it))
+</pre>
+</div>
+
+<p>
+This was me exploring how to do it <a href="https://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/">in a Playground mold</a>. The variable
+<code>self</code> contains the flattened list of all tree-sitter nodes for the
+test file. I am looking only for <a href="https://clojure.github.io/clojure/clojure.test-api.html">clojure.test</a> assertions (again I need
+to generalize to other test frameworks) and only for those mentioning
+my function (note the hard-coded <code>"of-module"</code>: <b>prototyping</b> yuhuu!!!).
+</p>
+
+<p>
+With these 3 bits we have the core of our mold. A bit of formatting in
+an Org buffer and we have easy to read examples!
+</p>
+
+<p>
+I already crave to extend this to Clojure property testing! Let's see
+how it goes :)
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5fbbcaf" class="outline-2">
+<h2 id="org5fbbcaf">Conclusion</h2>
+<div class="outline-text-2" id="text-org5fbbcaf">
+<p>
+The moral of this post is once again: make useful information easy to
+obtain! A software project is full of it. We can use this information
+to make easier to extend the project itself. I wrote about this a lot
+with my <a href="https://github.com/ag91/code-compass">code-compass</a> work, and I shall write even more for
+<a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>. So if you are curious, gather examples of your
+favourite (tested) Clojure function (by trying out <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> --
+if it is not easy to install ping me, I will fix it)!
+</p>
+
+<p>
+Happy coding!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-07-27</span>
+        <span title="last modification date" class="post-info">2021-07-27</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/clojure/">clojure</a>, <a href="/tags/org-mode/">org-mode</a>, <a href="/tags/elisp/">elisp</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
