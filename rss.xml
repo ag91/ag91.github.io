@@ -4,16 +4,23 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 27 Jul 2021 23:13:26 BST</pubDate>
-    <lastBuildDate>Tue, 27 Jul 2021 23:13:26 BST</lastBuildDate>
+    <pubDate>Tue, 27 Jul 2021 23:31:57 BST</pubDate>
+    <lastBuildDate>Tue, 27 Jul 2021 23:31:57 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
       <title>Moldable Emacs: finding examples of Clojure functions (with tests)</title>
       <link>http://ag91.github.io/blog/2021/07/27/moldable-emacs-finding-examples-of-clojure-functions-(with-tests)</link>
-      <description><![CDATA[Gather examples for your Clojure function at point]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-07-27</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/27/moldable-emacs-finding-examples-of-clojure-functions-(with-tests)</guid>
+    </item>
+    <item>
+      <title>What if we cannot make it? A less optimistic view on climate change</title>
+      <link>http://ag91.github.io/blog/2021/07/27/what-if-we-cannot-make-it-a-less-optimistic-view-on-climate-change</link>
+      <description><![CDATA[Are we parasites or gardeners?]]></description>
+      <pubDate>2021-07-27</pubDate>
+      <guid>http://ag91.github.io/blog/2021/07/27/what-if-we-cannot-make-it-a-less-optimistic-view-on-climate-change</guid>
     </item>
     <item>
       <title>Org Roam and Nyxt: taking Zettelkasten notes from the web</title>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-06-29</pubDate>
       <guid>http://ag91.github.io/blog/2021/06/29/extending-nyxt-via-emacs-how-to-leverage-common-lisp-wealth-to-get-your-links-as-qr-codes</guid>
-    </item>
-    <item>
-      <title>How (simple is) to install a Clojure tree-sitter grammar and use it from Emacs</title>
-      <link>http://ag91.github.io/blog/2021/06/22/how-(simple-is)-to-install-a-clojure-tree-sitter-grammar-and-use-it-from-emacs</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-06-22</pubDate>
-      <guid>http://ag91.github.io/blog/2021/06/22/how-(simple-is)-to-install-a-clojure-tree-sitter-grammar-and-use-it-from-emacs</guid>
     </item>
   </channel>
 </rss>
