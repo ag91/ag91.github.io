@@ -1,0 +1,115 @@
+#+TITLE:       Moldable Emacs: finding examples of Clojure functions (with tests)
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-07-27 Tue
+#+URI:         /blog/%y/%m/%d/moldable-emacs-finding-examples-of-clojure-functions-(with-tests)
+#+KEYWORDS:    moldable-emacs, emacs, clojure, org-mode, elisp
+#+TAGS:        moldable-emacs, emacs, clojure, org-mode, elisp
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Gather examples for your Clojure function at point
+
+* Too long; didn't read
+
+Check how to use the Clojure function under your cursor. Here we peek
+into the tests and render examples in an Org mode buffer.
+
+* The problem
+:PROPERTIES:
+:ID:       84a7f7bd-f5bb-4ba0-8d01-6e416350011c
+:END:
+
+I love good docs for functions! At my previous job, engineers followed
+the principle of keeping comments to a minimum. The idea is that tests
+should document usage. So, I needed to make the best of Emacs'
+navigation. I would both look at tests and the implementation of a
+symbol. The best tools for doing that in Scala projects were
+[[https://github.com/bbatsov/projectile][projectile]] and [[https://github.com/emacs-lsp/lsp-metals][lsp-metals]]. Now I am about to start a new Clojure job
+(excited), and I have already polished my [[https://github.com/clojure-emacs/cider][cider]] and [[https://github.com/liebke/cljr][cljr]] skills.
+Still, I thought: how could I make my gathering of examples simple?
+
+* It is a problem indeed
+
+Actually, having a way to gather examples easily would be ideal for
+any programming I do. This was true for Scala work, Elisp editing and
+any language I worked with. About always, it helps me to read the name
+of a function and a series of assertions like =(x 1 2) = 3, (x 3 2) =
+5= to guess what the function does. Wouldn't be amazing if we could
+turn Emacs in an example giver for any language?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       1d997b2e-fd10-44c7-8a81-89e5ee37cab1
+:END:
+
+This sounds material for a mold! We look at a function and want to see
+only its examples. This problem is about transforming the (Clojure)
+project in data we can filter to get what we need.
+
+Here I will show only a naive way to solve this. This satisfies me for
+now, but I bet I will improve it later (e.g., using metadata and
+docs).
+
+Anyway, let's start! Here a video to show you what I got to.
+
+[[file:ExamplesClojureMold.mp4]]
+
+When my cursor is on a Clojure function, I can search for all the
+examples in the respective test file. I can then pick the one I need
+and navigate to the test file (if I wish to). The example project I am
+using is the awesome [[https://github.com/adamtornhill/code-maat][code-maat]].
+
+First, how do you find a "respective test file"? Easy: projectile!
+
+#+begin_src elisp :noeval
+(projectile-find-matching-test (buffer-file-name))
+#+end_src
+
+If there is a test file for the current open file, this will find (as
+long as your language is supported by projectile).
+
+Next we want to find the name of the function at point.
+
+#+begin_src elisp :noeval
+(--> (list-at-point)
+     (when (and it (> (length it) 3) (equal (nth 0 it) 'defn)) (nth 1 it))
+     (symbol-name it))
+#+end_src
+
+The =list-at-point= works for all Lisps! Here I filter for only public
+Clojure functions (so no =defn-=). I could so generalize this, but
+maybe later (and if anybody needs it).
+
+Finally how do you get the examples? Well [[https://github.com/ubolonton/emacs-tree-sitter][emacs-tree-sitter]] to the rescue!
+
+#+begin_src elisp :noeval
+(--> (me/by-type 'list_lit self)
+  (--filter (and
+             (s-starts-with-p "(is(=" (s-replace " " "" (plist-get it :text)))
+             (s-contains-p "of-module" (plist-get it :text)))
+            it))
+#+end_src
+
+This was me exploring how to do it [[https://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground/][in a Playground mold]]. The variable
+=self= contains the flattened list of all tree-sitter nodes for the
+test file. I am looking only for [[https://clojure.github.io/clojure/clojure.test-api.html][clojure.test]] assertions (again I need
+to generalize to other test frameworks) and only for those mentioning
+my function (note the hard-coded ="of-module"=: *prototyping* yuhuu!!!).
+
+With these 3 bits we have the core of our mold. A bit of formatting in
+an Org buffer and we have easy to read examples!
+
+I already crave to extend this to Clojure property testing! Let's see
+how it goes :)
+ 
+* Conclusion
+
+The moral of this post is once again: make useful information easy to
+obtain! A software project is full of it. We can use this information
+to make easier to extend the project itself. I wrote about this a lot
+with my [[https://github.com/ag91/code-compass][code-compass]] work, and I shall write even more for
+[[https://github.com/ag91/moldable-emacs][moldable-emacs]]. So if you are curious, gather examples of your
+favourite (tested) Clojure function (by trying out [[https://github.com/ag91/moldable-emacs][moldable-emacs]] --
+if it is not easy to install ping me, I will fix it)!
+
+Happy coding!
