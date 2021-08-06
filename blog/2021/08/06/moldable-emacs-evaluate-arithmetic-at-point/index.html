@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: evaluate arithmetic at point - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Arithmetic results are a mold away!" />
+    <meta name="keywords" content="moldable-emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: evaluate arithmetic at point</h1>
+<p>
+This is a short post: <a href="https://github.com/ag91/moldable-emacs.git">moldable-emacs</a> has a mold to evaluate arithmetic
+expression at point!
+</p>
+
+<p>
+Say you are reading some text and you see a formula. You get curious
+but would like to finish the text first. Now how can you run that
+maths again? Emacs comes with the fantastic <code>calc</code> library. So a good
+option in vanilla Emacs is to use <code>calc-grab-region</code>. You need to
+highlight something and this will show up in a <code>calc</code> buffer.
+</p>
+
+<p>
+Well, maybe that is too much though. You just would like to pop the
+result of that operation on the side, while you keep reading.
+</p>
+
+<p>
+How can we do that?
+</p>
+
+<p>
+Simple, run your <code>me/mold</code> command. You will see a mold just for that.
+Let me show you how that looks.
+</p>
+
+
+<div id="orga2b9c2a" class="figure">
+<p><img src="/assets/blog/2021/08/06/moldable-emacs-evaluate-arithmetic-at-point/screen-2021-07-03-13-15-34.jpg" alt="/assets/blog/2021/08/06/moldable-emacs-evaluate-arithmetic-at-point/screen-2021-07-03-13-15-34.jpg" />
+</p>
+</div>
+
+<p>
+When your pointer is on an expression, it will run that. The
+outcome is green so you can find the result immediately.
+</p>
+
+<p>
+By the way you may want to access your computation in a Playground
+mold. In the <code>self</code> variable (of the buffer) you can find the
+following value: <code>(:given "(1+2) / 2 ^ 4" :then "0.1875")</code>. This gives
+you a chance to program the computation.
+</p>
+
+<p>
+Anyway you may want to focus on a sub-expression of the formula. For
+that I also added the possibility to use the region to select the
+formula you care about.
+</p>
+
+
+<div id="org60e2a69" class="figure">
+<p><img src="/assets/blog/2021/08/06/moldable-emacs-evaluate-arithmetic-at-point/screen-2021-07-03-13-16-14.jpg" alt="/assets/blog/2021/08/06/moldable-emacs-evaluate-arithmetic-at-point/screen-2021-07-03-13-16-14.jpg" />
+</p>
+</div>
+
+
+<p>
+This is it really. The functions I made for this may break easily
+because they only match my basic use cases. Feedback and PRs are
+welcome, if this does not work for you. I am happy I don't have to
+decide between keeping the formula or the result in my notes anymore!
+</p>
+
+<p>
+You can try this by using <a href="https://github.com/ag91/moldable-emacs.git">moldable-emacs</a>. And no external
+dependencies, all thanks to the power of <code>calc</code>!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-08-06</span>
+        <span title="last modification date" class="post-info">2021-08-06</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

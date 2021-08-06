@@ -4,10 +4,17 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 27 Jul 2021 23:31:57 BST</pubDate>
-    <lastBuildDate>Tue, 27 Jul 2021 23:31:57 BST</lastBuildDate>
+    <pubDate>Fri, 06 Aug 2021 22:13:18 BST</pubDate>
+    <lastBuildDate>Fri, 06 Aug 2021 22:13:18 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
+    <item>
+      <title>Moldable Emacs: evaluate arithmetic at point</title>
+      <link>http://ag91.github.io/blog/2021/08/06/moldable-emacs-evaluate-arithmetic-at-point</link>
+      <description><![CDATA[Arithmetic results are a mold away!]]></description>
+      <pubDate>2021-08-06</pubDate>
+      <guid>http://ag91.github.io/blog/2021/08/06/moldable-emacs-evaluate-arithmetic-at-point</guid>
+    </item>
     <item>
       <title>Moldable Emacs: finding examples of Clojure functions (with tests)</title>
       <link>http://ag91.github.io/blog/2021/07/27/moldable-emacs-finding-examples-of-clojure-functions-(with-tests)</link>
@@ -18,7 +25,7 @@
     <item>
       <title>What if we cannot make it? A less optimistic view on climate change</title>
       <link>http://ag91.github.io/blog/2021/07/27/what-if-we-cannot-make-it-a-less-optimistic-view-on-climate-change</link>
-      <description><![CDATA[Are we parasites or gardeners?]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-07-27</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/27/what-if-we-cannot-make-it-a-less-optimistic-view-on-climate-change</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-07-02</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/02/moldable-emacs-keep-an-eye-on-those-test-performance</guid>
-    </item>
-    <item>
-      <title>Extending Nyxt via Emacs: how to leverage Common Lisp wealth to get your links as QR codes</title>
-      <link>http://ag91.github.io/blog/2021/06/29/extending-nyxt-via-emacs-how-to-leverage-common-lisp-wealth-to-get-your-links-as-qr-codes</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-06-29</pubDate>
-      <guid>http://ag91.github.io/blog/2021/06/29/extending-nyxt-via-emacs-how-to-leverage-common-lisp-wealth-to-get-your-links-as-qr-codes</guid>
     </item>
   </channel>
 </rss>
