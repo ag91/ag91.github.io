@@ -57,14 +57,14 @@
 /* Put a border around prettyprinted code snippets. */
 pre.prettyprint {
   background-color: #042029;
-  padding: 10px;
-  border: 1px solid #E1E1E8; }
+  padding: 0.625em;
+  border: 0.0625em solid #E1E1E8; }
 
 /* Specify class=linenums on a pre to get line numbering */
 ol.linenums {
   color: #4c666c;
-  margin: 0 0 0 40px; }
+  margin: 0 0 0 2.5em; }
 
 ol.linenums li {
-  line-height: 18px;
-  padding-left: 12px; }
+  line-height: 1.125em;
+  padding-left: 0.75em; }
