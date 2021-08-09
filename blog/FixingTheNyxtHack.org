@@ -78,4 +78,4 @@ random waiting time.
 
 Now if you have some other useful suggestion, I am happy to hear!
 
-Happy lisping!
+Happy Lisping!
