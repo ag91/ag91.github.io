@@ -1,0 +1,81 @@
+#+TITLE:       Following wise suggestions: making emacs-with-nyxt more consistent
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-08-09 Mon
+#+URI:         /blog/%y/%m/%d/following-wise-suggestions-making-emacs-with-nyxt-more-consistent
+#+KEYWORDS:    nyxt, emacs
+#+TAGS:        nyxt, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Making emacs-with-nyxt less brittle
+
+This is a "thank you" post, really. Sometimes ago I shared my
+[[https://github.com/ag91/emacs-with-nyxt/][emacs-with-nyxt]] hack on Reddit, and
+[[https://www.reddit.com/r/emacs/comments/nvdwgp/emacs_nyxt_and_enginemode_how_to_browse_urls_via/h139vz2?utm_source=share&utm_medium=web2x&context=3][the
+user "trararawe" pointed out that there were too many =sleep-for= in
+there]].
+
+I confess it could have totally stayed a hack if that user didn't
+inspire me to clean up my code: so thank you!
+
+Since there is chance I could get some more nice suggestions, let me
+explain what I did.
+
+There are a few bits of the integration between Nyxt and Emacs that go
+totally asynchronous.
+
+The first is running Nyxt. When the browser starts it needs some setup
+to be ready to use via Emacs. We cannot continue until Nyxt is ready.
+The following code does the trick.
+
+#+begin_src elisp :noeval
+(async-shell-command (format "nyxt -e \"(nyxt-user::start-swank)\""))
+#+end_src
+
+That code will also start the Swank server to link to Slime. Since we
+need to wait, I came up with waiting about half a second before
+continuing. As "trararawe" said, guessing a time is fragile because my
+system is different from others. Both we are wasting people time or we
+are making them fail in starting Nyxt.
+
+So I replaced that code with this.
+
+#+begin_src elisp :noeval
+(async-shell-command (format "nyxt -e \"(nyxt-user::start-swank)\""))
+(while (not (ignore-errors (not (emacs-with-nyxt-slime-connect "localhost" "4006"))))
+  (sleep-for emacs-with-nyxt-slime-nyxt-delay))
+(while (not (ignore-errors (string= "NYXT-USER" (slime-current-package))))
+  (sleep-for emacs-with-nyxt-slime-nyxt-delay))
+#+end_src
+
+This is a bit ugly, but still a solution. We now exploit Slime to tell
+us when its connection is ready. When Slime establishes a connection
+then we can assume Nyxt is ready too. If it is not, we wait a little
+and try again. I should probably add a circuit break in there (to
+eventually exit). Ehrm... anyhow. We do something similar in the next
+line. You see, even if Swank is ready, the Nyxt Common Lisp package
+may not be available yet. Lucky us, Slime can tell us which package is
+available now. Nyxt set this to =NYXT-USER= by default. And this is
+the package we wait to have.
+
+Once these things are ready, we can start our interaction via the
+Common Lisp REPL.
+
+That is also another bit that is asynchronous. It seems that Slime
+connects to Swank at its own time. So just to be sure, I added another
+=while= loop that hold our horses until Slime is ready.
+
+#+begin_src elisp :noeval
+(defun emacs-with-nyxt-slime-connect (host port)
+  "Connect Slime to HOST and PORT ignoring version mismatches."
+  (slime-connect host port)
+  (while (not (slime-connected-p))
+   (sleep-for emacs-with-nyxt-slime-nyxt-delay)))
+#+end_src
+
+And that is it. With these I made the hack work without picking a
+random waiting time.
+
+Now if you have some other useful suggestion, I am happy to hear that :)
+
+Happy Lisping!
