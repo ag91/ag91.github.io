@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 06 Aug 2021 22:13:18 BST</pubDate>
-    <lastBuildDate>Fri, 06 Aug 2021 22:13:18 BST</lastBuildDate>
+    <pubDate>Mon, 09 Aug 2021 18:42:10 BST</pubDate>
+    <lastBuildDate>Mon, 09 Aug 2021 18:42:10 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Following wise suggestions: making emacs-with-nyxt more consistent</title>
+      <link>http://ag91.github.io/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent</link>
+      <description><![CDATA[Making emacs-with-nyxt less brittle]]></description>
+      <pubDate>2021-08-09</pubDate>
+      <guid>http://ag91.github.io/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: evaluate arithmetic at point</title>
       <link>http://ag91.github.io/blog/2021/08/06/moldable-emacs-evaluate-arithmetic-at-point</link>
-      <description><![CDATA[Arithmetic results are a mold away!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-08-06</pubDate>
       <guid>http://ag91.github.io/blog/2021/08/06/moldable-emacs-evaluate-arithmetic-at-point</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-07-09</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/09/org-capture-in-nyxt-taking-notes-while-browsing</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: keep an eye on those test performance!</title>
-      <link>http://ag91.github.io/blog/2021/07/02/moldable-emacs-keep-an-eye-on-those-test-performance</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-07-02</pubDate>
-      <guid>http://ag91.github.io/blog/2021/07/02/moldable-emacs-keep-an-eye-on-those-test-performance</guid>
     </item>
   </channel>
 </rss>
