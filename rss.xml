@@ -4,16 +4,23 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 09 Aug 2021 18:58:54 BST</pubDate>
-    <lastBuildDate>Mon, 09 Aug 2021 18:58:54 BST</lastBuildDate>
+    <pubDate>Mon, 09 Aug 2021 22:50:47 BST</pubDate>
+    <lastBuildDate>Mon, 09 Aug 2021 22:50:47 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
       <title>Following wise suggestions: making emacs-with-nyxt more consistent</title>
       <link>http://ag91.github.io/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent</link>
-      <description><![CDATA[Making emacs-with-nyxt less brittle]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-08-09</pubDate>
       <guid>http://ag91.github.io/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent</guid>
+    </item>
+    <item>
+      <title>Life is a cycle: why periodic behaviour is good for your health</title>
+      <link>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</link>
+      <description><![CDATA[<TODO: insert your description here>]]></description>
+      <pubDate>2021-08-09</pubDate>
+      <guid>http://ag91.github.io/blog/2020/12/12/life-is-a-cycle-why-periodic-behaviour-is-good-for-your-health</guid>
     </item>
     <item>
       <title>Moldable Emacs: evaluate arithmetic at point</title>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-07-17</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold</guid>
-    </item>
-    <item>
-      <title>Org capture in Nyxt: taking notes while browsing</title>
-      <link>http://ag91.github.io/blog/2021/07/09/org-capture-in-nyxt-taking-notes-while-browsing</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-07-09</pubDate>
-      <guid>http://ag91.github.io/blog/2021/07/09/org-capture-in-nyxt-taking-notes-while-browsing</guid>
     </item>
   </channel>
 </rss>
