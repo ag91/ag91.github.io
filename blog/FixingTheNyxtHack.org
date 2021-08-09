@@ -28,7 +28,7 @@ The first is running Nyxt. When the browser starts it needs some setup
 to be ready to use via Emacs. We cannot continue until Nyxt is ready.
 The following code does the trick.
 
-#+begin_src elisp
+#+begin_src elisp :noeval
 (async-shell-command (format "nyxt -e \"(nyxt-user::start-swank)\""))
 #+end_src
 
@@ -40,7 +40,7 @@ are making them fail in starting Nyxt.
 
 So I replaced that code with this.
 
-#+begin_src elisp
+#+begin_src elisp :noeval
 (async-shell-command (format "nyxt -e \"(nyxt-user::start-swank)\""))
 (while (not (ignore-errors (not (emacs-with-nyxt-slime-connect "localhost" "4006"))))
   (sleep-for emacs-with-nyxt-slime-nyxt-delay))
@@ -65,7 +65,7 @@ That is also another bit that is asynchronous. It seems that Slime
 connects to Swank at its own time. So just to be sure, I added another
 =while= loop that hold our horses until Slime is ready.
 
-#+begin_src elisp
+#+begin_src elisp :noeval
 (defun emacs-with-nyxt-slime-connect (host port)
   "Connect Slime to HOST and PORT ignoring version mismatches."
   (slime-connect host port)
