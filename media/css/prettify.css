@@ -15,7 +15,7 @@
   color: #d96e79; }
 
 .kwd {
-  color: #7966ff; }
+  color: #d55e67; }
 
 .com {
   color: #a79e8a;
@@ -43,7 +43,7 @@
   color: #a79e8a; }
 
 .atv {
-  color: #d55e67; }
+  color: #698b22; }
 
 .dec {
   color: #d9742d; }
@@ -52,7 +52,7 @@
   color: #d9742d; }
 
 .fun {
-  color: #00ffff; }
+  color: #7966ff; }
 
 /* Put a border around prettyprinted code snippets. */
 pre.prettyprint {
