@@ -1,7 +1,6 @@
 /* Pretty printing styles. Used with prettify.js.
  *
- * This version is (2021-08-10: totally, I needed to invert source
-   blocks colors) modified based on the original version.
+ * This version is slight modified based on the original version.
  *
  * Name:    Stanley Ng
  * Email:   stanleyhlng@googlegroups.com
@@ -10,60 +9,60 @@
  * http://code.google.com/p/google-code-prettify/source/browse/trunk/src/prettify.css
  */
 .pln {
-  color: #4241c9c9ecec; }
+  color: #41c9ec; }
 
 .str {
-  color: #d9d96e6e7979; }
+  color: #d96e79; }
 
 .kwd {
-  color: #7a796666ffff; }
+  color: #7966ff; }
 
 .com {
-  color: #a7a79e9e8a8a;
+  color: #a79e8a;
   font-style: italic; }
 
 .typ {
-  color: #4a497676ffff; }
+  color: #4976ff; }
 
 .lit {
-  color: #d5d55e5e6767; }
+  color: #d55e67; }
 
 .pun {
-  color: #7c7c6b6a6969; }
+  color: #7c6a69; }
 
 .opn {
-  color: #7c7c6b6a6969; }
+  color: #7c6a69; }
 
 .clo {
-  color: #7c7c6b6a6969; }
+  color: #7c6a69; }
 
 .tag {
-  color: #d9d974742d2d; }
+  color: #d9742d; }
 
 .atn {
-  color: #a7a79e9e8a8a; }
+  color: #a79e8a; }
 
 .atv {
-  color: #d5d55e5e6767; }
+  color: #d55e67; }
 
 .dec {
-  color: #d9d974742d2d; }
+  color: #d9742d; }
 
 .var {
-  color: #d9d974742d2d; }
+  color: #d9742d; }
 
 .fun {
-  color: #0000ffffffff; }
+  color: #00ffff; }
 
 /* Put a border around prettyprinted code snippets. */
 pre.prettyprint {
-  background-color: white;
+  background-color: #ffff;
   padding: 0.625em;
-  border: 0.0625em solid #1e1e1e1e1717; }
+  border: 0.0625em solid #1e1e17; }
 
 /* Specify class=linenums on a pre to get line numbering */
 ol.linenums {
-  color: #b3b399999393;
+  color: #ffff;
   margin: 0 0 0 2.5em; }
 
 ol.linenums li {
