@@ -58,8 +58,8 @@ may not be available yet. Lucky us, Slime can tell us which package is
 available now. Nyxt set this to =NYXT-USER= by default. And this is
 the package we wait to have.
 
-Once these things are ready, we can start our interaction via the
-Common Lisp REPL.
+Once these things are ready, we can start interacting with the Common
+Lisp REPL.
 
 That is also another bit that is asynchronous. It seems that Slime
 connects to Swank at its own time. So just to be sure, I added another
@@ -74,7 +74,7 @@ connects to Swank at its own time. So just to be sure, I added another
 #+end_src
 
 And that is it. With these changes I made the hack work without picking a
-random waiting time.
+random waiting time. 
 
 Now if you have some other useful suggestion, I am happy to hear :)
 
