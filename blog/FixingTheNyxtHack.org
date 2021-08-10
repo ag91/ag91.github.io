@@ -73,7 +73,7 @@ connects to Swank at its own time. So just to be sure, I added another
    (sleep-for emacs-with-nyxt-slime-nyxt-delay)))
 #+end_src
 
-And that is it. With these I made the hack work without picking a
+And that is it. With these changes I made the hack work without picking a
 random waiting time.
 
 Now if you have some other useful suggestion, I am happy to hear :)
