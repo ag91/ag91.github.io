@@ -38,7 +38,7 @@ continuing. As "trararawe" said, guessing a time is fragile because my
 system is different from others. Both we are wasting people time or we
 are making them fail in starting Nyxt.
 
-So I replaced that code with this.
+So I replaced that code with the following.
 
 #+begin_src elisp :noeval
 (async-shell-command (format "nyxt -e \"(nyxt-user::start-swank)\""))
