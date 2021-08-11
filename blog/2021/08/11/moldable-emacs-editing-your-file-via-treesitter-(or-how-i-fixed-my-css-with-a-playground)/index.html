@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: editing your file via Treesitter (or, how I fixed my CSS with a Playground) - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Code transformations rock!" />
+    <meta name="keywords" content="moldable-emacs, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: editing your file via Treesitter (or, how I fixed my CSS with a Playground)</h1>
+<div id="outline-container-orge1daeaa" class="outline-2">
+<h2 id="orge1daeaa">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orge1daeaa">
+<p>
+You can transform code with a Playground. As an example we will change
+my blog CSS file!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org10274f3" class="outline-2">
+<h2 id="org10274f3">The problem</h2>
+<div class="outline-text-2" id="text-org10274f3">
+<p>
+I always considered code transformations magical. I still remember how
+mind blowing was to realize that people have different ways to see the
+same thing. When I actually can see code change shape to fit those
+expectations: wow! It is just seeing other people ideas! Maybe this is
+too abstract. In my last job my team members liked code to be tidy. I
+think I am a tidy person, but I just got used to a different kind of
+tidiness during my Ph.D. Let me show an example.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def publicFn(): Int = privatePlus(1,1)
+
+def privatePlus(a: Int, b: Int) =&gt; Int = a + b
+</pre>
+</div>
+
+<p>
+This is what they liked: private functions at the bottom.
+</p>
+
+<p>
+I would naturally write this.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">def privatePlus(a: Int, b: Int) =&gt; Int = a + b
+
+def publicFn(): Int = privatePlus(1,1)
+</pre>
+</div>
+
+<p>
+(I guess my theorem proving practice has bent my brain: write small
+facts and compose them to prove bigger facts.)
+</p>
+
+<p>
+Anyway, after convincing myself to rewrite my code a few times, I
+thought: "Why am I wasting my time?". You could say team's peace of
+mind, consistency, etc... But that is not the point! A machine can do
+that much better than me. Code transformation here we go!
+</p>
+
+<p>
+How is it possible that I have still to sort my functions by hand in 2021?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org29a89e6" class="outline-2">
+<h2 id="org29a89e6">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org29a89e6">
+<p>
+That is just the start: why do we still spend precious time in
+restructuring things? I propose that we should make it easy to say how
+we like things and let the machine do it for us. For example, what if
+we could say: "Mmm, enough of monolithic applications! Computer split
+this application into modules like so and so". Sure describing the "so
+and so" is not banal. But in big teams (i.e., n &gt;= 3), you will need
+to explain that "so and so" anyway. Maybe somebody will be half asleep
+that day (because, you know, life) and miss something. Even if they
+were all awake, they still would have to apply your "so and so".
+</p>
+
+<p>
+Do you see? Is not better to describe (i.e., program) things once?
+</p>
+
+<p>
+And how could we do this in Emacs?!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org115351a" class="outline-2">
+<h2 id="org115351a">And there is a solution</h2>
+<div class="outline-text-2" id="text-org115351a">
+<p>
+As usual we need to start small. We will change my blog CSS to
+demonstrate how to save time with code transformations. I heard that
+my blog style needs to improve. So say I want to change all my font
+sizes and invert my colors. This sounds a long boring job, doesn't it?
+</p>
+
+<p>
+Well, code transformation remember? We can open any CSS file with the
+<a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> code tree mold. This means that we can at least gather
+those font sizes and colors I need to change. All you need to do is to
+open a Playground and query things with the following code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt;  (me/by-type 'integer_value self)
+      (--filter (s-contains-p "px" (plist-get it :text)) it))
+</pre>
+</div>
+
+<p>
+This picks all the CSS integer values. I filter the ones that are
+pixels. Now say I want to change all the values in my file from pixels
+to the <code>em</code> unit of measurement. The change description looks like this.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt;  (me/by-type 'integer_value self)
+      (--filter (s-contains-p "px" (plist-get it :text)) it)
+      (--map (list
+              :before it
+              :after (plist-put
+                      (copy-list it)
+                      :text
+                      (--&gt; (plist-get it :text)
+                           (s-replace "px" "" it)
+                           string-to-number
+                           (/ it 16.0)
+                           number-to-string
+                           (concat it "em"))))
+             it)
+      me/change-nodes
+      )
+</pre>
+</div>
+
+<p>
+As you can see, I map the list of pixel nodes to new nodes. So I
+declare a <i>transition</i>, a <code>:before</code> node and an <code>:after</code>. Then I run
+the transitions with <code>me/change-nodes</code>. (The translation to <code>em</code> is
+just dividing the pixel by 16 in my case and replacing <code>px</code> with
+<code>em</code>.)
+</p>
+
+<p>
+And let's change colors too! I want to make the code blocks from a
+dark background to a light one. So I think that inverting the colors
+will bring me there.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt;  (me/by-type 'color_value self)
+      (me/transitate-node-texts it
+                                (lambda (content)
+                                  (--&gt; content
+                                       (color-complement it)
+                                       (apply #'color-rgb-to-hex (-concat it (list 2))))))
+      me/change-nodes)
+</pre>
+</div>
+
+<p>
+See how easy is to collect colors with Treesitter CSS grammar
+identifier <code>color_value</code>. Also, I just came up with
+<code>me/transitate-node-texts</code> to hide the <code>--map</code> I showed before. The
+transformation is using the fabulous features of Emacs' color.el. The
+<code>color-complement</code> function find the reverse of a color. Then I
+transform that in a short RGB hex string (that is what <code>(list 2)</code> is
+for in there).
+</p>
+
+<p>
+Now how cool is to do this? Let me show it to you!
+</p>
+
+<p>
+<a href="/assets/blog/2021/08/11/moldable-emacs-editing-your-file-via-treesitter-(or-how-i-fixed-my-css-with-a-playground)/playgroundCodeTransform.mp4">/assets/blog/2021/08/11/moldable-emacs-editing-your-file-via-treesitter-(or-how-i-fixed-my-css-with-a-playground)/playgroundCodeTransform.mp4</a>
+</p>
+
+<p>
+Immediate! No boring searching for each color inverse. A few lines and
+zap! At least is a more interesting task!
+</p>
+
+<p>
+And that is just a basic example. Imagine if you can change the code
+to tell a story! What if you could run a migration from an
+architecture to another by defining some rules like the ones I have
+shown? One abstraction at the time and that could become possible (I hope)!
+</p>
+
+<p>
+Let's see where we get to ;)
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0ec9ee0" class="outline-2">
+<h2 id="org0ec9ee0">Conclusion</h2>
+<div class="outline-text-2" id="text-org0ec9ee0">
+<p>
+If you have little boring tasks (or you really don't care about code
+organization), well transform your code! As you could see, there is
+already basic support in <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>. Just grab a copy and give a
+try. Hopefully it will save you time and bring some fun!
+</p>
+
+<p>
+Happy transforming!
+</p>
+
+<p>
+P.S.: once more thanks to the creators of <a href="https://github.com/emacs-tree-sitter/elisp-tree-sitter">emacs-tree-sitter</a> and
+<a href="https://github.com/tree-sitter/tree-sitter">tree-sitter</a>!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-08-11</span>
+        <span title="last modification date" class="post-info">2021-08-11</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 10 Aug 2021 21:42:47 BST</pubDate>
-    <lastBuildDate>Tue, 10 Aug 2021 21:42:47 BST</lastBuildDate>
+    <pubDate>Wed, 11 Aug 2021 22:09:10 BST</pubDate>
+    <lastBuildDate>Wed, 11 Aug 2021 22:09:10 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: editing your file via Treesitter (or, how I fixed my CSS with a Playground)</title>
+      <link>http://ag91.github.io/blog/2021/08/11/moldable-emacs-editing-your-file-via-treesitter-(or-how-i-fixed-my-css-with-a-playground)</link>
+      <description><![CDATA[Code transformations rock!]]></description>
+      <pubDate>2021-08-11</pubDate>
+      <guid>http://ag91.github.io/blog/2021/08/11/moldable-emacs-editing-your-file-via-treesitter-(or-how-i-fixed-my-css-with-a-playground)</guid>
+    </item>
+    <item>
       <title>Following wise suggestions: making emacs-with-nyxt more consistent</title>
       <link>http://ag91.github.io/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent</link>
-      <description><![CDATA[Making emacs-with-nyxt less brittle]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-08-10</pubDate>
       <guid>http://ag91.github.io/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-07-19</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/19/moldable-emacs-capture-links-from-html-with-playground</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: capturing text from open images with an OCR mold</title>
-      <link>http://ag91.github.io/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-07-17</pubDate>
-      <guid>http://ag91.github.io/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold</guid>
     </item>
   </channel>
 </rss>

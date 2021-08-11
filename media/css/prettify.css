@@ -56,13 +56,13 @@
 
 /* Put a border around prettyprinted code snippets. */
 pre.prettyprint {
-  background-color: #ffff;
+  background-color: #Ffffff;
   padding: 0.625em;
   border: 0.0625em solid #1e1e17; }
 
 /* Specify class=linenums on a pre to get line numbering */
 ol.linenums {
-  color: #ffff;
+  color: #Ffffff;
   margin: 0 0 0 2.5em; }
 
 ol.linenums li {
