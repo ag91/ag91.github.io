@@ -1,0 +1,166 @@
+#+TITLE:       Moldable Emacs: editing your file via Treesitter (or, how I fixed my CSS with a Playground)
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-08-11 Wed
+#+URI:         /blog/%y/%m/%d/moldable-emacs-editing-your-file-via-treesitter-(or-how-i-fixed-my-css-with-a-playground)
+#+KEYWORDS:    moldable-emacs, emacs
+#+TAGS:        moldable-emacs, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Code transformations rock!
+* Too long; didn't read
+
+You can transform code with a Playground. As an example we will change
+my blog CSS file!
+
+* The problem
+
+I always considered code transformations magical. I still remember how
+mind blowing was to realize that people have different ways to see the
+same thing. When I actually can see code change shape to fit those
+expectations: wow! It is just seeing other people ideas! Maybe this is
+too abstract. In my last job my team members liked code to be tidy. I
+think I am a tidy person, but I just got used to a different kind of
+tidiness during my Ph.D. Let me show an example.
+
+#+begin_src scala
+def publicFn(): Int = privatePlus(1,1)
+
+def privatePlus(a: Int, b: Int) => Int = a + b
+#+end_src
+
+This is what they liked: private functions at the bottom.
+
+I would naturally write this.
+
+#+begin_src scala
+def privatePlus(a: Int, b: Int) => Int = a + b
+
+def publicFn(): Int = privatePlus(1,1)
+#+end_src
+
+(I guess my theorem proving practice has bent my brain: write small
+facts and compose them to prove bigger facts.)
+
+Anyway, after convincing myself to rewrite my code a few times, I
+thought: "Why am I wasting my time?". You could say team's peace of
+mind, consistency, etc... But that is not the point! A machine can do
+that much better than me. Code transformation here we go!
+
+How is it possible that I have still to sort my functions by hand in 2021?
+
+* It is a problem indeed
+
+That is just the start: why do we still spend precious time in
+restructuring things? I propose that we should make it easy to say how
+we like things and let the machine do it for us. For example, what if
+we could say: "Mmm, enough of monolithic applications! Computer split
+this application into modules like so and so". Sure describing the "so
+and so" is not banal. But in big teams (i.e., n >= 3), you will need
+to explain that "so and so" anyway. Maybe somebody will be half asleep
+that day (because, you know, life) and miss something. Even if they
+were all awake, they still would have to apply your "so and so".
+
+Do you see? Is not better to describe (i.e., program) things once?
+
+And how could we do this in Emacs?!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       eb85227e-2864-4891-9361-b6f2139ab315
+:END:
+
+As usual we need to start small. We will change my blog CSS to
+demonstrate how to save time with code transformations. I heard that
+my blog style needs to improve. So say I want to change all my font
+sizes and invert my colors. This sounds a long boring job, doesn't it?
+
+Well, code transformation remember? We can open any CSS file with the
+[[https://github.com/ag91/moldable-emacs][moldable-emacs]] code tree mold. This means that we can at least gather
+those font sizes and colors I need to change. All you need to do is to
+open a Playground and query things with the following code.
+
+#+begin_src elisp
+(-->  (me/by-type 'integer_value self)
+      (--filter (s-contains-p "px" (plist-get it :text)) it))
+#+end_src
+
+This picks all the CSS integer values. I filter the ones that are
+pixels. Now say I want to change all the values in my file from pixels
+to the =em= unit of measurement. The change description looks like this.
+
+#+begin_src elisp
+(-->  (me/by-type 'integer_value self)
+      (--filter (s-contains-p "px" (plist-get it :text)) it)
+      (--map (list
+              :before it
+              :after (plist-put
+                      (copy-list it)
+                      :text
+                      (--> (plist-get it :text)
+                           (s-replace "px" "" it)
+                           string-to-number
+                           (/ it 16.0)
+                           number-to-string
+                           (concat it "em"))))
+             it)
+      me/change-nodes
+      )
+#+end_src
+
+As you can see, I map the list of pixel nodes to new nodes. So I
+declare a /transition/, a =:before= node and an =:after=. Then I run
+the transitions with =me/change-nodes=. (The translation to =em= is
+just dividing the pixel by 16 in my case and replacing =px= with
+=em=.)
+
+And let's change colors too! I want to make the code blocks from a
+dark background to a light one. So I think that inverting the colors
+will bring me there.
+
+#+begin_src elisp
+(-->  (me/by-type 'color_value self)
+      (me/transitate-node-texts it
+                                (lambda (content)
+                                  (--> content
+                                       (color-complement it)
+                                       (apply #'color-rgb-to-hex (-concat it (list 2))))))
+      me/change-nodes)
+#+end_src
+
+See how easy is to collect colors with Treesitter CSS grammar
+identifier =color_value=. Also, I just came up with
+=me/transitate-node-texts= to hide the =--map= I showed before. The
+transformation is using the fabulous features of Emacs' color.el. The
+=color-complement= function find the reverse of a color. Then I
+transform that in a short RGB hex string (that is what =(list 2)= is
+for in there).
+
+Now how cool is to do this? Let me show it to you!
+
+[[file:playgroundCodeTransform.mp4]]
+
+Immediate! No boring searching for each color inverse. A few lines and
+zap! At least is a more interesting task!
+
+And that is just a basic example. Imagine if you can change the code
+to tell a story! What if you could run a migration from an
+architecture to another by defining some rules like the ones I have
+shown? One abstraction at the time and that could become possible (I hope)!
+
+Let's see where we get to ;)
+
+* Conclusion
+:PROPERTIES:
+:ID:       ab3408cb-9f31-4fb0-8f17-c98e11c58327
+:END:
+
+If you have little boring tasks (or you really don't care about code
+organization), well transform your code! As you could see, there is
+already basic support in [[https://github.com/ag91/moldable-emacs][moldable-emacs]]. Just grab a copy and give a
+try. Hopefully it will save you time and bring some fun!
+
+Happy transforming!
+
+P.S.: once more thanks to the creators of [[https://github.com/emacs-tree-sitter/elisp-tree-sitter][emacs-tree-sitter]] and
+[[https://github.com/tree-sitter/tree-sitter][tree-sitter]]!
