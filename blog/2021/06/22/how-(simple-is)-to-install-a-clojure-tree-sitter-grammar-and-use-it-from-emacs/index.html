@@ -3,6 +3,7 @@
   <head>
     <title>How (simple is) to install a Clojure tree-sitter grammar and use it from Emacs - Where parallels cross</title>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Andrea" />
     <meta name="description" content="How to install the Clojure tree-sitter for emacs-tree-sitter" />
     <meta name="keywords" content="moldable development, emacs" />
@@ -81,6 +82,10 @@ npx node-gyp configure
 
 # create `build/Release` and build `tree_sitter_clojure_binding.node`
 npx node-gyp rebuild
+
+# finally generate the dynamic library for emacs-tree-sitter
+# Note: you need tree-sitter-cli for this
+tree-sitter generate
 </pre>
 </div>
 
@@ -162,7 +167,7 @@ Happy coding!
     <div>
       <div class="post-meta">
         <span title="post date" class="post-info">2021-06-22</span>
-        <span title="last modification date" class="post-info">2021-06-22</span>
+        <span title="last modification date" class="post-info">2021-08-20</span>
         <span title="tags" class="post-info"><a href="/tags/moldable-development/">moldable development</a>, <a href="/tags/emacs/">emacs</a></span>
         <span title="author" class="post-info">Andrea</span>
       </div>
