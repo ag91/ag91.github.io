@@ -47,6 +47,10 @@ npx node-gyp configure
 
 # create `build/Release` and build `tree_sitter_clojure_binding.node`
 npx node-gyp rebuild
+
+# finally generate the dynamic library for emacs-tree-sitter
+# Note: you need tree-sitter-cli for this
+tree-sitter generate
 #+end_src
 
 Please be careful that the requirement for this is a recent version of
