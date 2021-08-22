@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: Vega-Lite, Nyxt and Emacs towards sustainable development - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Towards infinite possibilies in visualizing and acting on data" />
+    <meta name="keywords" content="moldable-development, nyxt, org-mode" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: Vega-Lite, Nyxt and Emacs towards sustainable development</h1>
+
+<div id="outline-container-org63b3f72" class="outline-2">
+<h2 id="org63b3f72">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org63b3f72">
+<p>
+Make plots interactive with Emacs! Merge visualizations, browsing and
+editing in a unique experience. Here I show how great tools can join
+hands to give you super powers.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org11a40c8" class="outline-2">
+<h2 id="org11a40c8">The problem</h2>
+<div class="outline-text-2" id="text-org11a40c8">
+<p>
+<a href="https://moldabledevelopment.com">Moldable development</a> is about letting you create tools good for the
+job at hand on the fly. It is about empowering you to deal with your
+complex world. Now reading text is pretty hard. It takes time! And it
+takes even more time to understand it.
+</p>
+
+<p>
+Mathematicians for example train themselves to read formulas, but to
+understand them they need to demo in their mind (or notepads) how a
+formula would work with concrete examples. So if I write a formula
+<code>x + y = ...</code>, a mathematician would replace the <code>x</code> and <code>y</code> with a
+few numbers to see if my formula holds. Programmers at work have the
+same issue. They use the machine to deal with testing their formulas
+(the Lisp REPL ideally!). So reading a program, formula or just text
+always requires testing it to fully understand.
+</p>
+
+<p>
+Bret Victor did majestic work at showing how we need to stop demo
+things in our minds. For example, <a href="http://worrydream.com/LadderOfAbstraction/">in developing a game you should be
+able to see how your changes affect the gameplay</a>.
+</p>
+
+<p>
+I want to move towards that! My tools must be richer than that though
+and far cheaper to make.
+</p>
+
+<p>
+It would be great to start from program execution. But I give priority
+to data. We are getting more and more data from the world around us.
+The problem is that we struggle understanding it and acting on it. For
+example, there is a lot of data about climate change, but we still
+struggle at extracting meaning from it. Then we struggle taking actions
+(e.g., what improves more the environment? If I have to choose: should I
+buy less flight tickets or consume less energy?)!
+</p>
+
+<p>
+Following the Lisp principle that everything is data (lol, <a href="https://day8.github.io/re-frame/re-frame/">the author
+of the guide of re-frame is really into this by the way</a>), how can I
+"give life to my data"? How can I actually interact with it in a novel
+way?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org63fb92a" class="outline-2">
+<h2 id="org63fb92a">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org63fb92a">
+<p>
+Programs are data. The world has data everywhere! If we make our tools
+better at extract useful meaning from that, well, we got more chance
+to change things for the better. When somebody tells a lie, it is hard
+to read all we need to find out the truth.
+</p>
+
+<p>
+When we lie to ourselves is even harder! Say that I take notes with
+Org Roam and I convinced myself that my main interest is Emacs. Could
+I check my assumption according to my note database?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgce30e54" class="outline-2">
+<h2 id="orgce30e54">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgce30e54">
+<p>
+Let's try to do just that (or an example of that at least)! The
+question is: what notes attract my attention most? Let me quantify
+this question by saying: which notes have the most Org Roam backlinks?
+This makes sense to me because adding a backlink is an effort.
+Backlinks show how much I care about a note. So the plan is to take (a
+portion of -- I got too many notes--) my notes, get how many backlinks
+they have, and plot this to see which note wins. Also I want to click
+the plot to open the note in Emacs (and show its backlinks). It sounds
+complex, but here it is!
+</p>
+
+<p>
+<a href="/assets/blog/2021/08/22/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development/MoldableEmacsNyxtVegaLite.mp4">/assets/blog/2021/08/22/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development/MoldableEmacsNyxtVegaLite.mp4</a>
+</p>
+
+<p>
+Time to explain! First of all the tools I needed for this workflow.
+</p>
+
+<ul class="org-ul">
+<li><a href="https://www.gnu.org/software/emacs/">Emacs</a> (for everything really),</li>
+<li><a href="https://www.orgroam.com/">Org Roam</a> (for the notes),</li>
+<li><a href="https://vega.github.io/vega-lite/">Vega-Lite</a> (for the plot),</li>
+<li><a href="https://github.com/ag91/moldable-emacs">Moldable Emacs</a> (for playground and data conversion),</li>
+<li><a href="https://github.com/ag91/emacs-with-nyxt">Emacs-with-Nyxt</a> (for interaction between Nyxt and Emacs),</li>
+<li><a href="https://nyxt.atlas.engineer/">Nyxt</a> (for hooking Emacs to the plot).</li>
+</ul>
+
+<p>
+We start from a moldable-emacs Playground that takes the first 100
+notes and transforms them into a plist. The list contains the number
+of backlinks, the size of the file and a <code>:command</code> which tells what
+to do when you click on a Vega-Lite node.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt; (org-roam-node-list)
+     (-take 100 it)
+     (--filter (&gt; (length (org-roam-backlinks-get it)) 0) it)
+     (--map
+      (list :file (org-roam-node-file it)
+            :backlinks (length (org-roam-backlinks-get it))
+            :size (file-attribute-size (file-attributes (org-roam-node-file it)))
+            :command (concat "file:///"
+                             (base64-encode-string
+                              (concat
+                               "(progn (find-file \""
+                               (org-roam-node-file it)
+                               "\")
+                               (org-roam-buffer-toggle))"))
+                             ".ag91"))
+      it)
+     )
+</pre>
+</div>
+
+<p>
+Vega-Lite does take data in JSON format. So we translate that plist
+into JSON with another moldable-emacs mold. The Vega-Lite schema is a
+hack of the <a href="https://vega.github.io/vega-lite/examples/point_href.html">scatterplot with href</a> example. The dimensions I consider
+are backlinks and size of file (I was curious if there was correlation
+between size and backlinks).
+</p>
+
+<p>
+Anyway, we now get into the pretty cool stuff. Vega-Lite supports
+hyperlinks to allow you click a node of the plot and navigate the web.
+I want to run an Emacs action instead (i.e., open the note and open
+the Org Roam buffer with backlinks)! What to do? Hack the hyperlink!
+</p>
+
+<p>
+Nyxt comes with a super-cool feature: it lets you define how to handle
+links. <a href="https://github.com/atlas-engineer/nyxt/issues/1634#issuecomment-884831413">Recently I modified my Nyxt configuration to open mails with
+Emacs</a>. You can also tell how to handle file extensions of an hyperlnk.
+So I made my own file extension and an handler.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(define-configuration buffer
+  ((request-resource-hook (reduce #'hooks:add-hook
+                                  (list 
+                                        (url-dispatching-handler
+                                         'emacs-mail
+                                         (match-scheme "mailto")
+                                         "/usr/bin/emacsclient --eval '(browse-url-mail \"~a\")'"
+                                         )
+                                        (url-dispatching-handler
+                                         'decode-elisp-with-emacs
+                                         (match-file-extension "ag91")
+                                         "/usr/bin/emacsclient --eval '(emacs-with-nyxt-decode-command \"~a\")'"
+                                         ))
+                                  :initial-value %slot-default%))))
+</pre>
+</div>
+
+<p>
+Note that when I find that extension, I make Emacs call
+<code>emacs-with-nyxt-decode-command</code>. The reason is into the Playground we saw before.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">:command (concat "file:///"
+                             (base64-encode-string
+                              (concat
+                               "(progn (find-file \""
+                               (org-roam-node-file it)
+                               "\")
+                               (org-roam-buffer-toggle))"))
+                             ".ag91")
+</pre>
+</div>
+
+<p>
+I put Elisp into my file name!!! I encode my Elisp program in base64
+and then add an <code>.ag91</code> exention.
+</p>
+
+<p>
+That is why I need a decode function.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun emacs-with-nyxt-decode-command (a)
+  (--&gt; a
+       (s-split "/" it t)
+       reverse
+       car
+       (s-split "\\." it t)
+       car
+       base64-decode-string
+       read
+       eval))
+</pre>
+</div>
+
+<p>
+This is probably crazy, but it opens humongous possibilities! You can
+run Elisp from the browser. And you can embed actions as hyperlinks!! I
+need to design a less hacky way to use this, after which I will add it
+to moldable-emacs and emacs-with-nyxt.
+</p>
+
+<p>
+And with this, I feel closer to have a moldable interface to
+understand better the world around me.
+</p>
+
+<p>
+(Note, this integration is a bit complex because Emacs does not have a
+good UX story. Otherwise, we could probably have an Emacs Vega-Lite
+and a simple way to hook actions to nodes. Nyxt embraces HTML and
+makes that first class. I think <a href="https://gtoolkit.com/">GlamorousToolkit</a> has a much better
+story because the UX is a first class citizen of the IDE: this means I
+would not need to jump from Emacs to Nyxt and back. In GT you can just
+program the components of the UX (which are Pharo objects) from within
+your tool. I hope Emacs will get inspired by that at some point!)
+</p>
+</div>
+</div>
+
+<div id="outline-container-org79f08aa" class="outline-2">
+<h2 id="org79f08aa">Conclusion</h2>
+<div class="outline-text-2" id="text-org79f08aa">
+<p>
+So stay tuned! We are finally getting towards giving a UX to data
+handled by Emacs. This is just a first experiment. Soon to come a
+designed way to do this kind of things (at least the file extension
+mechanism and encoding need to be easier).
+</p>
+
+<p>
+Happy vega-liting!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-08-22</span>
+        <span title="last modification date" class="post-info">2021-08-22</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-development/">moldable-development</a>, <a href="/tags/nyxt/">nyxt</a>, <a href="/tags/org-mode/">org-mode</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
