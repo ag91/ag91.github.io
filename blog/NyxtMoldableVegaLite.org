@@ -1,0 +1,208 @@
+#+TITLE:       Moldable Emacs: Vega-Lite, Nyxt and Emacs towards sustainable development
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-08-22 Sun
+#+URI:         /blog/%y/%m/%d/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development
+#+KEYWORDS:    moldable-development, nyxt, org-mode
+#+TAGS:        moldable-development, nyxt, org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Towards infinite possibilies in visualizing and acting on data
+
+* Too long; didn't read
+
+Make plots interactive with Emacs! Merge visualizations, browsing and
+editing in a unique experience. Here I show how great tools can join
+hands to give you super powers.
+
+* The problem
+
+[[https://moldabledevelopment.com][Moldable development]] is about letting you create tools good for the
+job at hand on the fly. It is about empowering you to deal with your
+complex world. Now reading text is pretty hard. It takes time! And it
+takes even more time to understand it.
+
+Mathematicians for example train themselves to read formulas, but to
+understand them they need to demo in their mind (or notepads) how a
+formula would work with concrete examples. So if I write a formula
+=x + y = ...=, a mathematician would replace the =x= and =y= with a
+few numbers to see if my formula holds. Programmers at work have the
+same issue. They use the machine to deal with testing their formulas
+(the Lisp REPL ideally!). So reading a program, formula or just text
+always requires testing it to fully understand.
+
+Bret Victor did majestic work at showing how we need to stop demo
+things in our minds. For example, [[http://worrydream.com/LadderOfAbstraction/][in developing a game you should be
+able to see how your changes affect the gameplay]].
+
+I want to move towards that! My tools must be richer than that though
+and far cheaper to make.
+
+It would be great to start from program execution. But I give priority
+to data. We are getting more and more data from the world around us.
+The problem is that we struggle understanding it and acting on it. For
+example, there is a lot of data about climate change, but we still
+struggle at extracting meaning from it. Then we struggle taking actions
+(e.g., what improves more the environment? If I have to choose: should I
+buy less flight tickets or consume less energy?)!
+
+Following the Lisp principle that everything is data (lol, [[https://day8.github.io/re-frame/re-frame/][the author
+of the guide of re-frame is really into this by the way]]), how can I
+"give life to my data"? How can I actually interact with it in a novel
+way?
+
+* It is a problem indeed
+
+Programs are data. The world has data everywhere! If we make our tools
+better at extract useful meaning from that, well, we got more chance
+to change things for the better. When somebody tells a lie, it is hard
+to read all we need to find out the truth.
+
+When we lie to ourselves is even harder! Say that I take notes with
+Org Roam and I convinced myself that my main interest is Emacs. Could
+I check my assumption according to my note database?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       c6c6937c-b53c-4b0f-80a4-2a80d5d2bc63
+:END:
+
+Let's try to do just that (or an example of that at least)! The
+question is: what notes attract my attention most? Let me quantify
+this question by saying: which notes have the most Org Roam backlinks?
+This makes sense to me because adding a backlink is an effort.
+Backlinks show how much I care about a note. So the plan is to take (a
+portion of -- I got too many notes--) my notes, get how many backlinks
+they have, and plot this to see which note wins. Also I want to click
+the plot to open the note in Emacs (and show its backlinks). It sounds
+complex, but here it is!
+
+[[file:MoldableEmacsNyxtVegaLite.mp4]]
+
+Time to explain! First of all the tools I needed for this workflow.
+
+- [[https://www.gnu.org/software/emacs/][Emacs]] (for everything really),
+- [[https://www.orgroam.com/][Org Roam]] (for the notes),
+- [[https://vega.github.io/vega-lite/][Vega-Lite]] (for the plot),
+- [[https://github.com/ag91/moldable-emacs][Moldable Emacs]] (for playground and data conversion),
+- [[https://github.com/ag91/emacs-with-nyxt][Emacs-with-Nyxt]] (for interaction between Nyxt and Emacs),
+- [[https://nyxt.atlas.engineer/][Nyxt]] (for hooking Emacs to the plot).
+
+We start from a moldable-emacs Playground that takes the first 100
+notes and transforms them into a plist. The list contains the number
+of backlinks, the size of the file and a =:command= which tells what
+to do when you click on a Vega-Lite node.
+
+#+begin_src elisp :noeval
+(--> (org-roam-node-list)
+     (-take 100 it)
+     (--filter (> (length (org-roam-backlinks-get it)) 0) it)
+     (--map
+      (list :file (org-roam-node-file it)
+            :backlinks (length (org-roam-backlinks-get it))
+            :size (file-attribute-size (file-attributes (org-roam-node-file it)))
+            :command (concat "file:///"
+                             (base64-encode-string
+                              (concat
+                               "(progn (find-file \""
+                               (org-roam-node-file it)
+                               "\")
+                               (org-roam-buffer-toggle))"))
+                             ".ag91"))
+      it)
+     )
+#+end_src
+
+Vega-Lite does take data in JSON format. So we translate that plist
+into JSON with another moldable-emacs mold. The Vega-Lite schema is a
+hack of the [[https://vega.github.io/vega-lite/examples/point_href.html][scatterplot with href]] example. The dimensions I consider
+are backlinks and size of file (I was curious if there was correlation
+between size and backlinks).
+
+Anyway, we now get into the pretty cool stuff. Vega-Lite supports
+hyperlinks to allow you click a node of the plot and navigate the web.
+I want to run an Emacs action instead (i.e., open the note and open
+the Org Roam buffer with backlinks)! What to do? Hack the hyperlink!
+
+Nyxt comes with a super-cool feature: it lets you define how to handle
+links. [[https://github.com/atlas-engineer/nyxt/issues/1634#issuecomment-884831413][Recently I modified my Nyxt configuration to open mails with
+Emacs]]. You can also tell how to handle file extensions of an hyperlnk.
+So I made my own file extension and an handler.
+
+#+begin_src lisp :noeval
+(define-configuration buffer
+  ((request-resource-hook (reduce #'hooks:add-hook
+                                  (list 
+                                        (url-dispatching-handler
+                                         'emacs-mail
+                                         (match-scheme "mailto")
+                                         "/usr/bin/emacsclient --eval '(browse-url-mail \"~a\")'"
+                                         )
+                                        (url-dispatching-handler
+                                         'decode-elisp-with-emacs
+                                         (match-file-extension "ag91")
+                                         "/usr/bin/emacsclient --eval '(emacs-with-nyxt-decode-command \"~a\")'"
+                                         ))
+                                  :initial-value %slot-default%))))
+#+end_src
+
+Note that when I find that extension, I make Emacs call
+=emacs-with-nyxt-decode-command=. The reason is into the Playground we saw before.
+
+#+begin_src elisp :noeval
+:command (concat "file:///"
+                             (base64-encode-string
+                              (concat
+                               "(progn (find-file \""
+                               (org-roam-node-file it)
+                               "\")
+                               (org-roam-buffer-toggle))"))
+                             ".ag91")
+#+end_src
+
+I put Elisp into my file name!!! I encode my Elisp program in base64
+and then add an =.ag91= exention.
+
+That is why I need a decode function.
+
+#+begin_src elisp :noeval
+   (defun emacs-with-nyxt-decode-command (a)
+     (--> a
+          (s-split "/" it t)
+          reverse
+          car
+          (s-split "\\." it t)
+          car
+          base64-decode-string
+          read
+          eval))
+#+end_src
+
+This is probably crazy, but it opens humongous possibilities! You can
+run Elisp from the browser. And you can embed actions as hyperlinks!! I
+need to design a less hacky way to use this, after which I will add it
+to moldable-emacs and emacs-with-nyxt.
+
+And with this, I feel closer to have a moldable interface to
+understand better the world around me.
+
+(Note, this integration is a bit complex because Emacs does not have a
+good UX story. Otherwise, we could probably have an Emacs Vega-Lite
+and a simple way to hook actions to nodes. Nyxt embraces HTML and
+makes that first class. I think [[https://gtoolkit.com/][GlamorousToolkit]] has a much better
+story because the UX is a first class citizen of the IDE: this means I
+would not need to jump from Emacs to Nyxt and back. In GT you can just
+program the components of the UX (which are Pharo objects) from within
+your tool. I hope Emacs will get inspired by that at some point!)
+
+* Conclusion
+:PROPERTIES:
+:ID:       a9336764-35c1-46dc-b002-3b954ff49d2a
+:END:
+
+So stay tuned! We are finally getting towards giving a UX to data
+handled by Emacs. This is just a first experiment. Soon to come a
+designed way to do this kind of things (at least the file extension
+mechanism and encoding need to be easier).
+
+Happy vega-liting!
