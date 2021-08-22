@@ -128,8 +128,12 @@ the plot to open the note in Emacs (and show its backlinks). It sounds
 complex, but here it is!
 </p>
 
+
 <p>
-<a href="/assets/blog/2021/08/22/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development/MoldableEmacsNyxtVegaLite.mp4">/assets/blog/2021/08/22/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development/MoldableEmacsNyxtVegaLite.mp4</a>
+  <video width="420" height="240" controls>
+    <source src="/assets/blog/2021/08/22/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development/MoldableEmacsNyxtVegaLite.mp4" type="video/mp4">
+    <a href="/assets/blog/2021/08/22/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development/MoldableEmacsNyxtVegaLite.mp4">/assets/blog/2021/08/22/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development/MoldableEmacsNyxtVegaLite.mp4</a>
+  </video>
 </p>
 
 <p>
@@ -198,7 +202,7 @@ So I made my own file extension and an handler.
 <div class="org-src-container">
 <pre class="src src-lisp">(define-configuration buffer
   ((request-resource-hook (reduce #'hooks:add-hook
-                                  (list 
+                                  (list
                                         (url-dispatching-handler
                                          'emacs-mail
                                          (match-scheme "mailto")
