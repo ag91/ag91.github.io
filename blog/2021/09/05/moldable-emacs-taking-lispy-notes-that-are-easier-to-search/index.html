@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: taking lispy notes that are easier to search! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Take notes via molds!" />
+    <meta name="keywords" content="moldable-emacs, org-mode" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: taking lispy notes that are easier to search!</h1>
+
+
+<div id="outline-container-org0db5760" class="outline-2">
+<h2 id="org0db5760">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org0db5760">
+<p>
+How about taking lispy notes? Here I am going to show a still immature
+but promising way of taking notes via molds.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org07ea9ab" class="outline-2">
+<h2 id="org07ea9ab">The problem</h2>
+<div class="outline-text-2" id="text-org07ea9ab">
+<p>
+I love Org Mode! You can say that <a href="https://ag91.github.io/blog/2020/12/22/mastering-emacs-is-a-slow-process-an-archeological-tour-of-my-(archived)-beginnings/">it was the start of my Emacs
+adventure</a>. From important dates to my mumbling and aspirations, Org
+Mode is always sustaining my planning. I would like Org Mode
+everywhere if possible. And I guess I am not alone, since people
+actually developed apps to bring it on mobile.
+</p>
+
+<p>
+One place I would like Org Mode is in my projects. Say I am thinking
+about something related to a line of code. Now I have to capture a
+note with a link. When I want to find that note, I need to jump in an
+Org buffer. Not really dynamic enough, is it?
+</p>
+
+<p>
+And then, sometimes I discover some cool command for eshell or vterm.
+If I take a note about that, I would have to search it when I need it!
+Indeed, so far I would use an Org Roam note and I would add a label
+(e.g., "eshell") in the title. Why do I need to tell my computer where
+to search? Often the context is clear: the computer should guess for
+me!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7712114" class="outline-2">
+<h2 id="org7712114">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org7712114">
+<p>
+If you are a habitual reader of my blog, you may know by now that
+context-switching is my nemesis. When I have to stop to find the
+related Org Mode file for "that note I am sure I had somewhere", well
+that is a pain. By the time that I find what I need, I need to recover
+what I was doing in the first place!!
+</p>
+
+<p>
+This happens a lot with my note taking. Even the splendid Org Mode
+suffers this issue. The answer for coding (I very much appreciate) was
+Org Babel, which lets you bring the code in Org Mode. As much as I
+practice that, it is not an universal answer. I can tangle code for
+small projects, but maintaining source blocks is too big of a
+challenge. So I say: if the code cannot go to the notes, let's make
+the notes go to the code!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org599517d" class="outline-2">
+<h2 id="org599517d">And there is a solution</h2>
+<div class="outline-text-2" id="text-org599517d">
+<p>
+This is an experiment that is working well for my work, so I feel it
+already valuable. I am missing a bunch of features I would like to
+have (e.g., deleting a note XD). Get in touch if you have ideas on how
+to use this with more comfort.
+</p>
+
+<p>
+Let me demo this for you first.
+</p>
+
+<p>
+<a href="/assets/blog/2021/09/05/moldable-emacs-taking-lispy-notes-that-are-easier-to-search/take-notes.mp4">/assets/blog/2021/09/05/moldable-emacs-taking-lispy-notes-that-are-easier-to-search/take-notes.mp4</a>
+</p>
+
+<p>
+As you can see, I am in a buffer, I highlight something, call the
+"AnnotateWithOrg" mold and add an Org Mode note. Then I can retrieve
+notes by buffer or even by mode!!! And I can list notes in the Lisp or
+Org Mode format.
+</p>
+
+<p>
+This is how a lispy note looks like.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(:given
+ (:node
+  (:key "2021-06-05+17:54:05" :type position :text "    ;; TODO make this smarter" :begin 919874 :end 919903 :buffer "config.org" :buffer-file "~/config.org" :mode org-mode))
+ :when nil :then
+ (:string "TODO I need to act on the internal representation of molds!"))
+</pre>
+</div>
+
+<p>
+<a href="https://ag91.github.io/blog/2021/06/18/moldable-emacs-vision-basic-concepts-and-design/">The format is in a story-telling style</a>. Given something (a node
+position in this case), then I have a note. I believe this structure
+will let me make some cool features later on. I am craving to have
+some time with <code>:when</code> really, to make things a bit more dynamic.
+</p>
+
+<p>
+Anyway, I recently added also an optional :git-hash attribute. The
+idea here is to make notes stick to a particular commit. We could make
+an history of our notes!
+</p>
+
+<p>
+Ah and by the way, you can also see all your notes as a journal since
+the ids contain dates.
+</p>
+
+<p>
+As you could see you can take notes as Org Mode files, so we can
+inherit Org superpowers too. This flexibility makes simple to export
+notes to Org Roam too: we could upgrade our notes to a Zettelkasten!
+</p>
+
+<p>
+The thing that I like most of this (immature) system is that I can
+stick notes to buffers. That provides a natural way to focus my search.
+</p>
+
+<p>
+Also notes are easy to program. Lisp comes first. The Org Mode format
+is just a way to manipulate Lisp. As soon as we are done, it returns
+to be something we can program. This is why it is so simple to group
+notes by mode or project.
+</p>
+
+<p>
+I have few notes for now, so I guess I will have to look into storage
+later. But maybe I don't have to: at that point I could export notes
+to Org Roam path, and so I could reuse their database system. Imagine
+a note system that migrates to the best host every time we need to!
+</p>
+
+<p>
+I hope this is just a great start of an useful mold!
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org6e180de" class="outline-2">
+<h2 id="org6e180de">Conclusion</h2>
+<div class="outline-text-2" id="text-org6e180de">
+<p>
+Again this is all available in <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>. Grab a copy, let me
+know if it difficult to install, and take a note!
+</p>
+
+<p>
+Happy note taking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-09-05</span>
+        <span title="last modification date" class="post-info">2021-09-05</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/org-mode/">org-mode</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
