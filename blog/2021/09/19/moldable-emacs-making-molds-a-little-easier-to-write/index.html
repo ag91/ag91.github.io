@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: making molds a little easier to write - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A little change to make molds more powerful!" />
+    <meta name="keywords" content="moldable-emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: making molds a little easier to write</h1>
+<div id="outline-container-org72374f7" class="outline-2">
+<h2 id="org72374f7">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org72374f7">
+<p>
+Molds definition <code>:given</code> and <code>:then</code> don't accept lambdas anymore:
+you want to declare a function with <code>:fn</code> instead. This small
+(breaking) change will bring some benefits. If you have already
+defined your molds, here you will find how to move them to the new
+format.
+</p>
+</div>
+</div>
+<div id="outline-container-org196a130" class="outline-2">
+<h2 id="org196a130">The problem</h2>
+<div class="outline-text-2" id="text-org196a130">
+<p>
+I am pretty proud of <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>. Lately I am creating molds for
+making my work simpler. For example, just the other day I shared with
+my colleagues how I collect production errors with a mold. I pull the
+errors from our logging system and then I analyse them with another
+mold. The idea is to bring that report into my editor. Soon (I hope)
+Emacs will point to me which file I have to fix to get rid of a given
+error!
+</p>
+
+<p>
+By the way, a reminder of the power of moldable development: just
+showing my little (rough) analysis prompted a colleague to solve an
+issue with a feature we are releasing! Again a custom view can save
+the day (and time).
+</p>
+
+<p>
+When molds gather data from other systems, they often block Emacs. So,
+I devised a little pattern to use the great <a href="https://github.com/jwiegley/emacs-async/blob/master/async.el">async.el</a> to keep my Emacs
+usable. Anytime a mold needs slow-to-get data, I start a process that
+does that in the background. In the meanwhile Emacs fetches the data,
+my mold displays a message like "Loading some data" in the output
+buffer.
+</p>
+
+<p>
+This pattern works, but it is tiring to code and easy to get wrong.
+And since the molds I make for work will ping all sort of services for
+data, I surely need a better solution.
+</p>
+
+<p>
+Would it not be amazing to just tag mold sections to say run this
+async?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgff7da5d" class="outline-2">
+<h2 id="orgff7da5d">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgff7da5d">
+<p>
+This is a more general issue. Each bit of a mold definition could
+carry metadata useful for running it. My first design of molds is not
+declarative enough. I decided to use a property list to make sure that
+molds are data that Emacs can interpret (and run). I now realize I
+left something out though.
+</p>
+
+<p>
+This is how a mold currently looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me/register-mold
+ :key "Query"
+ :given (lambda () 't)
+ :then (lambda ()
+         (let ((self (ignore-errors
+                       (save-excursion
+                         (goto-char (point-min))
+                         (eval `',(read (current-buffer))))))
+               (sexps (call-interactively 'eval-expression))
+               (buffer (get-buffer-create "m/tree")))
+           (with-current-buffer buffer
+             (erase-buffer)
+             (setq-local self sexps)
+             (me/print-to-buffer sexps buffer)
+             (emacs-lisp-mode)
+             buffer)
+           buffer)))
+</pre>
+</div>
+
+<p>
+(This mold is a nice utility: you write an Elisp expression that runs
+in the current buffer and outputs the results in a new buffer.)
+</p>
+
+<p>
+You can see that the <code>:given</code> and <code>:then</code> bits are lambdas. That is a
+blocker. When I get the <code>:given</code> of the "Query" mold, I have to run it.
+The more I think about it, the more it seems that <code>:given</code> could be
+other things than a function. For example, it could be a regexp! We
+could interpret that to activate the mold anytime that regexp is found
+in the buffer. Or it could be a function with a flat to run it asynchronously!
+</p>
+
+<p>
+Do you see? I feel that in my first design I missed just an important
+little out that could mean a lot later on.
+</p>
+</div>
+</div>
+<div id="outline-container-org2fd4352" class="outline-2">
+<h2 id="org2fd4352">And there is a solution</h2>
+<div class="outline-text-2" id="text-org2fd4352">
+<p>
+Time to improve things! Let me show how the new "Query" mold looks like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me/register-mold-1
+ :key "Query"
+ :given (:fn 't)
+ :then (:fn
+        (let ((self (ignore-errors
+                      (save-excursion
+                        (goto-char (point-min))
+                        (eval `',(read (current-buffer))))))
+              (sexps (call-interactively 'eval-expression)))
+          (with-current-buffer buffername
+            (emacs-lisp-mode)
+            (erase-buffer)
+            (setq-local self sexps)
+            (me/print-to-buffer sexps)))))
+</pre>
+</div>
+
+<p>
+The lambdas are gone! The <code>:fn</code> stands for lambda here. The
+<code>me-mold-1</code> function (which runs molds) will interpret that as
+something to run.
+</p>
+
+<p>
+So we can imagine (didn't finish to implement that yet though) that to
+make the <code>:then</code> clause run my async pattern, we could define "Query"
+like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me/register-mold-1
+ :key "Query"
+ :given (:fn 't)
+ :then (:fn ... :async t))
+</pre>
+</div>
+
+<p>
+It would be clean, no? Also, now that I think of it, I could make so
+that users can define their own custom interpretation of tags. A good
+way to separate concerns, I guess (<a href="https://en.wikipedia.org/wiki/Aspect-oriented_programming">Aspect Oriented Programming</a>, a
+remake).
+</p>
+
+<p>
+Note another thing: you don't need to create anymore the output buffer
+manually. Experience showed me that is a poor investment of time. You
+can still define a custom name by defining a <code>:buffername</code> property
+for the mold.
+</p>
+
+<p>
+Another little feature I introduce is a <code>:let</code> keyword. With that you
+can define bindings available to both <code>:given</code> and <code>:then</code> clauses.
+This increase code reuse for some molds. Later I want to make sure
+that these bindings are evaluated only once (_for now is evaluated
+twice_), so to spare computations.
+</p>
+
+<p>
+The steps to refactor molds for the new format are the following.
+</p>
+
+<ol class="org-ol">
+<li>replace <code>lambda</code> in <code>:given</code> and <code>:then</code> with <code>:fn</code></li>
+
+<li>use <code>buffername</code> to use the mold's output buffer in the <code>:then</code> clause</li>
+
+<li>put common variables between <code>:given</code> and <code>:then</code> in <code>:let</code>
+clause</li>
+
+<li>stop returning buffer at the end of the <code>:then</code> clause</li>
+</ol>
+
+<p>
+If you want to use the new format already, just use <code>me/mold-1</code>
+instead of <code>me/mold</code> to run molds AND put the following setting in your init:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq me/files-with-molds (list "&lt;moldable-emacs&gt;/molds/contrib-1.el" "&lt;moldable-emacs&gt;/molds/core-1.el"))
+</pre>
+</div>
+
+<p>
+Where <code>&lt;moldable-emacs&gt;</code> stands for your path to the mode. This will
+load and use the refactored molds.
+</p>
+
+<p>
+All in all, a small breaking change! I shall post soon about the
+improvements this allows!
+</p>
+</div>
+</div>
+<div id="outline-container-orgce2aaa3" class="outline-2">
+<h2 id="orgce2aaa3">Conclusion</h2>
+<div class="outline-text-2" id="text-orgce2aaa3">
+<p>
+Now a few interesting doors are open for moldable-emacs to evolve.
+Please let me know if you have any feedback!
+</p>
+
+<p>
+Happy molding!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-09-19</span>
+        <span title="last modification date" class="post-info">2021-09-19</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
