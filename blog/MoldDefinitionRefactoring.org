@@ -1,0 +1,178 @@
+#+TITLE:       Moldable Emacs: making molds a little easier to write
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-09-19 Sun
+#+URI:         /blog/%y/%m/%d/moldable-emacs-making-molds-a-little-easier-to-write
+#+KEYWORDS:    moldable-emacs
+#+TAGS:        moldable-emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A little change to make molds more powerful!
+* Too long; didn't read
+
+Molds definition =:given= and =:then= don't accept lambdas anymore:
+you want to declare a function with =:fn= instead. This small
+(breaking) change will bring some benefits. If you have already
+defined your molds, here you will find how to move them to the new
+format.
+* The problem
+:PROPERTIES:
+:ID:       8a2a5b72-db98-4e05-ac81-1643482e62ce
+:END:
+
+I am pretty proud of [[https://github.com/ag91/moldable-emacs][moldable-emacs]]. Lately I am creating molds for
+making my work simpler. For example, just the other day I shared with
+my colleagues how I collect production errors with a mold. I pull the
+errors from our logging system and then I analyse them with another
+mold. The idea is to bring that report into my editor. Soon (I hope)
+Emacs will point to me which file I have to fix to get rid of a given
+error!
+
+By the way, a reminder of the power of moldable development: just
+showing my little (rough) analysis prompted a colleague to solve an
+issue with a feature we are releasing! Again a custom view can save
+the day (and time).
+
+When molds gather data from other systems, they often block Emacs. So,
+I devised a little pattern to use the great [[https://github.com/jwiegley/emacs-async/blob/master/async.el][async.el]] to keep my Emacs
+usable. Anytime a mold needs slow-to-get data, I start a process that
+does that in the background. In the meanwhile Emacs fetches the data,
+my mold displays a message like "Loading some data" in the output
+buffer.
+
+This pattern works, but it is tiring to code and easy to get wrong.
+And since the molds I make for work will ping all sort of services for
+data, I surely need a better solution.
+
+Would it not be amazing to just tag mold sections to say run this
+async?
+                                                            
+* It is a problem indeed
+
+This is a more general issue. Each bit of a mold definition could
+carry metadata useful for running it. My first design of molds is not
+declarative enough. I decided to use a property list to make sure that
+molds are data that Emacs can interpret (and run). I now realize I
+left something out though.
+
+This is how a mold currently looks like:
+
+#+begin_src elisp
+(me/register-mold
+ :key "Query"
+ :given (lambda () 't)
+ :then (lambda ()
+         (let ((self (ignore-errors
+                       (save-excursion
+                         (goto-char (point-min))
+                         (eval `',(read (current-buffer))))))
+               (sexps (call-interactively 'eval-expression))
+               (buffer (get-buffer-create "m/tree")))
+           (with-current-buffer buffer
+             (erase-buffer)
+             (setq-local self sexps)
+             (me/print-to-buffer sexps buffer)
+             (emacs-lisp-mode)
+             buffer)
+           buffer)))
+#+end_src
+
+(This mold is a nice utility: you write an Elisp expression that runs
+in the current buffer and outputs the results in a new buffer.)
+
+You can see that the =:given= and =:then= bits are lambdas. That is a
+blocker. When I get the =:given= of the "Query" mold, I have to run it.
+The more I think about it, the more it seems that =:given= could be
+other things than a function. For example, it could be a regexp! We
+could interpret that to activate the mold anytime that regexp is found
+in the buffer. Or it could be a function with a flat to run it asynchronously!
+
+Do you see? I feel that in my first design I missed just an important
+little out that could mean a lot later on.
+* And there is a solution
+:PROPERTIES:
+:ID:       101de3dc-4d0a-4486-a219-a1805d6d3b06
+:END:
+
+Time to improve things! Let me show how the new "Query" mold looks like:
+
+#+begin_src elisp
+(me/register-mold-1
+ :key "Query"
+ :given (:fn 't)
+ :then (:fn
+        (let ((self (ignore-errors
+                      (save-excursion
+                        (goto-char (point-min))
+                        (eval `',(read (current-buffer))))))
+              (sexps (call-interactively 'eval-expression)))
+          (with-current-buffer buffername
+            (emacs-lisp-mode)
+            (erase-buffer)
+            (setq-local self sexps)
+            (me/print-to-buffer sexps)))))
+#+end_src
+
+The lambdas are gone! The =:fn= stands for lambda here. The
+=me-mold-1= function (which runs molds) will interpret that as
+something to run.
+
+So we can imagine (didn't finish to implement that yet though) that to
+make the =:then= clause run my async pattern, we could define "Query"
+like this:
+
+#+begin_src elisp
+(me/register-mold-1
+ :key "Query"
+ :given (:fn 't)
+ :then (:fn ... :async t))
+#+end_src
+
+It would be clean, no? Also, now that I think of it, I could make so
+that users can define their own custom interpretation of tags. A good
+way to separate concerns, I guess ([[https://en.wikipedia.org/wiki/Aspect-oriented_programming][Aspect Oriented Programming]], a
+remake).
+
+Note another thing: you don't need to create anymore the output buffer
+manually. Experience showed me that is a poor investment of time. You
+can still define a custom name by defining a =:buffername= property
+for the mold.
+
+Another little feature I introduce is a =:let= keyword. With that you
+can define bindings available to both =:given= and =:then= clauses.
+This increase code reuse for some molds. Later I want to make sure
+that these bindings are evaluated only once (_for now is evaluated
+twice_), so to spare computations.
+
+The steps to refactor molds for the new format are the following.
+
+    1. replace =lambda= in =:given= and =:then= with =:fn=
+
+    2. use =buffername= to use the mold's output buffer in the =:then= clause
+
+    3. put common variables between =:given= and =:then= in =:let=
+       clause
+
+    4. stop returning buffer at the end of the =:then= clause
+
+If you want to use the new format already, just use =me/mold-1=
+instead of =me/mold= to run molds AND put the following setting in your init:
+
+#+begin_src elisp
+(setq me/files-with-molds (list "<moldable-emacs>/molds/contrib-1.el" "<moldable-emacs>/molds/core-1.el"))
+#+end_src
+
+Where =<moldable-emacs>= stands for your path to the mode. This will
+load and use the refactored molds.
+
+All in all, a small breaking change! I shall post soon about the
+improvements this allows!
+* Conclusion
+:PROPERTIES:
+:ID:       92d51f9d-94bb-47b2-b34b-3e41e7a74653
+:END:
+
+Now a few interesting doors are open for moldable-emacs to evolve.
+Please let me know if you have any feedback!
+
+Happy molding!
