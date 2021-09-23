@@ -1,0 +1,131 @@
+#+TITLE:       Moldable Emacs: extending the Playground powers via hooks (to include Dired)
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-09-23 Thu
+#+URI:         /blog/%y/%m/%d/moldable-emacs-extending-the-playground-powers-via-hooks-to-include-dired
+#+KEYWORDS:    moldable-emacs, emacs
+#+TAGS:        moldable-emacs, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Or how to make any buffer behave like molds
+* Too long; didn't read
+
+The Playground is at its best when a =self= variable is defined. Molds always
+define such a variable, but you can define one even for normal buffer.
+Here I show how to do that for Dired buffers.
+
+* The problem
+
+It happened again! I was in a Dired buffer, I selected some files, and
+I thought: "how cool would it be to find out how complex these files
+are?". And once more I scratched my head and let my thoughts pass by:
+too difficult! Sometimes I need just a simple mechanism to run an
+Elisp snippet through files I selected in [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][Dired]]. I know I could use
+eshell, or first collect the files in a list and then write an Elisp
+snippet. But now that I use [[https://github.com/ag91/moldable-emacs][moldable-emacs]]'s Playground, I really
+would like to do that more easily!
+
+* It is a problem indeed
+
+Well, Dired fantastic capabilities are only a part of the story. Loop
+a snippet through files selected with Dired is cool, but I expect to
+have similar use cases for other existing Emacs modes. For example, I
+expect to want to script my way through a list of commits selected in
+[[https://magit.vc/][Magit]]. Or a list of snippets selected in grep-mode!
+
+The molds of moldable-emacs set a variable named =self= to contain the
+useful contents of a buffer. The idea is to make easy for other molds
+(Playground /in primis/) to transform those contents. The issue is
+that =self= is only set by molds! Dired does not set that. So if I
+open a Playground from a Dired buffer, I have no =self=.
+
+How could we set =self= for buffers of other amazing modes?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       c4a8c189-4f86-480a-bffa-6c1964c752ea
+:END:
+
+This took much more thought than needed. The other evening I realized
+I had all the pieces I needed to make that happen.
+
+Let me show the result first!
+
+[[file:diredPlayground.mp4]]
+
+This is just magic! I mark some ([[https://nyxt.atlas.engineer/][Nyxt]] source) files in Dired, then I
+carry the files in a Playground. Next I use my fabulous [[https://github.com/ag91/code-compass][code-compass]]
+complexity analysis on their contents. I can produce an alist or even
+better a plist. And as you know, I can make an Org table from that and
+plot the results!
+
+The beauty of this system is that I can compose at will. And when I am
+not sure how to compose, I have just to invoke =me-mold=. That will
+suggest me working molds to use next! For example, I could have used
+also the line plot! (Vega-Lite is still in the works by the way!)
+
+You can see how simple is the code in the Playground.
+
+#+begin_src elisp
+(--map
+ (cons `(file . ,it)
+       (c/calculate-complexity-stats (with-file it (buffer-string))))
+ self)
+
+(--> (--map
+      (cons `(file . ,it)
+            (c/calculate-complexity-stats (with-file it (buffer-string))))
+      self)
+     (--map (list :file (alist-get 'file it)
+                  :complexity (alist-get 'total it))
+            it))
+#+end_src
+
+Dired is doing the hard work of letting me select files! Indeed, my
+aim is to leverage amazing software and integrating it with our newer
+system. I guess this is going towards software environmentalism [[https://youtu.be/SflvfvOQ_5k?t=905][in the
+words of Tudor Girba]]: we reuse the brightness of our predecessors. (And
+what a view from these giants shoulders!)
+
+Anyway, if you wish, you can extend the Playground too. The trick for
+Dired is in the following code.
+
+#+begin_src elisp
+(defun me/set-dired-self-for-playground ()
+  "Set Playground `self' to dired list of files."
+  (when (and
+         (equal me/last-used-mold "Playground")
+         (ignore-errors mold-data)
+         (eq (plist-get mold-data :old-mode) 'dired-mode))
+    (setq-local self (with-current-buffer (plist-get mold-data :old-buffer)
+                       (or (progn (goto-char (point-min)) (dired-get-marked-files))
+                           (progn (mark-whole-buffer)
+                                  (call-interactively #'dired-mark)
+                                  (let ((files (dired-get-marked-files)))
+                                    (call-interactively #'dired-unmark-all-files)
+                                    files)))))))
+(add-hook 'me/mold-after-hook #'me/set-dired-self-for-playground) ;; the order is important: keep before me/set-self-mold-data
+#+end_src
+
+In short this code runs after a mold has run (i.e.,
+=me/mold-after-hook=). If the mold was a Playground and the starting
+buffer was a Dired one, we set =self=. In this case, I exploit
+=dired-get-marked-files= to get the list of file names. Note that
+=mold-data= is also set via a hook. That is why I got the comment at
+the end: this must run after that data is set otherwise it would not
+work.
+
+That is all! If you need to extend moldable-emacs's interpreter you
+have =me/mold-after-hook= and =me/mold-before-hook= and even
+=me/mold-before-mold-runs-hook=. So you are free to make =me/mold=
+smarter!
+
+
+* Conclusion
+
+Let's jump on the shoulders of Emacs giants! By extending the
+Playground we acquire incredible superpowers, because we can make
+existing modes behave like molds. So grab a copy of moldable-emacs and
+start scripting your marked files away!
+
+Happy Dired-ing!
