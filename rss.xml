@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 23 Sep 2021 21:02:23 BST</pubDate>
-    <lastBuildDate>Thu, 23 Sep 2021 21:02:23 BST</lastBuildDate>
+    <pubDate>Thu, 23 Sep 2021 21:11:01 BST</pubDate>
+    <lastBuildDate>Thu, 23 Sep 2021 21:11:01 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: extending the Playground powers via hooks (to include Dired)</title>
+      <link>http://ag91.github.io/blog/2021/09/23/moldable-emacs-extending-the-playground-powers-via-hooks-to-include-dired</link>
+      <description><![CDATA[Or how to make any buffer behave like molds]]></description>
+      <pubDate>2021-09-23</pubDate>
+      <guid>http://ag91.github.io/blog/2021/09/23/moldable-emacs-extending-the-playground-powers-via-hooks-to-include-dired</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: making molds a little easier to write</title>
       <link>http://ag91.github.io/blog/2021/09/19/moldable-emacs-making-molds-a-little-easier-to-write</link>
-      <description><![CDATA[A little change to make molds more powerful!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-09-19</pubDate>
       <guid>http://ag91.github.io/blog/2021/09/19/moldable-emacs-making-molds-a-little-easier-to-write</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-07-27</pubDate>
       <guid>http://ag91.github.io/blog/2021/07/27/moldable-emacs-finding-examples-of-clojure-functions-(with-tests)</guid>
-    </item>
-    <item>
-      <title>What if we cannot make it? A less optimistic view on climate change</title>
-      <link>http://ag91.github.io/blog/2021/07/27/what-if-we-cannot-make-it-a-less-optimistic-view-on-climate-change</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-07-27</pubDate>
-      <guid>http://ag91.github.io/blog/2021/07/27/what-if-we-cannot-make-it-a-less-optimistic-view-on-climate-change</guid>
     </item>
   </channel>
 </rss>

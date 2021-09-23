@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: extending the Playground powers via hooks (to include Dired) - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Or how to make any buffer behave like molds" />
+    <meta name="keywords" content="moldable-emacs, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: extending the Playground powers via hooks (to include Dired)</h1>
+<div id="outline-container-orgdb213f4" class="outline-2">
+<h2 id="orgdb213f4">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgdb213f4">
+<p>
+The Playground is at its best when a <code>self</code> variable is defined. Molds always
+define such a variable, but you can define one even for normal buffer.
+Here I show how to do that for Dired buffers.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfcb9508" class="outline-2">
+<h2 id="orgfcb9508">The problem</h2>
+<div class="outline-text-2" id="text-orgfcb9508">
+<p>
+It happened again! I was in a Dired buffer, I selected some files, and
+I thought: "how cool would it be to find out how complex these files
+are?". And once more I scratched my head and let my thoughts pass by:
+too difficult! Sometimes I need just a simple mechanism to run an
+Elisp snippet through files I selected in <a href="https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html">Dired</a>. I know I could use
+eshell, or first collect the files in a list and then write an Elisp
+snippet. But now that I use <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>'s Playground, I really
+would like to do that more easily!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1b7f850" class="outline-2">
+<h2 id="org1b7f850">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org1b7f850">
+<p>
+Well, Dired fantastic capabilities are only a part of the story. Loop
+a snippet through files selected with Dired is cool, but I expect to
+have similar use cases for other existing Emacs modes. For example, I
+expect to want to script my way through a list of commits selected in
+<a href="https://magit.vc/">Magit</a>. Or a list of snippets selected in grep-mode!
+</p>
+
+<p>
+The molds of moldable-emacs set a variable named <code>self</code> to contain the
+useful contents of a buffer. The idea is to make easy for other molds
+(Playground <i>in primis</i>) to transform those contents. The issue is
+that <code>self</code> is only set by molds! Dired does not set that. So if I
+open a Playground from a Dired buffer, I have no <code>self</code>.
+</p>
+
+<p>
+How could we set <code>self</code> for buffers of other amazing modes?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf52ff60" class="outline-2">
+<h2 id="orgf52ff60">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgf52ff60">
+<p>
+This took much more thought than needed. The other evening I realized
+I had all the pieces I needed to make that happen.
+</p>
+
+<p>
+Let me show the result first!
+</p>
+
+<p>
+<a href="/assets/blog/2021/09/23/moldable-emacs-extending-the-playground-powers-via-hooks-to-include-dired/diredPlayground.mp4">/assets/blog/2021/09/23/moldable-emacs-extending-the-playground-powers-via-hooks-to-include-dired/diredPlayground.mp4</a>
+</p>
+
+<p>
+This is just magic! I mark some (<a href="https://nyxt.atlas.engineer/">Nyxt</a> source) files in Dired, then I
+carry the files in a Playground. Next I use my fabulous <a href="https://github.com/ag91/code-compass">code-compass</a>
+complexity analysis on their contents. I can produce an alist or even
+better a plist. And as you know, I can make an Org table from that and
+plot the results!
+</p>
+
+<p>
+The beauty of this system is that I can compose at will. And when I am
+not sure how to compose, I have just to invoke <code>me-mold</code>. That will
+suggest me working molds to use next! For example, I could have used
+also the line plot! (Vega-Lite is still in the works by the way!)
+</p>
+
+<p>
+You can see how simple is the code in the Playground.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--map
+ (cons `(file . ,it)
+       (c/calculate-complexity-stats (with-file it (buffer-string))))
+ self)
+
+(--&gt; (--map
+      (cons `(file . ,it)
+            (c/calculate-complexity-stats (with-file it (buffer-string))))
+      self)
+     (--map (list :file (alist-get 'file it)
+                  :complexity (alist-get 'total it))
+            it))
+</pre>
+</div>
+
+<p>
+Dired is doing the hard work of letting me select files! Indeed, my
+aim is to leverage amazing software and integrating it with our newer
+system. I guess this is going towards software environmentalism <a href="https://youtu.be/SflvfvOQ_5k?t=905">in the
+words of Tudor Girba</a>: we reuse the brightness of our predecessors. (And
+what a view from these giants shoulders!)
+</p>
+
+<p>
+Anyway, if you wish, you can extend the Playground too. The trick for
+Dired is in the following code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun me/set-dired-self-for-playground ()
+  "Set Playground `self' to dired list of files."
+  (when (and
+         (equal me/last-used-mold "Playground")
+         (ignore-errors mold-data)
+         (eq (plist-get mold-data :old-mode) 'dired-mode))
+    (setq-local self (with-current-buffer (plist-get mold-data :old-buffer)
+                       (or (progn (goto-char (point-min)) (dired-get-marked-files))
+                           (progn (mark-whole-buffer)
+                                  (call-interactively #'dired-mark)
+                                  (let ((files (dired-get-marked-files)))
+                                    (call-interactively #'dired-unmark-all-files)
+                                    files)))))))
+(add-hook 'me/mold-after-hook #'me/set-dired-self-for-playground) ;; the order is important: keep before me/set-self-mold-data
+</pre>
+</div>
+
+<p>
+In short this code runs after a mold has run (i.e.,
+<code>me/mold-after-hook</code>). If the mold was a Playground and the starting
+buffer was a Dired one, we set <code>self</code>. In this case, I exploit
+<code>dired-get-marked-files</code> to get the list of file names. Note that
+<code>mold-data</code> is also set via a hook. That is why I got the comment at
+the end: this must run after that data is set otherwise it would not
+work.
+</p>
+
+<p>
+That is all! If you need to extend moldable-emacs's interpreter you
+have <code>me/mold-after-hook</code> and <code>me/mold-before-hook</code> and even
+<code>me/mold-before-mold-runs-hook</code>. So you are free to make <code>me/mold</code>
+smarter!
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgdea447b" class="outline-2">
+<h2 id="orgdea447b">Conclusion</h2>
+<div class="outline-text-2" id="text-orgdea447b">
+<p>
+Let's jump on the shoulders of Emacs giants! By extending the
+Playground we acquire incredible superpowers, because we can make
+existing modes behave like molds. So grab a copy of moldable-emacs and
+start scripting your marked files away!
+</p>
+
+<p>
+Happy Dired-ing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-09-23</span>
+        <span title="last modification date" class="post-info">2021-09-23</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
