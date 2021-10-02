@@ -50,7 +50,7 @@ tests check objects. But also produce examples for how the object works.
 
 For example, notice how the object behind GT's Wardley Maps defines examples.
 
-#+BEGIN_SRC emacs-lisp :results file :exports results :file "/tmp/screen-2021-09-24-22-11-04.jpg"
+#+BEGIN_SRC emacs-lisp :results file :exports results :file "screen-2021-09-24-22-11-04.jpg"
   (base64-decode-string
       "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
 FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
@@ -3366,7 +3366,7 @@ Lu1s7vzJ5Nm1fKcZw6k8kY6A0UVVPKqNOSmm9Nen+RM8wqTi4tLX+u5//9k=")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/screen-2021-09-24-22-11-04.jpg]]
+[[file:screen-2021-09-24-22-11-04.jpg]]
 
 The green icons mean that I ran those examples as tests. But I can
 also inspect them to learn how to use that object. So I can both
