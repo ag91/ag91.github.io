@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: molds need examples too! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Generating tests and documentation from molds!" />
+    <meta name="keywords" content="moldable-emacs, moldable-development, gt" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: molds need examples too!</h1>
+
+<div id="outline-container-orgf1beacc" class="outline-2">
+<h2 id="orgf1beacc">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgf1beacc">
+<p>
+Molds can be challenging to use. Let's use tests to document them
+then! Let me show you how moldable-emacs is self documenting. And that
+one can generate useful documentation from source code.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org219c010" class="outline-2">
+<h2 id="org219c010">The problem</h2>
+<div class="outline-text-2" id="text-org219c010">
+<p>
+The best systems are self documenting. Creators of things like these
+are super cool. I came to understand that the best of the best are
+those that design a tool in such a way that you can use the tool to
+learn/understand it. Pretty convoluted, right? An example helps: in
+Common Lisp I can use an inspector to see what a thing is.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(inspect 'inspect)
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-text">The object is a SYMBOL.
+0. Name: "INSPECT"
+1. Package: #&lt;PACKAGE "COMMON-LISP"&gt;
+2. Value: "unbound"
+3. Function: #&lt;FUNCTION INSPECT&gt;
+4. Plist: NIL
+</pre>
+</div>
+
+<p>
+I find this cool because the inspector works on itself. Similarly on
+how you can edit Emacs source in Emacs.
+</p>
+
+<p>
+An amazing way I have seen this done is in <a href="https://gtoolkit.com/">GlamorousToolkit</a>. GT is a
+Pharo/SmallTalk system. So everything is an object. These objects may
+be complex. The user can do more if she has examples to work from. Now
+GT made sure to extract as much value as possible from tests. So unit
+tests check objects. But also produce examples for how the object works.
+</p>
+
+<p>
+For example, notice how the object behind GT's Wardley Maps defines examples.
+</p>
+
+
+<div id="org622eb8f" class="figure">
+<p><img src="file:///tmp/screen-2021-09-24-22-11-04.jpg" alt="screen-2021-09-24-22-11-04.jpg" />
+</p>
+</div>
+
+<p>
+The green icons mean that I ran those examples as tests. But I can
+also inspect them to learn how to use that object. So I can both
+validate the object and learn about it from them. And GT let me view
+this information in the shape I need: view the example, visualize the
+graphic it creates, open the source code or run tests. These are just
+views of the same thing.
+</p>
+
+<p>
+Then self documentation becomes more about your tool recognizing a
+pattern and make that accessible for you too. It is about inclusivity.
+</p>
+
+<p>
+Then the question: how does <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> learn from these majestic
+examples?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org517575e" class="outline-2">
+<h2 id="org517575e">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org517575e">
+<p>
+I like the idea behind self documentation because it inspires me of
+doing the best I can with the little I have got. As we have seen, if I
+put effort in writing an unit test, I should also use it for
+documentation. And the extra benefit is that the docs are finally
+alive: users may keep updating examples to fit to their needs. By
+doing so they also update tests. A healthy feedback loop!
+</p>
+
+<p>
+Lisp comes with macros. The idea here is that if functions are
+powerful, why not to apply that idea to the source code itself? So we
+can edit code with code. Again we do a lot with the little we got.
+</p>
+
+<p>
+While I was developing <a href="https://github.com/ag91/code-compass">code-compass</a>, I ended up creating a <code>doctor</code>
+function because <a href="https://github.com/ag91/code-compass/issues/2">somebody was struggling at finding the dependencies
+they needed to use my tool</a>. A <code>doctor</code> function shows you what
+dependencies you miss. I think a <code>doctor</code> function is a patch.
+Somewhere in code-compass's source there is an import. Or even a
+statement that invokes a software that is not available by default. By
+this I mean that the information is there. It is just well hidden.
+This inaccessibility forces me to spend more time (both in writing and
+maintaining more software) while the computer could as well do that for me.
+</p>
+
+<p>
+Again the lazy me wants the machine to do the boring tasks. Can
+moldable-emacs improve over code-compass?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf67a995" class="outline-2">
+<h2 id="orgf67a995">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgf67a995">
+<p>
+The secret is: patterns. GT uses special syntax to mark examples.
+Macros use <code>defmacro</code> to mark a special function that acts on source.
+We can call names other people because we associate a name to a
+pattern (a face). Ops, I went off track!
+</p>
+
+<p>
+Ahem, let me show a pattern in moldable-emacs.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">:given (:fn (and
+             (executable-find "graph")
+              (me/require 'esxml)
+              report))
+</pre>
+</div>
+
+<p>
+Actually there is more than one here. First we have the <code>:given</code> which
+tells there is a precondition. Then we have <code>:fn</code> that <a href="https://ag91.github.io/blog/2021/09/19/moldable-emacs-making-molds-a-little-easier-to-write/">I have recently
+introduced</a>. And finally we have <code>(executable-find "graph")</code> and
+<code>(me/require 'esxml)</code>!
+</p>
+
+<p>
+This last ones are the stars of the show today. I have been evolving a
+pattern: any time I use an external Emacs package or an external
+software, I use these functions. We need to get the most from the
+little we got, remember? Indeed, I find these functions useful as
+precondition of a mold. If these return false, the mold is unusable.
+So the first benefit is mold selection. And you can see that this
+pattern hints that we can collect dependencies easily. Do you see
+where I am going?
+</p>
+
+<p>
+Now moldable-emacs is about molds that help you understand software in
+the way you need it. In this case, I would like to know what molds I
+can use and what I can't. And if I can't, what am I missing.
+</p>
+
+<p>
+This is how it works.
+</p>
+
+<p>
+<a href="/assets/blog/2021/10/02/moldable-emacs-molds-need-examples-too/moldableExamples.mp4">/assets/blog/2021/10/02/moldable-emacs-molds-need-examples-too/moldableExamples.mp4</a>
+</p>
+
+<p>
+You can see that the mold "WhatMoldsCanIUse" shows two sets of molds:
+the ones I can and the ones I could use. This mold behaves according
+to the context, so I run it on something looking like an IP address to
+trigger the "Decode IP address" mold. We can see that I am missing a
+dependency there. The cool thing is that I get a link that brings me
+to find the dependency. It would be trivial (any PR welcome!) to
+improve the mold to let Emacs install that package for me!
+</p>
+
+<p>
+Moreover, I showed that I can open a "Demo" link for that mold. That
+is how moldable-emacs learn from GT. Molds can provide examples. You
+can demo these to preview a mold, if you are unsure of how it works.
+These examples can also work as tests. This story has rough edges (for
+example, in handling images), but you can already run things like the
+following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me/test-mold-examples (me/find-mold "Playground"))
+</pre>
+</div>
+
+<p>
+The plan is to create a mold to do just that. So that when you are on
+a mold you can unit test it. (At some point, that will also become a
+condition for the mold to be usable.)
+</p>
+
+<p>
+Again, you can see that now we are applying molds on molds. It reminds
+me of the previous Common Lisp snippet <code>(inspect 'inspect)</code>.
+</p>
+
+<p>
+Documentation, testing, listing dependencies and demos all rely on the
+structure of molds. That data format creates a pattern our Emacs can
+use to give valuable information to us.
+</p>
+
+<p>
+And we can also mix things! Look for example how we can get detailed
+information about the "Query" mold.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me/mold-doc "Query")
+</pre>
+</div>
+
+<p>
+Here <code>me/mold-doc</code> mixes the <code>:docs</code> and <code>:examples</code> of a mold to
+produce detailed documentation. You can access these easily using the
+<code>me/mold-docs</code> command. Please note that I needed to write examples
+for demo and testing needs, but documentation comes out for free!
+</p>
+
+<p>
+All in all, this feels a good start to make moldable-emacs self
+documenting. There are still huge issues for molds with side-effects:
+for instance, I could not write examples yet for the molds that show
+notes. Testing those would fail because different users have different
+notes. Still I am sure I can overcome those issues somehow later. The
+point is that making documentation a first class citizen and easy to
+keep up-to-date is possible (and cheap)!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7bf9c39" class="outline-2">
+<h2 id="org7bf9c39">Conclusion</h2>
+<div class="outline-text-2" id="text-org7bf9c39">
+<p>
+When you write your first mold add some docs! And even an example if
+you are courageous! I will explain later the facilities to make easy
+to add an example. In the meanwhile explore the documentation that is
+generated for you with <code>me-mold-docs</code>.
+</p>
+
+<p>
+Happy exploring!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-10-02</span>
+        <span title="last modification date" class="post-info">2021-10-02</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/moldable-development/">moldable-development</a>, <a href="/tags/gt/">gt</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
