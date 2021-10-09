@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>On the power of macros: a dynamic lazy let - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How I wrote a macro for moldable-emacs :let dsl" />
+    <meta name="keywords" content="elisp, emacs, learning" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>On the power of macros: a dynamic lazy let</h1>
+<p>
+Recently I have been working on making <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> easier to
+extend. One of the challenges was to define common variables in a
+single place. For example, I wanted to make this code
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(:given (:fn (let ((a (run-something))
+                   (b (run-something-else)))
+               ...))
+ :then (:fn (let ((a (run-something))
+                  (b (run-something-else)))
+              ...)))
+</pre>
+</div>
+
+<p>
+into this one
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(:let ((a (run-something))
+       (b (run-something-else)))
+ :given (:fn ...)
+ :then (:fn ...))
+</pre>
+</div>
+
+<p>
+The second piece of code can save a bit of copy paste for when I write
+molds. I also need that <code>a</code> and <code>b</code> get calculated lazily for the
+<code>:given</code> clause: if there is something like <code>(and nil a b)</code>, I want to
+skip to calculate the bindings (because it may be useless).
+</p>
+
+<p>
+Since I am creating a little Domain Specific Language for defining
+molds, your Lisp-senses should scream: macros!
+</p>
+
+<p>
+Let's start easy.
+</p>
+
+<p>
+If you want to write a macro that wraps thing is a let, it is simple.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defmacro with-my-let (&amp;rest body)
+  `(let ((a (+ 1 2)))
+     ,@body))
+
+(with-my-let (+ a 1))
+</pre>
+</div>
+
+<pre class="example">
+4
+</pre>
+
+
+<p>
+This is good and easy because we know <code>a</code> in advance. In my case I
+realize the bindings of the <code>let</code> only at run-time. We then need as
+input the list of bindings.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defmacro with-my-let (let-bindings &amp;rest body)
+  `(let (,@let-bindings)
+     ,@body))
+
+(with-my-let ((a (+ 1 2))) (+ a 1))
+</pre>
+</div>
+
+<pre class="example">
+4
+</pre>
+
+
+<p>
+So far so good! And what if I get <code>let-bindings</code> as a variable?
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defmacro with-my-let (let-bindings &amp;rest body)
+  `(let (,@let-bindings)
+     ,@body))
+
+(let ((let-bindings '((a (+ 1 2)))))
+  (with-my-let let-bindings (+ a 1)))
+</pre>
+</div>
+
+<p>
+This breaks because the <code>with-my-let</code> macro expands to the following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(let let-bindings
+  (+ a 1))
+</pre>
+</div>
+
+<p>
+This happens because macros don't evaluate their arguments. But even
+if they did, <code>let-binding</code> obtains a value only at run time! This is
+the first challenge: get the bindings at run time.
+</p>
+
+<p>
+We need to do this in two steps:
+</p>
+
+<ol class="org-ol">
+<li>"pause" the generation of the code until run time</li>
+<li>at run time inject the value in the code</li>
+</ol>
+
+<p>
+Here is how it looks.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defmacro with-my-let (let-bindings &amp;rest body)
+  `(funcall
+   (lambda (bindings body)
+     (eval `(let* ,bindings ;; here ,bindings = ((a (+ 1 2)))
+        ,@body)))
+   ,let-bindings ;; here ,let-bindings = let-bindings-var
+   ',body))
+
+(let ((let-bindings-var '((a (+ 1 2)))))
+  (with-my-let let-bindings-var (+ a 1)))
+</pre>
+</div>
+
+<pre class="example">
+4
+</pre>
+
+
+<p>
+The trick is a function that takes the <code>let-bindings</code> variable we
+pass. This function is somewhat like a macro: it produces a sexp
+itself (the bit <code>`(let</code>)! But, it evaluates it as well (the <code>eval</code>
+bit).
+</p>
+
+<p>
+Well, let me show you how it expands:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(let ((let-bindings-var '((a (+ 1 2)))))
+  (funcall
+   (lambda
+     (bindings body)
+     (eval
+      `(let ,bindings ,@body)))
+   let-bindings-var
+   '((+ a 1))))
+</pre>
+</div>
+
+<p>
+I must confess: it took me some time to fully understand what I did
+when I wrote it!
+</p>
+
+<p>
+Now lets get in the funny bit: what if we want to have lazy bindings?
+By lazy I mean bindings getting a value only at the latest possible
+moment. This means that if we don't use a value, we don't invest any
+time in producing it!
+</p>
+
+<p>
+Emacs is so cool that it already has a way to do that: <a href="https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/thunk.el">thunk.el</a>. This
+library provides <code>thunk-let*</code>, which does exactly what we need: it
+makes all bindings lazy!
+</p>
+
+<p>
+So the macro will change only slightly to become amazing!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defmacro with-my-let (let-bindings &amp;rest body)
+  `(funcall
+    (lambda (bindings body)
+      (eval `(thunk-let* ,bindings ;; here ,bindings = ((a (+ 1 2)))
+               ,@body)
+            t))
+    ,let-bindings ;; here ,let-bindings = let-bindings-var
+    ',body))
+
+(let ((let-bindings-var '((a (+ 1 2))
+                          (slow-poke (sleep-for 20)))))
+  (with-my-let let-bindings-var (+ a 1)))
+</pre>
+</div>
+
+<pre class="example">
+4
+</pre>
+
+
+<p>
+If you try this code, you will see that you will skip <code>slow-poke</code>'s
+long sleep time! All we needed to do was to substitute our <code>let*</code> with
+<code>thunk-let*</code> AND make sure that sexp is evaluated in a <span class="underline">lexical</span>
+context. You can do that by giving <code>eval</code> an extra argument.
+</p>
+
+<p>
+How amazing is this macro?! Well if it is not, let me know because I
+would still like to improve it, if possible.
+</p>
+
+<p>
+And keep in mind that your <code>body</code> must be inline! For example, this
+cannot work:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun f (x)
+  (+ a x))
+
+(let ((let-bindings-var '((a (+ 1 2))
+                          (slow-poke (sleep-for 20)))))
+  (with-my-let let-bindings-var (f 1)))
+</pre>
+</div>
+
+<p>
+So if you have something like that, you have to pass the binding or
+inject the function code in the <code>body</code>.
+</p>
+
+<p>
+Now that I gave you that caveat.. we are done!
+</p>
+
+<p>
+Thanks to stick around so far and hopefully you will find inspiration
+to write your own useful (lazy?!) macros!
+</p>
+
+<p>
+Happy macro-ing!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-10-09</span>
+        <span title="last modification date" class="post-info">2021-10-09</span>
+        <span title="tags" class="post-info"><a href="/tags/elisp/">elisp</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/learning/">learning</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
