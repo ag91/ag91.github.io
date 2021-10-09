@@ -1,0 +1,195 @@
+#+TITLE:       On the power of macros: a dynamic lazy let
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-10-09 Sat
+#+URI:         /blog/%y/%m/%d/on-the-power-of-macros-a-dynamic-lazy-let
+#+KEYWORDS:    elisp, emacs, learning
+#+TAGS:        elisp, emacs, learning
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How I wrote a macro for moldable-emacs :let dsl
+
+Recently I have been working on making [[https://github.com/ag91/moldable-emacs][moldable-emacs]] easier to
+extend. One of the challenges was to define common variables in a
+single place. For example, I wanted to make this code
+
+#+begin_src elisp :exports both :noeval
+(:given (:fn (let ((a (run-something))
+                   (b (run-something-else)))
+               ...))
+ :then (:fn (let ((a (run-something))
+                  (b (run-something-else)))
+              ...)))
+#+end_src
+
+into this one
+
+#+begin_src elisp :exports both :noeval
+(:let ((a (run-something))
+       (b (run-something-else)))
+ :given (:fn ...)
+ :then (:fn ...))
+#+end_src
+
+The second piece of code can save a bit of copy paste for when I write
+molds. I also need that =a= and =b= get calculated lazily for the
+=:given= clause: if there is something like =(and nil a b)=, I want to
+skip to calculate the bindings (because it may be useless).
+
+Since I am creating a little Domain Specific Language for defining
+molds, your Lisp-senses should scream: macros!
+
+Let's start easy.
+
+If you want to write a macro that wraps thing is a let, it is simple.
+
+#+begin_src elisp :exports both
+(defmacro with-my-let (&rest body)
+  `(let ((a (+ 1 2)))
+     ,@body))
+
+(with-my-let (+ a 1))
+#+end_src
+
+#+RESULTS:
+: 4
+
+This is good and easy because we know =a= in advance. In my case I
+realize the bindings of the =let= only at run-time. We then need as
+input the list of bindings.
+
+#+begin_src elisp :exports both
+(defmacro with-my-let (let-bindings &rest body)
+  `(let (,@let-bindings)
+     ,@body))
+
+(with-my-let ((a (+ 1 2))) (+ a 1))
+#+end_src
+
+#+RESULTS:
+: 4
+
+So far so good! And what if I get =let-bindings= as a variable?
+
+#+begin_src elisp :exports both :noeval
+(defmacro with-my-let (let-bindings &rest body)
+  `(let (,@let-bindings)
+     ,@body))
+
+(let ((let-bindings '((a (+ 1 2)))))
+  (with-my-let let-bindings (+ a 1)))
+#+end_src
+
+This breaks because the =with-my-let= macro expands to the following.
+
+#+begin_src elisp :exports both :noeval
+(let let-bindings
+  (+ a 1))
+#+end_src
+
+This happens because macros don't evaluate their arguments. But even
+if they did, =let-binding= obtains a value only at run time! This is
+the first challenge: get the bindings at run time.
+
+We need to do this in two steps:
+
+1. "pause" the generation of the code until run time
+2. at run time inject the value in the code
+
+Here is how it looks.
+
+#+begin_src elisp :exports both
+(defmacro with-my-let (let-bindings &rest body)
+  `(funcall
+   (lambda (bindings body)
+     (eval `(let* ,bindings ;; here ,bindings = ((a (+ 1 2)))
+        ,@body)))
+   ,let-bindings ;; here ,let-bindings = let-bindings-var
+   ',body))
+
+(let ((let-bindings-var '((a (+ 1 2)))))
+  (with-my-let let-bindings-var (+ a 1)))
+#+end_src
+
+#+RESULTS:
+: 4
+
+The trick is a function that takes the =let-bindings= variable we
+pass. This function is somewhat like a macro: it produces a sexp
+itself (the bit =`(let=)! But, it evaluates it as well (the =eval=
+bit).
+
+Well, let me show you how it expands:
+
+#+begin_src elisp :exports both :noeval
+(let ((let-bindings-var '((a (+ 1 2)))))
+  (funcall
+   (lambda
+     (bindings body)
+     (eval
+      `(let ,bindings ,@body)))
+   let-bindings-var
+   '((+ a 1))))
+#+end_src
+
+I must confess: it took me some time to fully understand what I did
+when I wrote it!
+
+Now lets get in the funny bit: what if we want to have lazy bindings?
+By lazy I mean bindings getting a value only at the latest possible
+moment. This means that if we don't use a value, we don't invest any
+time in producing it!
+
+Emacs is so cool that it already has a way to do that: [[https://github.com/emacs-mirror/emacs/blob/master/lisp/emacs-lisp/thunk.el][thunk.el]]. This
+library provides =thunk-let*=, which does exactly what we need: it
+makes all bindings lazy!
+
+So the macro will change only slightly to become amazing!
+
+#+begin_src elisp :exports both
+(defmacro with-my-let (let-bindings &rest body)
+  `(funcall
+    (lambda (bindings body)
+      (eval `(thunk-let* ,bindings ;; here ,bindings = ((a (+ 1 2)))
+               ,@body)
+            t))
+    ,let-bindings ;; here ,let-bindings = let-bindings-var
+    ',body))
+
+(let ((let-bindings-var '((a (+ 1 2))
+                          (slow-poke (sleep-for 20)))))
+  (with-my-let let-bindings-var (+ a 1)))
+#+end_src
+
+#+RESULTS:
+: 4
+
+If you try this code, you will see that you will skip =slow-poke='s
+long sleep time! All we needed to do was to substitute our =let*= with
+=thunk-let*= AND make sure that sexp is evaluated in a _lexical_
+context. You can do that by giving =eval= an extra argument.
+
+How amazing is this macro?! Well if it is not, let me know because I
+would still like to improve it, if possible.
+
+And keep in mind that your =body= must be inline! For example, this
+cannot work:
+
+#+begin_src elisp :exports both
+(defun f (x)
+  (+ a x))
+
+(let ((let-bindings-var '((a (+ 1 2))
+                          (slow-poke (sleep-for 20)))))
+  (with-my-let let-bindings-var (f 1)))
+#+end_src
+
+So if you have something like that, you have to pass the binding or
+inject the function code in the =body=.
+
+Now that I gave you that caveat.. we are done!
+
+Thanks to stick around so far and hopefully you will find inspiration
+to write your own useful (lazy?!) macros!
+
+Happy macro-ing!
