@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: moldable tutorials - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A tutorial mold to make it easy to start with moldable-emacs" />
+    <meta name="keywords" content="moldable-emacs, gt, org-mode" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: moldable tutorials</h1>
+
+<div id="outline-container-org1802322" class="outline-2">
+<h2 id="org1802322">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org1802322">
+<p>
+Tutorials are great to start with a new tool. In this post I describe
+a new mold I crafted to make tutorials available from moldable-emacs.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb731f65" class="outline-2">
+<h2 id="orgb731f65">The problem</h2>
+<div class="outline-text-2" id="text-orgb731f65">
+<p>
+I got a <a href="https://github.com/ag91/moldable-emacs/issues/6">few</a> <a href="https://github.com/ag91/moldable-emacs/issues/5">issues</a> opened last couple of weeks that made pretty
+excited! One that bit at me was about <a href="https://github.com/ag91/moldable-emacs/issues/7">the absence of introductory
+material for moldable-emacs</a>. Just in my last post I wrote <a href="https://ag91.github.io/blog/2021/10/02/moldable-emacs-molds-need-examples-too/">how great
+are tools that are self explanatory</a>. I strive to make my little mode
+like that too. I know that it is a struggle to start with a tool
+without a guide. We know how beginning with Emacs can test your
+patience and skills. I remember clearly how frustrating was to learn
+to copy paste again. My productivity plummeted for a while. It still
+does now: I have started using the amazing <a href="https://github.com/abo-abo/lispy">Lispy</a> recently for
+(structurally) coding Clojure and I need to undo things a lot!
+</p>
+
+<p>
+So the question: how to make the first steps with moldable-emacs
+easier?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org437d30c" class="outline-2">
+<h2 id="org437d30c">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org437d30c">
+<p>
+Well, I thought to write a tutorial. <a href="https://github.com/ag91/moldable-emacs/blob/master/tutorials/ListCurrentEmacsBuffersAndSizesInBarChart.org">And I did</a>! But it felt wrong.
+Just the other day I was writing how adding a <code>doctor</code> function to
+<a href="https://github.com/ag91/code-compass">code-compass</a> felt an extra effort. How cool would it be to make the
+tutorials interactive? Tutorials that you can run with moldable-emacs
+itself, I mean.
+</p>
+
+<p>
+Emacs does already an amazing job at that: for instance, have you ever
+tried the calc tutorial <code>M-x calc-tutorial</code>?!
+</p>
+
+<p>
+This idea is also definitely inspired by GlamorousToolkit again. When
+you run it, you can find a bunch of guides in the main window. You can
+interact with these by using the tool itself. A fascinating approach.
+</p>
+
+<p>
+(As an aside: if you are on Linux or Mac, running GT from Emacs is
+easy. The following Elisp function is what I use for running the
+latest build.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun fun/make-latest-version-of-GT ()
+  "Make latest version of GT."
+  (interactive)
+  (let* ((mac-p (eq 'darwin system-type))
+         (just-run (if mac-p
+                       "cd /tmp/; open myGT/GlamorousToolkit.app"
+                     "cd /tmp/myGT/bin; ./GlamorousToolkit"))
+         (download-and-run (if mac-p
+                               "mkdir /tmp/myGT; cd /tmp/myGT; wget https://dl.feenk.com/gt/GlamorousToolkitOSX64-release.zip; unzip GlamorousToolkitOSX64-release.zip; cd ../ open myGT/GlamorousToolkit.app"
+                              "mkdir /tmp/myGT; cd /tmp/myGT; wget https://dl.feenk.com/gt/GlamorousToolkitLinux64-release.zip; unzip GlamorousToolkitLinux64-release.zip; cd bin; ./GlamorousToolkit")))
+    (async-shell-command (if (file-exists-p "/tmp/myGT") just-run download-and-run))))
+</pre>
+</div>
+
+<p>
+)
+</p>
+
+<p>
+So I was wondering: can I at least open tutorials from moldable-emacs
+itself?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org15ec08e" class="outline-2">
+<h2 id="org15ec08e">And there is a solution</h2>
+<div class="outline-text-2" id="text-org15ec08e">
+<p>
+That was easier than I expected! The idea is to have a mold that
+collects tutorials and makes them accessible to the user. If you want
+to use moldable-emacs then you need the repository. So I added a
+folder with tutorials in there. Then we know where the tutorials are.
+We just have to pull them and display them nicely to the user! Org
+Mode has some nice presentation/interactive features. So I wrote the
+tutorials in Org.
+</p>
+
+<p>
+This is how the new mold looks like at the moment.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me-register-mold
+ :key "Show Tutorials"
+ :given (:fn (not me-i-know-what-i-am-doing))
+ :then (:fn
+        (let ((tutorials (--&gt; (symbol-file 'me-mold)
+                              (file-name-directory it)
+                              (concat it "/tutorials")
+                              (directory-files it t)
+                              (--filter (equal (file-name-extension it) "org") it))))
+          (with-current-buffer buffername
+            (org-mode)
+            (erase-buffer)
+            (insert "#+TITLE: Moldable Emacs Tutorials\n\n")
+            (--each tutorials
+              (insert-file-contents-literally it))
+            (goto-char (point-min))
+            (call-interactively #'outline-hide-sublevels)
+            (setq-local self tutorials))))
+ :docs "You can consult `moldable-emacs' tutorials."
+ :examples nil)
+</pre>
+</div>
+
+<p>
+A bit of commentary:
+</p>
+
+<ol class="org-ol">
+<li><code>me-i-know-what-i-am-doing</code> is a variable you can set to <code>t</code> in
+order to hide this mold</li>
+
+<li><p>
+<code>(symbol-file 'me-mold)</code> tells us where you stored moldable-emacs repository
+</p>
+
+<p>
+then we can gather the file names starting from that
+</p></li>
+
+<li><code>(insert-file-contents-literally it)</code> is really the trick: we just
+insert the files verbatim in an Org Mode based mold!</li>
+
+<li>this buffer sets <code>self</code> to be the list of tutorials filenames.</li>
+</ol>
+
+<p>
+The exciting thing is that now you can follow along with the tutorial
+by firing your <code>me-mold</code>! I will try to write my next tutorial so that
+you can run moldable-emacs on the tutorial itself. (Actually you can do
+that already: there is a mold <code>OrgAsTree</code> that could be interesting to
+you.)
+</p>
+
+<p>
+And the fun bit is that also my blog posts are written in Org Mode...
+</p>
+
+<p>
+A world of interactivity awaits us!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org51ebe62" class="outline-2">
+<h2 id="org51ebe62">Conclusion</h2>
+<div class="outline-text-2" id="text-org51ebe62">
+<p>
+Embed your tutorials in your tool! And give <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>' <a href="https://github.com/ag91/moldable-emacs/blob/master/tutorials/ListCurrentEmacsBuffersAndSizesInBarChart.org">tutorials</a>
+a try. Let's make the feedback loop faster to enjoy things more.
+</p>
+
+<p>
+Happy learning!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-10-15</span>
+        <span title="last modification date" class="post-info">2021-10-15</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/gt/">gt</a>, <a href="/tags/org-mode/">org-mode</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
