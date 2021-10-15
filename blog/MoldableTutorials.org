@@ -1,0 +1,135 @@
+#+TITLE:       Moldable Emacs: moldable tutorials
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-10-15 Fri
+#+URI:         /blog/%y/%m/%d/moldable-emacs-moldable-tutorials
+#+KEYWORDS:    moldable-emacs, gt, org-mode
+#+TAGS:        moldable-emacs, gt, org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A tutorial mold to make it easy to start with moldable-emacs
+
+* Too long; didn't read
+
+Tutorials are great to start with a new tool. In this post I describe
+a new mold I crafted to make tutorials available from moldable-emacs.
+
+* The problem
+
+I got a [[https://github.com/ag91/moldable-emacs/issues/6][few]] [[https://github.com/ag91/moldable-emacs/issues/5][issues]] opened last couple of weeks that made pretty
+excited! One that bit at me was about [[https://github.com/ag91/moldable-emacs/issues/7][the absence of introductory
+material for moldable-emacs]]. Just in my last post I wrote [[https://ag91.github.io/blog/2021/10/02/moldable-emacs-molds-need-examples-too/][how great
+are tools that are self explanatory]]. I strive to make my little mode
+like that too. I know that it is a struggle to start with a tool
+without a guide. We know how beginning with Emacs can test your
+patience and skills. I remember clearly how frustrating was to learn
+to copy paste again. My productivity plummeted for a while. It still
+does now: I have started using the amazing [[https://github.com/abo-abo/lispy][Lispy]] recently for
+(structurally) coding Clojure and I need to undo things a lot!
+
+So the question: how to make the first steps with moldable-emacs
+easier?
+
+* It is a problem indeed
+
+Well, I thought to write a tutorial. [[https://github.com/ag91/moldable-emacs/blob/master/tutorials/ListCurrentEmacsBuffersAndSizesInBarChart.org][And I did]]! But it felt wrong.
+Just the other day I was writing how adding a =doctor= function to
+[[https://github.com/ag91/code-compass][code-compass]] felt an extra effort. How cool would it be to make the
+tutorials interactive? Tutorials that you can run with moldable-emacs
+itself, I mean.
+
+Emacs does already an amazing job at that: for instance, have you ever
+tried the calc tutorial =M-x calc-tutorial=?!
+
+This idea is also definitely inspired by GlamorousToolkit again. When
+you run it, you can find a bunch of guides in the main window. You can
+interact with these by using the tool itself. A fascinating approach.
+
+(As an aside: if you are on Linux or Mac, running GT from Emacs is
+easy. The following Elisp function is what I use for running the
+latest build.
+
+#+begin_src elisp
+(defun fun/make-latest-version-of-GT ()
+  "Make latest version of GT."
+  (interactive)
+  (let* ((mac-p (eq 'darwin system-type))
+         (just-run (if mac-p
+                       "cd /tmp/; open myGT/GlamorousToolkit.app"
+                     "cd /tmp/myGT/bin; ./GlamorousToolkit"))
+         (download-and-run (if mac-p
+                               "mkdir /tmp/myGT; cd /tmp/myGT; wget https://dl.feenk.com/gt/GlamorousToolkitOSX64-release.zip; unzip GlamorousToolkitOSX64-release.zip; cd ../ open myGT/GlamorousToolkit.app"
+                              "mkdir /tmp/myGT; cd /tmp/myGT; wget https://dl.feenk.com/gt/GlamorousToolkitLinux64-release.zip; unzip GlamorousToolkitLinux64-release.zip; cd bin; ./GlamorousToolkit")))
+    (async-shell-command (if (file-exists-p "/tmp/myGT") just-run download-and-run))))
+#+end_src
+
+)
+
+So I was wondering: can I at least open tutorials from moldable-emacs
+itself?
+
+* And there is a solution
+
+That was easier than I expected! The idea is to have a mold that
+collects tutorials and makes them accessible to the user. If you want
+to use moldable-emacs then you need the repository. So I added a
+folder with tutorials in there. Then we know where the tutorials are.
+We just have to pull them and display them nicely to the user! Org
+Mode has some nice presentation/interactive features. So I wrote the
+tutorials in Org.
+
+This is how the new mold looks like at the moment.
+
+#+begin_src elisp
+(me-register-mold
+ :key "Show Tutorials"
+ :given (:fn (not me-i-know-what-i-am-doing))
+ :then (:fn
+        (let ((tutorials (--> (symbol-file 'me-mold)
+                              (file-name-directory it)
+                              (concat it "/tutorials")
+                              (directory-files it t)
+                              (--filter (equal (file-name-extension it) "org") it))))
+          (with-current-buffer buffername
+            (org-mode)
+            (erase-buffer)
+            (insert "#+TITLE: Moldable Emacs Tutorials\n\n")
+            (--each tutorials
+              (insert-file-contents-literally it))
+            (goto-char (point-min))
+            (call-interactively #'outline-hide-sublevels)
+            (setq-local self tutorials))))
+ :docs "You can consult `moldable-emacs' tutorials."
+ :examples nil)
+#+end_src
+
+A bit of commentary:
+
+1. =me-i-know-what-i-am-doing= is a variable you can set to =t= in
+   order to hide this mold
+
+2. =(symbol-file 'me-mold)= tells us where you stored moldable-emacs repository
+
+   then we can gather the file names starting from that
+
+3. =(insert-file-contents-literally it)= is really the trick: we just
+   insert the files verbatim in an Org Mode based mold!
+
+4. this buffer sets =self= to be the list of tutorials filenames.
+
+The exciting thing is that now you can follow along with the tutorial
+by firing your =me-mold=! I will try to write my next tutorial so that
+you can run moldable-emacs on the tutorial itself. (Actually you can do
+that already: there is a mold =OrgAsTree= that could be interesting to
+you.)
+
+And the fun bit is that also my blog posts are written in Org Mode...
+
+A world of interactivity awaits us!
+
+* Conclusion
+
+Embed your tutorials in your tool! And give [[https://github.com/ag91/moldable-emacs][moldable-emacs]]' [[https://github.com/ag91/moldable-emacs/blob/master/tutorials/ListCurrentEmacsBuffersAndSizesInBarChart.org][tutorials]]
+a try. Let's make the feedback loop faster to enjoy things more.
+
+Happy learning!
