@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: how to get useful info about a buffer without reading it - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Get stats from your buffer!" />
+    <meta name="keywords" content="moldable-emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: how to get useful info about a buffer without reading it</h1>
+
+<div id="outline-container-orgc32fb16" class="outline-2">
+<h2 id="orgc32fb16">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgc32fb16">
+<p>
+You can get useful information about a buffer without reading it. Here
+I show <a href="https://github.com/ag91/moldable-emacs.git">moldable-emacs</a>'s Stats mold which can help you find some of the
+salient bits of your buffer.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5479f41" class="outline-2">
+<h2 id="org5479f41">The problem</h2>
+<div class="outline-text-2" id="text-org5479f41">
+<p>
+I have spent some time reviewing code. Often I could avoid to read it
+to find out things I could improve. For example, I know code is
+getting too complex if there are too many if-else around. That need
+pushed me to build <a href="https://github.com/ag91/code-compass">code-compass</a>. In <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> I want to work in
+terms of buffers though. I want a gist of a buffer. The gist should
+change according to the context I am dealing with. That is, if I am
+looking at text show me number of words and reading time, but if I am
+looking at code show me how many if-else I got.
+</p>
+
+<p>
+How would such a mold look like?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org540012c" class="outline-2">
+<h2 id="org540012c">And there is a solution</h2>
+<div class="outline-text-2" id="text-org540012c">
+<p>
+The mold I came up with is "Stats". Let me give you a sense of how it
+looks.
+</p>
+
+
+<div id="org84079d1" class="figure">
+<p><img src="/assets/blog/2021/10/22/moldable-emacs-how-to-get-useful-info-about-a-buffer-without-reading-it/screen-2021-07-02-14-09-53.jpg" alt="screen-2021-07-02-14-09-53.jpg" />
+</p>
+</div>
+
+<p>
+For an Org buffer we get some generic stats. Things like reading time,
+number of lines, size and most and least used words. Reading time and
+book pages for example help me to keep things manageable for the
+reader.
+</p>
+
+<p>
+The very same mold works differently for a piece of code, though!
+Let's take a <a href="https://github.com/emilybache/GildedRose-Refactoring-Kata">GildedRose</a> file as an example.
+</p>
+
+
+<div id="org7e1e473" class="figure">
+<p><img src="/assets/blog/2021/10/22/moldable-emacs-how-to-get-useful-info-about-a-buffer-without-reading-it/screen-2021-07-02-14-27-49.jpg" alt="screen-2021-07-02-14-27-49.jpg" />
+</p>
+</div>
+
+<p>
+Now in the result of the mold, we have some Programming Stats! We can
+see that this code has 62 lines but also 16 if-else. You can see that
+the mold detects the method and the class. Under the hood this is
+using the amazing <a href="https://github.com/ubolonton/emacs-tree-sitter.git">emacs-tree-sitter</a>. We parse the code and label
+tokens according to the available Java grammar. I tested this mold
+with Scala, Java and Python for now. Grammars use slightly different
+names for things: for example the Scala grammar uses
+<code>class_definition</code> while the Java grammar uses <code>class_declaration</code>.
+</p>
+
+<p>
+Anyway, let me show you a cool side of this mold!
+</p>
+
+
+<div id="org2755051" class="figure">
+<p><img src="/assets/blog/2021/10/22/moldable-emacs-how-to-get-useful-info-about-a-buffer-without-reading-it/screen-2021-07-02-14-35-52.jpg" alt="screen-2021-07-02-14-35-52.jpg" />
+</p>
+</div>
+
+<p>
+(you can check a video here:
+<a href="https://user-images.githubusercontent.com/6580039/129642956-eb1fb07e-8fee-42b1-b688-37c64af8b132.mp4">https://user-images.githubusercontent.com/6580039/129642956-eb1fb07e-8fee-42b1-b688-37c64af8b132.mp4</a>)
+</p>
+
+<p>
+At the bottom we have some duplication stats. The idea is to make
+redundant text evident. For code we want to see redundant constructs.
+nSo the highlighted <code>assignment_expression</code> indicates that 4 out of 9
+variable assignments are redundant. When your pointer passes over one
+of the lines, you see all the tokens matching the type. This is good
+enough to find duplication in this example. An improvement over this
+would be to highlight only the duplicates. When I firstly wrote this
+mold, I was getting just the text, but I had no idea what an
+<code>assignment_expression</code> meant! Luckily <code>emacs-tree-sitter</code> comes with
+a query language to highlight tokens you care about. In a future post
+I shall explain how I made this highlighting system! (I plan to make a
+programming language explainer: think of "I don't know that
+construct", call a mold and it tells you what it does.)
+</p>
+
+<p>
+For now this highlighting uses <code>tree-sitter</code> and so duplication stats
+work only for code. I would like to extend that to any other text as
+soon I find a good way to structure natural language (machine learning
+I guess?).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5a6734b" class="outline-2">
+<h2 id="org5a6734b">Conclusion</h2>
+<div class="outline-text-2" id="text-org5a6734b">
+<p>
+That was it! Give a try at extracting stats from your buffer with
+<a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>. And get in touch if you have ideas on how to improve
+this mold.
+</p>
+
+<p>
+Happy stats!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-10-22</span>
+        <span title="last modification date" class="post-info">2021-10-22</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

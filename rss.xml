@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 15 Oct 2021 23:31:54 BST</pubDate>
-    <lastBuildDate>Fri, 15 Oct 2021 23:31:54 BST</lastBuildDate>
+    <pubDate>Fri, 22 Oct 2021 21:18:56 BST</pubDate>
+    <lastBuildDate>Fri, 22 Oct 2021 21:18:56 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: how to get useful info about a buffer without reading it</title>
+      <link>http://ag91.github.io/blog/2021/10/22/moldable-emacs-how-to-get-useful-info-about-a-buffer-without-reading-it</link>
+      <description><![CDATA[Get stats from your buffer!]]></description>
+      <pubDate>2021-10-22</pubDate>
+      <guid>http://ag91.github.io/blog/2021/10/22/moldable-emacs-how-to-get-useful-info-about-a-buffer-without-reading-it</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: moldable tutorials</title>
       <link>http://ag91.github.io/blog/2021/10/15/moldable-emacs-moldable-tutorials</link>
-      <description><![CDATA[A tutorial mold to make it easy to start with moldable-emacs]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-10-15</pubDate>
       <guid>http://ag91.github.io/blog/2021/10/15/moldable-emacs-moldable-tutorials</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-08-11</pubDate>
       <guid>http://ag91.github.io/blog/2021/08/11/moldable-emacs-editing-your-file-via-treesitter-(or-how-i-fixed-my-css-with-a-playground)</guid>
-    </item>
-    <item>
-      <title>Following wise suggestions: making emacs-with-nyxt more consistent</title>
-      <link>http://ag91.github.io/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-08-10</pubDate>
-      <guid>http://ag91.github.io/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent</guid>
     </item>
   </channel>
 </rss>
