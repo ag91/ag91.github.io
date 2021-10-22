@@ -29,11 +29,14 @@ looking at code show me how many if-else I got.
 How would such a mold look like?
 
 * And there is a solution
+:PROPERTIES:
+:ID:       6ebd638f-3d91-4cbe-a101-70b4b03c4e11
+:END:
 
 The mold I came up with is "Stats". Let me give you a sense of how it
 looks.
 
-#+BEGIN_SRC emacs-lisp :results file :exports results :file "/tmp/screen-2021-07-02-14-09-53.jpg"
+#+BEGIN_SRC emacs-lisp :results file :exports results :file "screen-2021-07-02-14-09-53.jpg"
   (base64-decode-string
       "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
 FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
@@ -3082,7 +3085,7 @@ VnUUUAf/2Q==")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/screen-2021-07-02-14-09-53.jpg]]
+[[file:screen-2021-07-02-14-09-53.jpg]]
 
 For an Org buffer we get some generic stats. Things like reading time,
 number of lines, size and most and least used words. Reading time and
@@ -3092,7 +3095,7 @@ reader.
 The very same mold works differently for a piece of code, though!
 Let's take a [[https://github.com/emilybache/GildedRose-Refactoring-Kata][GildedRose]] file as an example.
 
-#+BEGIN_SRC emacs-lisp :results file :exports results :file "/tmp/screen-2021-07-02-14-27-49.jpg"
+#+BEGIN_SRC emacs-lisp :results file :exports results :file "screen-2021-07-02-14-27-49.jpg"
   (base64-decode-string
       "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
 FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
@@ -7117,7 +7120,7 @@ KKKKACiiigArOoooA//Z")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/screen-2021-07-02-14-27-49.jpg]]
+[[file:screen-2021-07-02-14-27-49.jpg]]
 
 Now in the result of the mold, we have some Programming Stats! We can
 see that this code has 62 lines but also 16 if-else. You can see that
@@ -7130,7 +7133,7 @@ names for things: for example the Scala grammar uses
 
 Anyway, let me show you a cool side of this mold!
 
-#+BEGIN_SRC emacs-lisp :results file :exports results :file "/tmp/screen-2021-07-02-14-35-52.jpg"
+#+BEGIN_SRC emacs-lisp :results file :exports results :file "screen-2021-07-02-14-35-52.jpg"
   (base64-decode-string
       "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcU
 FhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgo
@@ -11138,7 +11141,7 @@ RQAUUUUAFFFFABWdRRQB/9k=")
 #+END_SRC
 
 #+RESULTS:
-[[file:/tmp/screen-2021-07-02-14-35-52.jpg]]
+[[file:screen-2021-07-02-14-35-52.jpg]]
 
 (you can check a video here:
 https://user-images.githubusercontent.com/6580039/129642956-eb1fb07e-8fee-42b1-b688-37c64af8b132.mp4)
