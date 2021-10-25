@@ -1,0 +1,46 @@
+#+TITLE:       Nyxt on MacOS!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-10-25 Mon
+#+URI:         /blog/%y/%m/%d/nyxt-on-macos
+#+KEYWORDS:    nyxt, emacs
+#+TAGS:        nyxt, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to use emacs-with-nyxt in MacOS!
+
+This is a quick write up for those of you that wish to try Nyxt and
+are on MacOS. So far we could not build Nyxt on MacOS, but the GitHub
+user @deddu has just saved us: https://github.com/deddu/nyxt-docker.
+If you are a Docker user already this will come super convenient.
+
+Just follow the instructions on his repository and you will be using
+Nyxt on MacOS.
+
+If you install the latest (2.2.1) image, then [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]] will
+work out of the box too! Actually that is incorrect: you need a few
+steps.
+
+First plug into your preferred terminal init file the following alias
+(substitute =andrea= with your home name).
+
+#+begin_src sh
+alias nyxt="xterm -e 'xhost +127.0.0.1; docker run -it -p 4006:4006 -v /Users/andrea:/root/ --rm bigdeddu/nyxt:2.2.1'"
+#+end_src
+
+This just makes available the Swank/Sly port (4006) and the nyxt and
+Quicklisp configuration folder (that are in your home).
+
+And you hopefully already have in your Emacs init this code: =(setq
+shell-command-switch "-ic")=. This makes the alias usable by the
+Emacs shells.
+
+Ah and don't forget to set the [[https://github.com/deddu/nyxt-docker/issues/6][Swank and Sly host to: 0.0.0.0]].
+
+Given all of that, you can just use all the hacks I provide in
+emacs-with-nyxt.
+
+A caveat though: since you run this in a Docker container, external
+software are not available. At least I still haven't managed to use
+=pass= or =youtube-dl=. But still you can browse in Common Lisp from
+MacOS!
