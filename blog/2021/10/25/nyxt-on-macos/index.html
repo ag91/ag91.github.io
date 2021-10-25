@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <title>Tag: nyxt - Where parallels cross</title>
+    <title>Nyxt on MacOS! - Where parallels cross</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Andrea" />
+    <meta name="description" content="How to use emacs-with-nyxt in MacOS!" />
+    <meta name="keywords" content="nyxt, emacs" />
     <link rel="stylesheet" href="/media/css/main.css" type="text/css">
     <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
   </head>
@@ -26,23 +28,77 @@
         </form>
       </header>
     </div>
+
+<div>
+<div class="post">
+<h1>Nyxt on MacOS!</h1>
+<p>
+This is a quick write up for those of you that wish to try Nyxt and
+are on MacOS. So far we could not build Nyxt on MacOS, but the GitHub
+user @deddu has just saved us: <a href="https://github.com/deddu/nyxt-docker">https://github.com/deddu/nyxt-docker</a>.
+If you are a Docker user already this will come super convenient.
+</p>
+
+<p>
+Just follow the instructions on his repository and you will be using
+Nyxt on MacOS.
+</p>
+
+<p>
+If you install the latest (2.2.1) image, then <a href="https://github.com/ag91/emacs-with-nyxt">emacs-with-nyxt</a> will
+work out of the box too! Actually that is incorrect: you need a few
+steps.
+</p>
+
+<p>
+First plug into your preferred terminal init file the following alias
+(substitute <code>andrea</code> with your home name).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">alias nyxt="xterm -e 'xhost +127.0.0.1; docker run -it -p 4006:4006 -v /Users/andrea:/root/ --rm bigdeddu/nyxt:2.2.1'"
+</pre>
+</div>
+
+<p>
+This just makes available the Swank/Sly port (4006) and the nyxt and
+Quicklisp configuration folder (that are in your home).
+</p>
+
+<p>
+And you hopefully already have in your Emacs init this code: <code>(setq
+shell-command-switch "-ic")</code>. This makes the alias usable by the
+Emacs shells.
+</p>
+
+<p>
+Ah and don't forget to set the <a href="https://github.com/deddu/nyxt-docker/issues/6">Swank and Sly host to: 0.0.0.0</a>.
+</p>
+
+<p>
+Given all of that, you can just use all the hacks I provide in
+emacs-with-nyxt.
+</p>
+
+<p>
+A caveat though: since you run this in a Docker container, external
+software are not available. At least I still haven't managed to use
+<code>pass</code> or <code>youtube-dl</code>. But still you can browse in Common Lisp from
+MacOS!
+</p>
+
+</div>
+</div>
     <div>
-      <div class="post">
-        <h1>Tag: nyxt</h1>
-        <ul class="org-ul">
-          <li><a href="/blog/2021/07/09/org-capture-in-nyxt-taking-notes-while-browsing">Org capture in Nyxt: taking notes while browsing</a></li>
-          <li><a href="/blog/2021/07/22/nyxt-to-mold-html-the-first-mix-of-moldable-emacs-and-browsing">Nyxt to mold HTML: the first mix of moldable-emacs and browsing</a></li>
-          <li><a href="/blog/2021/06/29/extending-nyxt-via-emacs-how-to-leverage-common-lisp-wealth-to-get-your-links-as-qr-codes">Extending Nyxt via Emacs: how to leverage Common Lisp wealth to get your links as QR codes</a></li>
-          <li><a href="/blog/2021/07/25/org-roam-and-nyxt-taking-zettelkasten-notes-from-the-web">Org Roam and Nyxt: taking Zettelkasten notes from the web</a></li>
-          <li><a href="/blog/2021/10/25/nyxt-on-macos">Nyxt on MacOS!</a></li>
-          <li><a href="/blog/2021/08/22/moldable-emacs-vega-lite-nyxt-and-emacs-towards-sustainable-development">Moldable Emacs: Vega-Lite, Nyxt and Emacs towards sustainable development</a></li>
-          <li><a href="/blog/2021/08/09/following-wise-suggestions-making-emacs-with-nyxt-more-consistent">Following wise suggestions: making emacs-with-nyxt more consistent</a></li>
-          <li><a href="/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime">Emacs, Nyxt and Engine-mode: how to browse URLs via Nyxt and Slime</a></li>
-          <li><a href="/blog/2021/06/22/back-to-emacs-while-in-nyxt-how-to-edit-the-web-in-a-lispy-editor">Back to Emacs while in Nyxt: how to edit the web in a Lispy editor</a></li>
-        </ul>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-10-25</span>
+        <span title="last modification date" class="post-info">2021-10-25</span>
+        <span title="tags" class="post-info"><a href="/tags/nyxt/">nyxt</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
       </div>
-    </div>
-    <div>
+      <section>
+        <h1>Comments</h1>
+      </section>
       <script src="//code.jquery.com/jquery-latest.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
       <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -67,5 +123,6 @@
         </p>
       </div>
     </div>
+
   </body>
 </html>
