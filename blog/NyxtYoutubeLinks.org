@@ -1,0 +1,113 @@
+#+TITLE:       Emacs with Nyxt: capturing YouTube links at time and molding Nyxt with JS
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-10-29 Fri
+#+URI:         /blog/%y/%m/%d/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js
+#+KEYWORDS:    nyxt, moldable-emacs, emacs
+#+TAGS:        nyxt, moldable-emacs, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to take YouTube links at time with Nyxt and run JS on Nyxt with moldable-emacs
+
+* Too long; didn't read
+
+The little command =org-capture= in [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]] now captures
+YouTube links with duration! And [[https://github.com/ag91/moldable-emacs][moldable-emacs]] lets you interact with
+Nyxt in JavaScript.
+
+* The problem
+
+When I watch a YouTube video I like to capture links. It is useful to
+take a note about a certain moment in the video. Often this saves my
+(and others) time because I can review only the bit I cared to cite.
+So far this involved a bit of clicking in the browser. I had plans to
+automate this with Nyxt, but watching video didn't really work on the
+Guix version. Then, just the other day, [[https://nyxt.atlas.engineer/article/release-2.2.1.org][Nyxt 2.2.1 came out]]. And for
+me YouTube came with it (because @ambrevar fixed a bug in the Debian
+package: thanks!!). I already captured notes via Nyxt: so how
+difficult would be to capture the link at a certain duration?
+
+* It is a problem indeed
+
+This is super interesting for a subtle reason: it involves interacting
+with JavaScript (JS)! When you click on a video, it is evident that
+you see a menu produced via JS. And if you read my previous blogs, you
+know that I believe that small things can open new worlds. Here
+capturing a link could let us connect Emacs to the browser JS console!
+And that definitely means we could make a JS Playground in
+moldable-emacs. That is exciting because you can command a webpage:
+[[https://www.reddit.com/r/Nyxt/comments/p3eg6r/how_to_get_csv_files_from_bank_account/][did you ever want to login to your bank account automatically?]] What is
+the first step to get to that? A YouTube link with duration :D
+
+* And there is a solution
+:PROPERTIES:
+:ID:       b19254d2-ef2e-4c02-b4bd-ad78f792846a
+:END:
+
+First things first. I discovered there is an easy way to run your JS
+in Nyxt: =ffi-buffer-evaluate-javascript=. This little function is the
+engine of what I am showing you next.
+
+[[file:nyxtYoutubeLinks.mp4]]
+
+In the video above I take an Org Roam note with a "timed" YouTube
+link. I show that by opening the link in Firefox: the video opens at
+the same point. And you can see a Playground in action to query the
+current page in JS and getting the data in Emacs!
+
+The function =ffi-buffer-evaluate-javascript= takes two arguments: the
+current Nyxt buffer and a string with JavaScript. The result is in
+Common Lisp.
+
+You can evaluate the duration of the video you are watching by
+evaluating the following JS.
+
+#+begin_src js
+document.getElementById('movie_player').getCurrentTime();
+#+end_src
+
+This queries the =movie_player= element for the timestamp. This
+returns a real number. We can achieve the very same with [[https://common-lisp.net/project/parenscript/][Parenscript]].
+
+#+begin_src lisp
+(ps:ps (ps:chain document (get-element-by-id "movie_player") (get-current-time)))
+#+end_src
+
+This lets you use Common Lisp to produce JS: indeed, =ps:ps= converts
+the Common Lisp code into a JS string.
+
+Given the YouTube =url=, all you need is the following.
+
+#+begin_src lisp
+(str:concat
+          url                                                                               
+          "&t="
+          (write-to-string ;; Common Lisp way to produce a string
+           (floor ;; keep only the integer part
+            (ffi-buffer-evaluate-javascript (current-buffer)
+                                            (ps:ps (ps:chain document (get-element-by-id "movie_player") (get-current-time))))))
+          "s")
+#+end_src
+
+This code produces a link like "www.youtube.com?v=xxx&t=10s".
+Injecting that in my old commands =org-capture= and =org-roam-capture=
+makes capturing possible.
+
+That inspired me to make a Playground mold to exploit
+=ffi-buffer-evaluate-javascript= even more! Now you can query/command
+the JS of a Nyxt page and get the results in your Emacs. How cool
+would it be to automate boring flows that don't have APIs via JS? With
+a mix of emacs-with-nyxt and moldable-emacs, I am sure I could
+automate a lot of things that I do manually. I am pretty sure I will
+write more about this soon!
+
+* Conclusion
+
+We can interact with our browser JS from Emacs. Probably there was
+some way to that even before, but now we can interact with Nyxt and in
+Common Lisp!! So if you know JS, Common Lisp and you use Emacs, it is
+time you grab my [[https://github.com/ag91/emacs-with-nyxt][emacs-with-nyxt]] and start exploring your options :D
+
+Happy JavaScripting!
+
+
