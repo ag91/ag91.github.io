@@ -87,8 +87,12 @@ in Nyxt: <code>ffi-buffer-evaluate-javascript</code>. This little function is th
 engine of what I am showing you next.
 </p>
 
+
 <p>
-<a href="/assets/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js/nyxtYoutubeLinks.mp4">/assets/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js/nyxtYoutubeLinks.mp4</a>
+  <video width="420" height="240" controls>
+    <source src="/assets/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js/nyxtYoutubeLinks.mp4" type="video/mp4">
+    <a href="/assets/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js/nyxtYoutubeLinks.mp4">/assets/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js/nyxtYoutubeLinks.mp4</a>
+  </video>
 </p>
 
 <p>
@@ -135,7 +139,7 @@ Given the YouTube <code>url</code>, all you need is the following.
 
 <div class="org-src-container">
 <pre class="src src-lisp">(str:concat
-          url                                                                               
+          url
           "&amp;t="
           (write-to-string ;; Common Lisp way to produce a string
            (floor ;; keep only the integer part
