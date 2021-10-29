@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emacs with Nyxt: capturing YouTube links at time and molding Nyxt with JS - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to take YouTube links at time with Nyxt and run JS on Nyxt with moldable-emacs" />
+    <meta name="keywords" content="nyxt, moldable-emacs, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emacs with Nyxt: capturing YouTube links at time and molding Nyxt with JS</h1>
+
+<div id="outline-container-org5d44069" class="outline-2">
+<h2 id="org5d44069">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org5d44069">
+<p>
+The little command <code>org-capture</code> in <a href="https://github.com/ag91/emacs-with-nyxt">emacs-with-nyxt</a> now captures
+YouTube links with duration! And <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> lets you interact with
+Nyxt in JavaScript.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org90d508e" class="outline-2">
+<h2 id="org90d508e">The problem</h2>
+<div class="outline-text-2" id="text-org90d508e">
+<p>
+When I watch a YouTube video I like to capture links. It is useful to
+take a note about a certain moment in the video. Often this saves my
+(and others) time because I can review only the bit I cared to cite.
+So far this involved a bit of clicking in the browser. I had plans to
+automate this with Nyxt, but watching video didn't really work on the
+Guix version. Then, just the other day, <a href="https://nyxt.atlas.engineer/article/release-2.2.1.org">Nyxt 2.2.1 came out</a>. And for
+me YouTube came with it (because @ambrevar fixed a bug in the Debian
+package: thanks!!). I already captured notes via Nyxt: so how
+difficult would be to capture the link at a certain duration?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd7cefdc" class="outline-2">
+<h2 id="orgd7cefdc">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgd7cefdc">
+<p>
+This is super interesting for a subtle reason: it involves interacting
+with JavaScript (JS)! When you click on a video, it is evident that
+you see a menu produced via JS. And if you read my previous blogs, you
+know that I believe that small things can open new worlds. Here
+capturing a link could let us connect Emacs to the browser JS console!
+And that definitely means we could make a JS Playground in
+moldable-emacs. That is exciting because you can command a webpage:
+<a href="https://www.reddit.com/r/Nyxt/comments/p3eg6r/how_to_get_csv_files_from_bank_account/">did you ever want to login to your bank account automatically?</a> What is
+the first step to get to that? A YouTube link with duration :D
+</p>
+</div>
+</div>
+
+<div id="outline-container-org919477c" class="outline-2">
+<h2 id="org919477c">And there is a solution</h2>
+<div class="outline-text-2" id="text-org919477c">
+<p>
+First things first. I discovered there is an easy way to run your JS
+in Nyxt: <code>ffi-buffer-evaluate-javascript</code>. This little function is the
+engine of what I am showing you next.
+</p>
+
+<p>
+<a href="/assets/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js/nyxtYoutubeLinks.mp4">/assets/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js/nyxtYoutubeLinks.mp4</a>
+</p>
+
+<p>
+In the video above I take an Org Roam note with a "timed" YouTube
+link. I show that by opening the link in Firefox: the video opens at
+the same point. And you can see a Playground in action to query the
+current page in JS and getting the data in Emacs!
+</p>
+
+<p>
+The function <code>ffi-buffer-evaluate-javascript</code> takes two arguments: the
+current Nyxt buffer and a string with JavaScript. The result is in
+Common Lisp.
+</p>
+
+<p>
+You can evaluate the duration of the video you are watching by
+evaluating the following JS.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-js">document.getElementById('movie_player').getCurrentTime();
+</pre>
+</div>
+
+<p>
+This queries the <code>movie_player</code> element for the timestamp. This
+returns a real number. We can achieve the very same with <a href="https://common-lisp.net/project/parenscript/">Parenscript</a>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(ps:ps (ps:chain document (get-element-by-id "movie_player") (get-current-time)))
+</pre>
+</div>
+
+<p>
+This lets you use Common Lisp to produce JS: indeed, <code>ps:ps</code> converts
+the Common Lisp code into a JS string.
+</p>
+
+<p>
+Given the YouTube <code>url</code>, all you need is the following.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-lisp">(str:concat
+          url                                                                               
+          "&amp;t="
+          (write-to-string ;; Common Lisp way to produce a string
+           (floor ;; keep only the integer part
+            (ffi-buffer-evaluate-javascript (current-buffer)
+                                            (ps:ps (ps:chain document (get-element-by-id "movie_player") (get-current-time))))))
+          "s")
+</pre>
+</div>
+
+<p>
+This code produces a link like "www.youtube.com?v=xxx&amp;t=10s".
+Injecting that in my old commands <code>org-capture</code> and <code>org-roam-capture</code>
+makes capturing possible.
+</p>
+
+<p>
+That inspired me to make a Playground mold to exploit
+<code>ffi-buffer-evaluate-javascript</code> even more! Now you can query/command
+the JS of a Nyxt page and get the results in your Emacs. How cool
+would it be to automate boring flows that don't have APIs via JS? With
+a mix of emacs-with-nyxt and moldable-emacs, I am sure I could
+automate a lot of things that I do manually. I am pretty sure I will
+write more about this soon!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org712358d" class="outline-2">
+<h2 id="org712358d">Conclusion</h2>
+<div class="outline-text-2" id="text-org712358d">
+<p>
+We can interact with our browser JS from Emacs. Probably there was
+some way to that even before, but now we can interact with Nyxt and in
+Common Lisp!! So if you know JS, Common Lisp and you use Emacs, it is
+time you grab my <a href="https://github.com/ag91/emacs-with-nyxt">emacs-with-nyxt</a> and start exploring your options :D
+</p>
+
+<p>
+Happy JavaScripting!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-10-29</span>
+        <span title="last modification date" class="post-info">2021-10-29</span>
+        <span title="tags" class="post-info"><a href="/tags/nyxt/">nyxt</a>, <a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
