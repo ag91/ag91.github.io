@@ -1,0 +1,127 @@
+#+TITLE:       Moldable Emacs: a Clojure Playground with Babashka
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-11-05 Fri
+#+URI:         /blog/%y/%m/%d/moldable-emacs-a-clojure-playground-with-babashka
+#+KEYWORDS:    moldable-emacs, emacs, clojure
+#+TAGS:        moldable-emacs, emacs, clojure
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A mold to play with Clojure, Cider and Babashka!
+
+* Too long; didn't read
+
+There is a Playground for Clojure now. You need a [[https://github.com/clojure-emacs/cider][cider]] connection to
+use it and with [[https://github.com/babashka/babashka][babashka]] is even cooler!
+
+* The problem
+
+When I finished to implement my first mold, the Playground, I remember
+I had this thought: "wouldn't it be cool to have a Playground in the
+language you like?". That was also [[https://github.com/ag91/moldable-emacs/issues/1][the first issue]] of [[https://github.com/ag91/moldable-emacs][moldable-emacs]].
+Then I moved on and I forgot about it.
+
+Until the other day, when I had this cool work task about finding out
+team ratio between planned and unplanned work. Long story short,
+moldable-emacs was a great ally to solve it. After a couple of hours
+of hacking, there I go with a reproducible analysis. Here my problem:
+reproducible only by me. Unluckily few people use Emacs at work and I
+am the only one using my mode.
+
+The thing my colleagues have in common though is that they are
+Clojurians. So even if they don't use Emacs, they do use Clojure. The
+Playground is in Elisp. So... [[https://github.com/clojure-emacs/clomacs][clomacs]]? Not this time. For work stuff I
+want to write my scripts in Clojure!
+
+Then another analysis task comes along, moldable-emacs would be great
+again! What shall I do?!?
+
+* It is a problem indeed
+
+Apart of the need to reproduce work (to spot errors and improve upon
+it), a polyglot workflow is fun. Indeed, Org Babel is a show-off of
+marvels. When I chain Bash, JavaScript, and Elisp to get what I need
+is a joy. Each language has strengths. It feels an amazing freedom to
+compose these strengths into a flow of data. Moldable-emacs works well
+to unify data representations, but its main language remains Elisp. I
+mean you can move to JSON to a plist and back, but you still have to
+express yourself in Elisp. Even if JavaScript is just better at
+surfing JSON.
+
+Can we do a first step in that direction?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       d337ff2b-5a68-4ace-9a6b-e4a27164184c
+:END:
+
+Since I need to share Clojure with others, let's start from there. I
+wanted a way to easily reproduce a Clojure script. In the sense that I
+don't want to create a project, if I were to need some external
+library. In Scala I would have picked something like [[https://github.com/com-lihaoyi/Ammonite][Ammonite]] to back
+up my foreign Playground. So, I ended up learning that the cool
+Clojure kid of the block is babashka these days. And I totally agree.
+The beautiful mind that gave us [[https://github.com/clj-kondo/clj-kondo][clj-kondo]] gave as a nice way of
+scripting in Clojure too. And babashka fits perfectly with [[https://github.com/clojure-emacs/cider][cider]], the
+mode I use to enhance my Clojure dev experience. So I wrote a new
+mold.
+
+The main dependency of this mold is cider. Babashka is just an
+insurance that the code in my Playground is going to be easy to share.
+
+I made also an "Eval With Clojure" mold to evaluate the last Clojure
+sexp. Let me show how it all works together.
+
+[[file:ClojurePlayground.mp4]]
+
+As you can see, I picked the babashka example that fetches the latest
+tag of the project [[https://github.com/babashka/babashka/tree/master/examples][here]]. After connecting =cider=, I evaluate the
+=require= and the function, and I get the latest tag! And by the way,
+you can see that I can also evaluate =self= (in the Elisp REPL).
+
+That is indeed the bit that I care about: data integration. The
+implementation of the mold follows.
+
+#+begin_src elisp
+(me-register-mold
+ :key "Playground Clojure"
+ :given (:fn (and (me-require 'clojure-mode)))
+ :then (:fn
+        (let* ((tree (ignore-errors self)))
+          (with-current-buffer buffername
+            (clojure-mode)
+            (erase-buffer)
+            (insert ";; Tips:\n;;    Use `self' to access the mold context.\n;;    You can access the previous mold context through `mold-data'.\n\n")
+            (ignore-errors
+              (when (cider-connected-p) (cider-nrepl-sync-request:eval (format "(def self '%s)" (let ((x self)) (with-temp-buffer (me-print-to-buffer x)
+                                                                                                                                  (buffer-string)))))))
+            (setq-local self tree))))
+ :docs "You can play around with code in Clojure."
+ :examples ...)
+#+end_src
+
+You can see that the =self= is only set if cider is connected (the bit
+with =(cider-connected-p)=). This is pretty sketchy because the
+setting of =self= may fail. Also we miss =mold-data=, which contains
+old mold information. It is still available from the Elisp side, but
+not in the cider session. Still, I believe it is a good first&tiny
+step for polyglot molding!
+
+And I could share how I made my analysis with my colleagues: so success!
+
+The way I did was to develop my Playground, add a =#!/usr/bin/env bb=
+at the top and that was it. Before developing I just needed to:
+
+1. run babashka nrepl: =(async-shell-command "bb nrepl-server 1667")=
+2. connect cider to that with =cider-connect-clj=
+
+You can connect to any nrepl session. We leverage cider superpowers!
+
+* Conclusion
+
+The first polyglot mold! As you can see, even if others don't use
+moldable-emacs, you can still share your data transformation. It is a
+bit ad-hoc, but it is possible. And if you are a Clojurian, well it is
+ready to use.
+
+Happy polyglotting!
