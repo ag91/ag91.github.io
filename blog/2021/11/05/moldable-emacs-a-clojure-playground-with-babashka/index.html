@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: a Clojure Playground with Babashka - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A mold to play with Clojure, Cider and Babashka!" />
+    <meta name="keywords" content="moldable-emacs, emacs, clojure" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: a Clojure Playground with Babashka</h1>
+
+<div id="outline-container-orga1ecee8" class="outline-2">
+<h2 id="orga1ecee8">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orga1ecee8">
+<p>
+There is a Playground for Clojure now. You need a <a href="https://github.com/clojure-emacs/cider">cider</a> connection to
+use it and with <a href="https://github.com/babashka/babashka">babashka</a> is even cooler!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org247117a" class="outline-2">
+<h2 id="org247117a">The problem</h2>
+<div class="outline-text-2" id="text-org247117a">
+<p>
+When I finished to implement my first mold, the Playground, I remember
+I had this thought: "wouldn't it be cool to have a Playground in the
+language you like?". That was also <a href="https://github.com/ag91/moldable-emacs/issues/1">the first issue</a> of <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>.
+Then I moved on and I forgot about it.
+</p>
+
+<p>
+Until the other day, when I had this cool work task about finding out
+team ratio between planned and unplanned work. Long story short,
+moldable-emacs was a great ally to solve it. After a couple of hours
+of hacking, there I go with a reproducible analysis. Here my problem:
+reproducible only by me. Unluckily few people use Emacs at work and I
+am the only one using my mode.
+</p>
+
+<p>
+The thing my colleagues have in common though is that they are
+Clojurians. So even if they don't use Emacs, they do use Clojure. The
+Playground is in Elisp. So... <a href="https://github.com/clojure-emacs/clomacs">clomacs</a>? Not this time. For work stuff I
+want to write my scripts in Clojure!
+</p>
+
+<p>
+Then another analysis task comes along, moldable-emacs would be great
+again! What shall I do?!?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfd826a2" class="outline-2">
+<h2 id="orgfd826a2">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgfd826a2">
+<p>
+Apart of the need to reproduce work (to spot errors and improve upon
+it), a polyglot workflow is fun. Indeed, Org Babel is a show-off of
+marvels. When I chain Bash, JavaScript, and Elisp to get what I need
+is a joy. Each language has strengths. It feels an amazing freedom to
+compose these strengths into a flow of data. Moldable-emacs works well
+to unify data representations, but its main language remains Elisp. I
+mean you can move to JSON to a plist and back, but you still have to
+express yourself in Elisp. Even if JavaScript is just better at
+surfing JSON.
+</p>
+
+<p>
+Can we do a first step in that direction?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfde5631" class="outline-2">
+<h2 id="orgfde5631">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgfde5631">
+<p>
+Since I need to share Clojure with others, let's start from there. I
+wanted a way to easily reproduce a Clojure script. In the sense that I
+don't want to create a project, if I were to need some external
+library. In Scala I would have picked something like <a href="https://github.com/com-lihaoyi/Ammonite">Ammonite</a> to back
+up my foreign Playground. So, I ended up learning that the cool
+Clojure kid of the block is babashka these days. And I totally agree.
+The beautiful mind that gave us <a href="https://github.com/clj-kondo/clj-kondo">clj-kondo</a> gave as a nice way of
+scripting in Clojure too. And babashka fits perfectly with <a href="https://github.com/clojure-emacs/cider">cider</a>, the
+mode I use to enhance my Clojure dev experience. So I wrote a new
+mold.
+</p>
+
+<p>
+The main dependency of this mold is cider. Babashka is just an
+insurance that the code in my Playground is going to be easy to share.
+</p>
+
+<p>
+I made also an "Eval With Clojure" mold to evaluate the last Clojure
+sexp. Let me show how it all works together.
+</p>
+
+<p>
+<a href="/assets/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka/ClojurePlayground.mp4">/assets/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka/ClojurePlayground.mp4</a>
+</p>
+
+<p>
+As you can see, I picked the babashka example that fetches the latest
+tag of the project <a href="https://github.com/babashka/babashka/tree/master/examples">here</a>. After connecting <code>cider</code>, I evaluate the
+<code>require</code> and the function, and I get the latest tag! And by the way,
+you can see that I can also evaluate <code>self</code> (in the Elisp REPL).
+</p>
+
+<p>
+That is indeed the bit that I care about: data integration. The
+implementation of the mold follows.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me-register-mold
+ :key "Playground Clojure"
+ :given (:fn (and (me-require 'clojure-mode)))
+ :then (:fn
+        (let* ((tree (ignore-errors self)))
+          (with-current-buffer buffername
+            (clojure-mode)
+            (erase-buffer)
+            (insert ";; Tips:\n;;    Use `self' to access the mold context.\n;;    You can access the previous mold context through `mold-data'.\n\n")
+            (ignore-errors
+              (when (cider-connected-p) (cider-nrepl-sync-request:eval (format "(def self '%s)" (let ((x self)) (with-temp-buffer (me-print-to-buffer x)
+                                                                                                                                  (buffer-string)))))))
+            (setq-local self tree))))
+ :docs "You can play around with code in Clojure."
+ :examples ...)
+</pre>
+</div>
+
+<p>
+You can see that the <code>self</code> is only set if cider is connected (the bit
+with <code>(cider-connected-p)</code>). This is pretty sketchy because the
+setting of <code>self</code> may fail. Also we miss <code>mold-data</code>, which contains
+old mold information. It is still available from the Elisp side, but
+not in the cider session. Still, I believe it is a good first&amp;tiny
+step for polyglot molding!
+</p>
+
+<p>
+And I could share how I made my analysis with my colleagues: so success!
+</p>
+
+<p>
+The way I did was to develop my Playground, add a <code>#!/usr/bin/env bb</code>
+at the top and that was it. Before developing I just needed to:
+</p>
+
+<ol class="org-ol">
+<li>run babashka nrepl: <code>(async-shell-command "bb nrepl-server 1667")</code></li>
+<li>connect cider to that with <code>cider-connect-clj</code></li>
+</ol>
+
+<p>
+You can connect to any nrepl session. We leverage cider superpowers!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7b977f2" class="outline-2">
+<h2 id="org7b977f2">Conclusion</h2>
+<div class="outline-text-2" id="text-org7b977f2">
+<p>
+The first polyglot mold! As you can see, even if others don't use
+moldable-emacs, you can still share your data transformation. It is a
+bit ad-hoc, but it is possible. And if you are a Clojurian, well it is
+ready to use.
+</p>
+
+<p>
+Happy polyglotting!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-11-05</span>
+        <span title="last modification date" class="post-info">2021-11-05</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a>, <a href="/tags/clojure/">clojure</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

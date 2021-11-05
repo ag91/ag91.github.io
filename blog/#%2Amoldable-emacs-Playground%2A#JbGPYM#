@@ -1,0 +1,20 @@
+;; Tips:
+;;    Use `self' to access the mold context.
+;;    You can access the previous mold context through `mold-data'.
+
+(--> (org-roam-node-list)
+     (-take 100 it)
+     (--filter (> (length (org-roam-backlinks-get it)) 0) it)
+     (--map
+      (list :file (org-roam-node-file it)
+            :backlinks (length (org-roam-backlinks-get it))
+            :size (file-attribute-size (file-attributes (org-roam-node-file it)))
+            :command (concat "file:///"
+                             (base64-encode-string
+                              (concat
+                               "(progn (find-file \""
+                               (org-roam-node-file it)
+                               "\")
+                               (org-roam-buffer-toggle))"))
+                             ".ag91"))
+      it))
