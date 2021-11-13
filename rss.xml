@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 05 Nov 2021 23:05:53 GMT</pubDate>
-    <lastBuildDate>Fri, 05 Nov 2021 23:05:53 GMT</lastBuildDate>
+    <pubDate>Sat, 13 Nov 2021 21:46:27 GMT</pubDate>
+    <lastBuildDate>Sat, 13 Nov 2021 21:46:27 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Understanding ourselves: the miracle of sweat</title>
+      <link>http://ag91.github.io/blog/2021/11/13/understanding-ourselves-the-miracle-of-sweat</link>
+      <description><![CDATA[How sweat is an amazing feature of our bodies!]]></description>
+      <pubDate>2021-11-13</pubDate>
+      <guid>http://ag91.github.io/blog/2021/11/13/understanding-ourselves-the-miracle-of-sweat</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: a Clojure Playground with Babashka</title>
       <link>http://ag91.github.io/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka</link>
-      <description><![CDATA[A mold to play with Clojure, Cider and Babashka!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-11-05</pubDate>
       <guid>http://ag91.github.io/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-09-19</pubDate>
       <guid>http://ag91.github.io/blog/2021/09/19/moldable-emacs-making-molds-a-little-easier-to-write</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: taking lispy notes that are easier to search!</title>
-      <link>http://ag91.github.io/blog/2021/09/05/moldable-emacs-taking-lispy-notes-that-are-easier-to-search</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-09-05</pubDate>
-      <guid>http://ag91.github.io/blog/2021/09/05/moldable-emacs-taking-lispy-notes-that-are-easier-to-search</guid>
     </item>
   </channel>
 </rss>
