@@ -9,62 +9,62 @@
  * http://code.google.com/p/google-code-prettify/source/browse/trunk/src/prettify.css
  */
 .pln {
-  color: #41c9ec; }
+  color: #bd3613; }
 
 .str {
-  color: #d96e79; }
+  color: #269186; }
 
 .kwd {
-  color: #d55e67; }
+  color: #859900; }
 
 .com {
-  color: #a79e8a;
+  color: #586175;
   font-style: italic; }
 
 .typ {
-  color: #4976ff; }
+  color: #b58900; }
 
 .lit {
-  color: #d55e67; }
+  color: #2aa198; }
 
 .pun {
-  color: #7c6a69; }
+  color: #839496; }
 
 .opn {
-  color: #7c6a69; }
+  color: #839496; }
 
 .clo {
-  color: #7c6a69; }
+  color: #839496; }
 
 .tag {
-  color: #d9742d; }
+  color: #268bd2; }
 
 .atn {
-  color: #a79e8a; }
+  color: #586175; }
 
 .atv {
-  color: #698b22; }
+  color: #2aa198; }
 
 .dec {
-  color: #d9742d; }
+  color: #268bd2; }
 
 .var {
-  color: #d9742d; }
+  color: #268bd2; }
 
 .fun {
-  color: #7966ff; }
+  color: #FF0000; }
 
 /* Put a border around prettyprinted code snippets. */
 pre.prettyprint {
-  background-color: #Ffffff;
-  padding: 0.625em;
-  border: 0.0625em solid #1e1e17; }
+  background-color: #042029;
+  padding: 10px;
+  border: 1px solid #E1E1E8; }
 
 /* Specify class=linenums on a pre to get line numbering */
 ol.linenums {
-  color: #Ffffff;
-  margin: 0 0 0 2.5em; }
+  color: #4c666c;
+  margin: 0 0 0 40px; }
 
 ol.linenums li {
-  line-height: 1.125em;
-  padding-left: 0.75em; }
+  line-height: 18px;
+  padding-left: 12px; }

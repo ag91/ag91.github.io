@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: let&#39;s make English easy to query! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A prototype of querying English text!" />
+    <meta name="keywords" content="moldable-emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: let&#39;s make English easy to query!</h1>
+
+<div id="outline-container-org68f9934" class="outline-2">
+<h2 id="org68f9934">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org68f9934">
+<p>
+This is about an experiment to parse text with NLP software so that we
+can ask our text questions!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgca21c43" class="outline-2">
+<h2 id="orgca21c43">The problem</h2>
+<div class="outline-text-2" id="text-orgca21c43">
+<p>
+Lately I have been spending time querying my code. I have been asking
+mostly basic things: how many functions has this file? How complex are
+those? How many functions in the whole project? Now I am finally (and
+slowly) getting into more complex queries, but then I said to myself:
+"wait! Let's try with English now".
+</p>
+
+<p>
+My thinking is: if I can recognize things like functions in code, in
+text I should find things like predicates. Or objects, or subjects or
+sentences that depend on others. Since we have fancy stuff like <a href="https://openai.com/blog/gpt-3-apps/">GT-3</a>,
+I was hopeful to find some software I could plug in <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> to
+obtain some structural information for text.
+</p>
+
+<p>
+So I wondered: how would this work?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbc846eb" class="outline-2">
+<h2 id="orgbc846eb">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgbc846eb">
+<p>
+Imagine structural editing for English. I mean Emacs already lets you
+move words, paragraphs and sentences all over the place, if you like.
+But what about predicates? And what about finding me all the sentences
+that have "pear" as subject? By structural editing I mean to change
+the subject of those sentences from pear to orange.
+</p>
+
+<p>
+And what if we could lint our text by coming up with rules like:
+"careful! 3 sentences contain recursive relative clauses: that is
+difficult to read".
+</p>
+
+<p>
+There is more though! How cool would be to query a book? Imagine you
+have fond memories of a passage in a book. You can vaguely remember
+that passage is about a prince and a snake. How cool would it be if
+you can ask the book itself? Find me all those phrases that have as
+subject a prince and as object a snake. We would at least have a more
+fun at it than skimming through.
+</p>
+
+<p>
+You could even filter your text to read only what you need!! How
+exciting would that be?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3b4a399" class="outline-2">
+<h2 id="org3b4a399">And there is a solution</h2>
+<div class="outline-text-2" id="text-org3b4a399">
+<p>
+Well, this is a pretty rough prototype that I haven't properly tested
+yet. I am pretty excited about it, so this blog is more like a spoiler
+of work in progress.
+</p>
+
+<p>
+First things first, I have been looking for a low hanging fruit CLI to
+a NLP model. I am not an expert of machine learning (yet XD), so I
+wanted something plug&amp;play.
+</p>
+
+<p>
+Looking at packages available via <a href="https://pypi.org/project/pip/">pip</a>, I fell onto <a href="https://github.com/emorynlp/elit">Elit</a>. Well, I don't
+know much about this project, but plug&amp;play, right? Just playing
+around.
+</p>
+
+<p>
+After downloading a few GigaBytes of models (it is pretty usable, Elit does
+all itself), I run elit in the command line for the first time:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">andrea@andrea-pc:/tmp$ elit parse
+Moldable development is a way of programming through which you construct custom tools for each problem.
+</pre>
+</div>
+
+<p>
+That returns the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-json">{
+  "lem": [
+    ["moldable", "development", "be", "a", "way", "of", "programming", "through", "which", "you", "construct", "custom", "tool", "for", "each", "problem", "."]
+  ],
+  "pos": [
+    ["JJ", "NN", "VBZ", "DT", "NN", "IN", "NN", "IN", "WDT", "PRP", "VBP", "JJ", "NNS", "IN", "DT", "NN", "."]
+  ],
+  "ner": [
+    []
+  ],
+  "srl": [
+    [[["ARGM-LOC", 3, 7, "a way of programming"], ["R-ARGM-MNR", 7, 9, "through which"], ["ARG0", 9, 10, "you"], ["PRED", 10, 11, "construct"], ["ARG1", 11, 16, "custom tools for each problem"]], [["ARG1", 0, 2, "Moldable development"], ["PRED", 2, 3, "is"], ["ARG2", 3, 16, "a way of programming through which you construct custom tools for each problem"]]]
+  ],
+  "dep": [
+    [[1, "attr"], [4, "nsbj"], [4, "cop"], [4, "det"], [-1, "root"], [6, "case"], [4, "ppmod"], [8, "case"], [10, "r-ppmod"], [10, "nsbj"], [4, "relcl"], [12, "attr"], [10, "obj"], [15, "case"], [15, "det"], [12, "ppmod"], [4, "p"]]
+  ],
+  "con": [
+    ["TOP", [["S", [["NP", [["JJ", ["Moldable"]], ["NN", ["development"]]]], ["VP", [["VBZ", ["is"]], ["NP", [["NP", [["DT", ["a"]], ["NN", ["way"]]]], ["PP", [["IN", ["of"]], ["NP", [["NP", [["NN", ["programming"]]]], ["SBAR", [["WHPP", [["IN", ["through"]], ["WHNP", [["WDT", ["which"]]]]]], ["S", [["NP", [["PRP", ["you"]]]], ["VP", [["VBP", ["construct"]], ["NP", [["NP", [["JJ", ["custom"]], ["NNS", ["tools"]]]], ["PP", [["IN", ["for"]], ["NP", [["DT", ["each"]], ["NN", ["problem"]]]]]]]]]]]]]]]]]]]]]], [".", ["."]]]]]]
+  ],
+  "amr": [
+    [["c4", "ARG0", "c6"], ["c0", "ARG1", "c1"], ["c4", "ARG1", "c5"], ["c8", "ARG1", "c5"], ["c4", "beneficiary", "c7"], ["c9", "domain", "c7"], ["c0", "instance", "develop-02"], ["c1", "instance", "moldable"], ["c2", "instance", "way"], ["c3", "instance", "program-01"], ["c4", "instance", "construct-01"], ["c5", "instance", "tool-01"], ["c6", "instance", "you"], ["c7", "instance", "problem"], ["c8", "instance", "custom"], ["c9", "instance", "each"], ["c0", "manner", "c2"], ["c3", "manner", "c2"], ["c4", "manner", "c2"]]
+  ],
+  "tok": [
+    ["Moldable", "development", "is", "a", "way", "of", "programming", "through", "which", "you", "construct", "custom", "tools", "for", "each", "problem", "."]
+  ]
+}
+</pre>
+</div>
+
+<p>
+Naturally I barely know what that means. Anyway, I seem to see a
+<code>relcl</code> there: elit found a relative clause! That is encouraging.
+Furthermore, that seem to be also in the "con" section of the JSON
+output: <code>WHNP</code> seems to wrap just our relative clause (i.e., "which
+you construct custom tools for each problem").
+</p>
+
+<p>
+I discovered that the strange abbreviations (e.g, <code>JJ</code> and <code>NN</code>) are
+types of nodes of the natural syntax tree.
+</p>
+
+<p>
+I made a list to use later from an <a href="https://www.cs.cornell.edu/courses/cs474/2004fa/lec1.pdf">university lecture</a> I found online:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defvar me-natural-syntax-tree-labels   ;; TODO may be incomplete!
+  '(
+    (:label "NN" :long-name "singular noun" :example "pyramid"                             )
+    (:label "NNS" :long-name "plural noun" :example "lectures"                             )
+    (:label "NNP" :long-name "proper noun" :example "Khufu"                                )
+    (:label "VBD" :long-name "past tense verb" :example "claimed"                          )
+    (:label "VBZ" :long-name "3rd person singular present tense verb" :example "is"        )
+    (:label "VBP" :long-name "non-3rd person singular present tense verb" :example "have"  )
+    (:label "VBN" :long-name "past  participle" :example "found"                           )
+    (:label "VB" :long-name "base" :example "He may like/VB cookies. I heard her  answer/VB the question. They may be/VB tired.")
+    (:label "VBG" :long-name "present participle, G-form" :example "Eating/VG cookies is unhealthy. He likes eating/VG cookies.")
+    (:label "VBN" :long-name "past participle, N-form" :example "He has eaten/VBN the cookies. She has ansered/VBN the questions. My question was not answered/VBN.")
+    :label "MD" :long-name "modal" :example "She will/MD prevail."
+    :label "TO" :long-name "auxiliary to" :example "She expects to/TO prevail."
+    (:label "PRP" :long-name "pronoun" :example "they"                                     )
+    (:label "PRP$" :long-name "possessive  pronoun" :example "their"                       )
+    (:label "JJ" :long-name "adjective" :example "public"                                  )
+    (:label "IN" :long-name "preposition/complementizer" :example "in/that"                )
+    (:label "DT" :long-name "determiner" :example "the"                                    )
+    (:label "NP" :long-name "noun phrase" :example "their public lectures"                 )
+    (:label "VP" :long-name "verb phrase" :example "built the pyramid"                     )
+    (:label "PP" :long-name "prepositional phrase" :example "in the five chambers"         )
+    (:label "S" :long-name "sentence " :example "Khufu built thepyramid"                   )
+    (:label "SBAR" :long-name "sbar" :example "that Khufu built the pyramid"               )
+    )
+  "Natural syntax tree labels and examples according to https://www.cs.cornell.edu/courses/cs474/2004fa/lec1.pdf.")
+</pre>
+</div>
+
+<p>
+Anyway, that seemed promising, so I decided to make a mold out of it. Let's try it!
+</p>
+
+<p>
+<a href="/assets/blog/2021/11/22/moldable-emacs-lets-make-english-easy-to-query/MoldableAskText.mp4">/assets/blog/2021/11/22/moldable-emacs-lets-make-english-easy-to-query/MoldableAskText.mp4</a>
+</p>
+
+<p>
+You can see that I just mark some text and after a few seconds I get
+an Elisp list with some of elit's information. I took just the "con"
+bit for now, because it is an experiment. Also because I don't
+understand most of the output of elit yet (and I am not sure I should
+just yet).
+</p>
+
+<p>
+The format in which I am showing the nodes is the same as the one for
+code. The idea is indeed to keep the interface the same, so maybe we
+could even ending up reusing things between the two.
+</p>
+
+<p>
+In the video I also try a simple query! And you can see that I can
+jump to the original text in just the same way I can for code nodes.
+</p>
+
+<p>
+Well I just finished implementing this, so it is all I can show you for now.
+</p>
+
+<p>
+(Note that I took a lot of shortcuts for this: for example, I patched
+elit code to take a text file as input. Also the mold I have does not
+handle newlines well -- the positions I get for the node become
+imprecise).
+</p>
+
+<p>
+All in all I am pretty happy that we are at a stage where I can hack
+something usable in a couple of days of evening work!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org0010789" class="outline-2">
+<h2 id="org0010789">Conclusion</h2>
+<div class="outline-text-2" id="text-org0010789">
+<p>
+This was just a bite of machine learning in moldable-emacs for you. We
+can make Emacs understand English to let us query it. It is possible
+:D I am not sure where this will head to, but the start is exciting!
+</p>
+
+<p>
+Please get in touch if you have suggestions for better ML software or
+ideas on how to use this feature. In the meanwhile I will try to
+experiment and refine it, and post some more experiments.
+</p>
+
+<p>
+Happy machine-reading!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-11-22</span>
+        <span title="last modification date" class="post-info">2021-11-22</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
