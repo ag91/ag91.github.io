@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 22 Nov 2021 21:45:47 GMT</pubDate>
-    <lastBuildDate>Mon, 22 Nov 2021 21:45:47 GMT</lastBuildDate>
+    <pubDate>Thu, 23 Dec 2021 20:24:33 GMT</pubDate>
+    <lastBuildDate>Thu, 23 Dec 2021 20:24:33 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: examples for docs, demos and ERT tests!</title>
+      <link>http://ag91.github.io/blog/2021/12/23/moldable-emacs-examples-for-docs-demos-and-ert-tests</link>
+      <description><![CDATA[Examples as tests, demos and docs!]]></description>
+      <pubDate>2021-12-23</pubDate>
+      <guid>http://ag91.github.io/blog/2021/12/23/moldable-emacs-examples-for-docs-demos-and-ert-tests</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: let&#39;s make English easy to query!</title>
       <link>http://ag91.github.io/blog/2021/11/22/moldable-emacs-lets-make-english-easy-to-query</link>
-      <description><![CDATA[A prototype of querying English text!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-11-22</pubDate>
       <guid>http://ag91.github.io/blog/2021/11/22/moldable-emacs-lets-make-english-easy-to-query</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-10-02</pubDate>
       <guid>http://ag91.github.io/blog/2021/10/02/moldable-emacs-molds-need-examples-too</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: extending the Playground powers via hooks (to include Dired)</title>
-      <link>http://ag91.github.io/blog/2021/09/23/moldable-emacs-extending-the-playground-powers-via-hooks-to-include-dired</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-09-23</pubDate>
-      <guid>http://ag91.github.io/blog/2021/09/23/moldable-emacs-extending-the-playground-powers-via-hooks-to-include-dired</guid>
     </item>
   </channel>
 </rss>
