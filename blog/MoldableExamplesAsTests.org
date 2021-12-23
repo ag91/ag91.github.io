@@ -1,0 +1,209 @@
+#+TITLE:       Moldable Emacs: examples for docs, demos and ERT tests!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-12-23 Thu
+#+URI:         /blog/%y/%m/%d/moldable-emacs-examples-for-docs-demos-and-ert-tests
+#+KEYWORDS:    moldable-emacs
+#+TAGS:        moldable-emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Examples as tests, demos and docs!
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       333a0cc1-c369-4712-9c39-881b76a382e8
+:END:
+
+Add examples of usage to the software. You can make examples into
+(automated) tests, documentation and even demos/previews.
+
+* The problem
+:PROPERTIES:
+:ID:       c8edcbab-ff26-4557-b1c3-42f20a3a7242
+:END:
+
+The person behind the GitHub user ikappaki gave me a wonderful gift:
+[[https://github.com/ag91/moldable-emacs/pull/16][they enabled CI for moldable-emacs]]. I am grateful for that kindness. I
+find Continous Integration vital for projects. My moldable-emacs
+started as a prototype to see how many [[https://gtoolkit.com/docs/moldable/][moldable ideas]] could fit in
+Emacs. Learning how to setup CI for a (possibly-failing) prototype was
+a bit out of scope at the time. At this point, though, it is [[https://github.com/ag91/moldable-emacs/issues/24][very]] [[https://github.com/ag91/moldable-emacs/issues/23][much]]
+[[https://github.com/ag91/moldable-emacs/issues/14][needed]]! Now a change here causes an error there. Not good!
+
+That's why ikappaki saved the day! We now have CI and we can test
+things with [[https://github.com/doublep/eldev][eldev]] and ERT, the Emacs' regression testing library.
+
+We have [[https://github.com/ag91/moldable-emacs/blob/ecaa723bed403855c5307a071decf4971bea1c9f/tests/moldable-emacs-test.el][few tests for now]] and... I hope it stays that way!
+
+The core issue is how to test molds. I hope to check that molds are
+healthy without writing a test for each of them. Tests are code and
+need maintenance too (and I want to save my time)!
+
+How to achieve that?
+
+* It is a problem indeed
+
+This is a problem that I would like to solve in other places too. When
+I program, I have a problem. I think about how to solve it. I write a
+function. Then I write a test to avoid regressions (if I am TDDing, I
+write the test to describe the problem). And then? Then time passes
+and my completion framework shows me this function. But I don't
+remember how to use it! So I need to hope I added docs or a test at
+the time (assume the test passes) or worse read the function's code.
+
+This seems a waste of time! If I have the test, I defined an example
+of usage there. Why cannot I make that part of the function itself?
+That way I could check if the function applies to the specific problem
+I have by seeing the use case it was written for. Even when you have
+static types, an example still helps!
+
+AND with examples I could also test the function without writing a
+test! I would just need to write the example WITH the function.
+
+This would also make my completion more helpful! I could see an
+example of usage (maybe even run it live) to pick the best fit while I
+am developing.
+
+Can we try this approach in moldable-emacs?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       16194bc3-dd71-493d-8206-d4ba802ee9d2
+:END:
+
+Even if I didn't setup CI, [[https://ag91.github.io/blog/2021/06/18/moldable-emacs-vision-basic-concepts-and-design/][I gave this problem a thought from the
+start]] (lucky me)! It is just merit of the amazing GlamorousToolkit's
+community really: [[https://youtu.be/XwdJvgdbLPo?list=PLfrs5bwLJOoBtfhXJ4mqcQ4ktpQOEBTvP&t=3245][you can watch Tudor Girba explaining how the idea
+works in GT]].
+
+This is how a mold looks in Elisp.
+
+#+begin_src elisp
+(me-register-mold
+ :key "Playground"
+ :given (:fn 't)
+ :then (:fn
+        ...)
+ :examples ((
+             :name "Empty file"
+             :given (:type file :name "/tmp/test.txt" :mode text-mode :contents "")
+             :then (:type buffer :name "Playground" :mode emacs-lisp-mode :contents ";; Tips:
+;;    Use `self' to access the mold context.
+;;    You can access the previous mold context through `mold-data'.
+
+"))))
+#+end_src
+
+If you see a mold as a function ([[https://github.com/ag91/moldable-emacs/issues/27][there is also a cool discussion
+ongoing]]), then the =:examples= bit is what I described earlier. That
+is our example of usage!
+
+The examples have 3 properties: a name, a given clause and a then
+clause. That gives us enough information to show a demo to users. You
+just have to call =me-mold-docs= and choose "Playground" to see a
+documentation buffer using the example. It shows the following text:
+
+#+begin_src text 
+You can write any Elisp here.
+Then you can evaluate with `EvalSexp'.
+This mold saves structured data of the previous buffer
+in the local variable `self'.
+
+Given the "/tmp/test.txt" file with the following contents:
+
+----------
+
+
+
+----------
+
+The mold returns the "Playground" buffer with the following contents:
+
+----------
+
+;; Tips:
+;;    Use `self' to access the mold context.
+;;    You can access the previous mold context through `mold-data'.
+
+
+
+----------
+#+end_src
+
+If you use the mold "AllMolds" ([[https://github.com/ag91/moldable-emacs/pull/22][thanks to alanz]]) or
+"WhatMoldsCanIuse?", you can even see the example as a demo of the
+mold.
+
+So with examples we get both documentation and preview. I want to
+experiment with showing the preview when you pick a mold to use with
+=me-mold=. That would cover the completion issue I mentioned before.
+
+The properties of an example provide enough context for testing as
+well. We could show a demo by setting buffers with name, contents and
+mode as defined in the =:given= clause. Now we can setup a test with
+the same information. The demo only creates mock buffers. The test
+should set the precondition (the example =:given=) and then run the
+mold starting from that. If the output is the same as the example
+=:then= clause, the test passes.
+
+The code for that is a bit ugly at the moment, but it works!
+The following code is an example of a successful run.
+
+  #+begin_src elisp :results code
+  (me-check-mold-examples (me-find-mold "Playground"))
+  #+end_src
+
+  #+RESULTS:
+  #+begin_src elisp
+  ((:example "Empty file" :success t :issues nil))
+  #+end_src
+
+While the following is an example of failure.
+
+  #+begin_src elisp :results code
+  (me-check-mold-examples (me-find-mold "Evaluate Arithmetic Expression"))
+  #+end_src
+
+  #+RESULTS:
+  #+begin_src elisp
+  ((:example "Simple arithmetic expression" :success nil :issues
+             (((:expected . "1 + 1 / 2 = 1.5")
+               (:actual . "nil = nil")))))
+  #+end_src
+
+By the way, the above shows that the infrastructure is a prototype.
+Some molds expect to set the point in a certain position and I cannot
+express that yet in the example's =:given= clause.
+
+Assuming I can come up with a better infra, I expect to add a single
+test to the ERT suite. It will go through all the molds with examples
+and run its examples as tests. This means that I will run tens of
+tests in a few lines of code! And even if you think that the examples
+are code themselves, well I can at least use them also for demos and
+documentation. 3 in 1: what a deal! Better than just tests.
+
+Also, examples need to be easy to add, right? The way I do it in
+moldable-emacs is to run a mold, and then call
+=me-insert-last-example=.
+
+Note: this inserts the example wherever you are and it also misses the
+=:name=! For now, you should go to the =:examples= section of the mold
+and put your cursor in the first element of the list. And add a name.
+I will make this even more user friendly soon (by asking the name and
+inserting the example in the right place), but it already saves you
+from adding =:given= and =:then= yourself!
+
+This means that you can capture examples while you use molds! How cool
+is it when machines can do most of the work?!
+
+(Caveat: it is still a work in progress, things will not work for
+molds that expect images or certain states of your machine -- like
+files to be present)
+
+* Conclusion
+
+Make more out of examples! Look into how to make the examples in your
+tests more useful. And if you use moldable-emacs, add examples to your
+molds. If you do, you get free docs, demos and even tests!!!
+
+Merry exampling!
