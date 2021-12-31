@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 23 Dec 2021 20:24:33 GMT</pubDate>
-    <lastBuildDate>Thu, 23 Dec 2021 20:24:33 GMT</lastBuildDate>
+    <pubDate>Fri, 31 Dec 2021 20:18:25 GMT</pubDate>
+    <lastBuildDate>Fri, 31 Dec 2021 20:18:25 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: make your molds async with ease</title>
+      <link>http://ag91.github.io/blog/2021/12/31/moldable-emacs-make-your-molds-async-with-ease</link>
+      <description><![CDATA[Add a keyword and your mold will load data in the background ;)]]></description>
+      <pubDate>2021-12-31</pubDate>
+      <guid>http://ag91.github.io/blog/2021/12/31/moldable-emacs-make-your-molds-async-with-ease</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: examples for docs, demos and ERT tests!</title>
       <link>http://ag91.github.io/blog/2021/12/23/moldable-emacs-examples-for-docs-demos-and-ert-tests</link>
-      <description><![CDATA[Examples as tests, demos and docs!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2021-12-23</pubDate>
       <guid>http://ag91.github.io/blog/2021/12/23/moldable-emacs-examples-for-docs-demos-and-ert-tests</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-10-09</pubDate>
       <guid>http://ag91.github.io/blog/2021/10/09/on-the-power-of-macros-a-dynamic-lazy-let</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: molds need examples too!</title>
-      <link>http://ag91.github.io/blog/2021/10/02/moldable-emacs-molds-need-examples-too</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-10-02</pubDate>
-      <guid>http://ag91.github.io/blog/2021/10/02/moldable-emacs-molds-need-examples-too</guid>
     </item>
   </channel>
 </rss>

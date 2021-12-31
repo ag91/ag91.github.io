@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: make your molds async with ease - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Add a keyword and your mold will load data in the background ;)" />
+    <meta name="keywords" content="moldable-emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: make your molds async with ease</h1>
+
+<div id="outline-container-orgf4585c1" class="outline-2">
+<h2 id="orgf4585c1">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgf4585c1">
+<p>
+Make a mold not block your Emacs by just adding an extra keyword to
+the mold definition (that is <code>(me-register-mold :key ... :async ((some-var-that-takes-long ...)))</code>).
+</p>
+
+<p>
+(Last blog of the year: have an amazing 2022!)
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb7e0dc2" class="outline-2">
+<h2 id="orgb7e0dc2">The problem</h2>
+<div class="outline-text-2" id="text-orgb7e0dc2">
+<p>
+Some computations are long. And we should not be waiting for that.
+Rather <a href="https://brandur.org/interfaces">the computer should be waiting on us</a>. It may happen that molds
+take a while to compute their result. For example, some of my work
+molds queried Jenkins to gather the running statistics of integration
+tests: since that required a chain of API calls, I may wait for
+seconds. Not fun! I had a pattern for these cases: present some
+placeholder text, run the mold with <code>async.el</code> and eventually present
+the real results. Since that didn't happen often, I had been
+reinventing the wheel. Ideally, I wanted an annotation of sort to say:
+"this is slow, run it asynchronously".
+</p>
+
+<p>
+How difficult would that be?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc646298" class="outline-2">
+<h2 id="orgc646298">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgc646298">
+<p>
+If we generalize a bit, we could see that this is a cross-cutting
+concern for molds. Today the issue is synchronicity, but tomorrow? For
+example, what if we would like to add logs to mold? It may likely be
+that the implementation is similar for all molds: should we really add
+logs everywhere by hand?
+</p>
+
+<p>
+So the real point is: how could we tell <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> to run a mold
+in some special way?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6e0db2d" class="outline-2">
+<h2 id="org6e0db2d">And there is a solution</h2>
+<div class="outline-text-2" id="text-org6e0db2d">
+<p>
+I described some preparatory work for this <a href="https://ag91.github.io/blog/2021/09/19/moldable-emacs-making-molds-a-little-easier-to-write/">in one of my last posts</a>.
+The idea is to add the async concern to the mold definition. A mold
+definition must have a <code>:then</code> clause like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(...
+ (:then (:fn ...))
+ ...)
+</pre>
+</div>
+
+<p>
+What we want for a mold to run asynchronously is:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(...
+ (:then (:fn ... :async ...))
+ ...)
+</pre>
+</div>
+
+<p>
+If the <code>:async</code> is present we want the mold to replay the pattern I
+was writing by hand: create a buffer, put a placeholder text, evaluate
+things asynchronously, fill the buffer with the output once is
+ready.
+</p>
+
+<p>
+Let me show the before and after for the "Image To Text" mold.
+</p>
+
+<p>
+<b>Before</b>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me-register-mold
+ :key "Image To Text"
+ :docs "Extracts text from the image using `imageclip'."
+ :given (:fn (and
+              (eq major-mode 'image-mode)
+              (executable-find "imgclip")))
+ :then (:fn
+        (let* ((buffer (buffer-name))
+               (img (list :img (or (buffer-file-name) buffer)))
+               (_ (me-async-map            ;; TODO change this when I implement :async
+                   `(lambda (s)
+                      (shell-command-to-string
+                       (format "imgclip -p '%s' --lang eng" s)))
+                   (list (or (buffer-file-name)
+                             ;; otherwise store the open image in /tmp for imgclip to work on a file
+                             (let ((path (concat "/tmp/" buffer)))
+                               (write-region (point-min) (point-max) path)
+                               path)))
+                   `(lambda (_)
+                      (with-current-buffer ,buffername
+                        (erase-buffer)
+                        (clipboard-yank)
+                        (plist-put self :text (buffer-substring-no-properties (point-min) (point-max))))))))
+          (with-current-buffer buffername
+            (erase-buffer)
+            (setq-local self img)
+            (insert "Loading text from image..."))))
+ ...)
+</pre>
+</div>
+
+<p>
+<b>After</b>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me-register-mold
+ :key "Image To Text"
+ :docs "Extracts text from the image using `imageclip'."
+ :let ((file-name (buffer-file-name))
+       (buf-name (buffer-name)))
+ :given (:fn (and
+              (eq major-mode 'image-mode)
+              (executable-find "imgclip")))
+ :then
+ (
+  :async ((_ (shell-command-to-string
+              (format "imgclip -p '%s' --lang eng"
+                      (or file-name
+                          ;; otherwise store the open image in /tmp for imgclip to work on a file
+                          (let ((path (concat "/tmp/" buf-name)))
+                            (write-region (point-min) (point-max) path)
+                            path))))))
+  :fn (let* ((img (list :img (or (buffer-file-name) (buffer-name)))))
+        (with-current-buffer buffername
+          (erase-buffer)
+          (clipboard-yank)
+          (setq-local self img)
+          (plist-put self :text (buffer-substring-no-properties (point-min) (point-max))))))
+ ...)
+</pre>
+</div>
+
+<p>
+My feeling is that the second is simpler to write. <a href="https://ag91.github.io/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold/">This mold
+translates an image to text</a>. In the <code>:then</code> clause of the "before"
+snippet we use <code>me-async-map</code> to run the image recognition software.
+There the placeholder text is "Loading text from image...". The
+<code>:then</code> of the "after" snippet introduces a <code>:async</code> keyword. This
+lets you define bindings that the content of <code>:fn</code> use. Indeed, <code>:fn</code>
+will not run until <code>:async</code> has returned. However, when <code>:async</code> is
+there, moldable-emacs sets a placeholder buffer for you. And you can
+still use your Emacs for other things.
+</p>
+
+<p>
+Note: I made it easy to swap between sync and async running. Just
+change <code>:async</code> to <code>:no-async</code>. That will skip the placeholder text
+and just run things synchronously, if you were to need it. It seemed
+useful to debug things.
+</p>
+
+<p>
+Under the hood I achieve this with an interpreter. If I am trying to
+run the <code>:then</code> clause of a mold, I check what it contains. If it
+contains <code>:async</code>, run the async pattern, if <code>:no-async</code> just wrap the
+bindings in a let, otherwise run <code>:fn</code>'s contents. The function to
+look at is <a href="https://github.com/ag91/moldable-emacs/blob/da95af6/moldable-emacs.el#L269">me-interpret-then</a>. I obtain the async behavior via
+<code>async-let</code> (I always wanted to use it!).
+</p>
+
+<p>
+Ah! One thing to keep in mind is that the <code>:async</code> block runs in the
+<code>*emacs*</code> buffer set by async. This means that functions influenced by
+the buffer context return unexpected things. This is why I needed to
+introduce the <code>:let</code> clause in the "Image to Text" mold for
+<code>(buffer-name)</code> and <code>(buffer-file-name)</code>.
+</p>
+
+<p>
+Anyway, now you can make molds async more easily!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3532b43" class="outline-2">
+<h2 id="org3532b43">Conclusion</h2>
+<div class="outline-text-2" id="text-org3532b43">
+<p>
+No more worries for making molds speedy! Add some bindings in the
+<code>:async</code> section and you will be done!
+</p>
+
+<p>
+Happy async molding and happy 2022!!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2021-12-31</span>
+        <span title="last modification date" class="post-info">2021-12-31</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
