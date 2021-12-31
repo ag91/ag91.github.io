@@ -1,0 +1,175 @@
+#+TITLE:       Moldable Emacs: make your molds async with ease
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2021-12-31 Fri
+#+URI:         /blog/%y/%m/%d/moldable-emacs-make-your-molds-async-with-ease
+#+KEYWORDS:    moldable-emacs
+#+TAGS:        moldable-emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Add a keyword and your mold will load data in the background ;)
+
+* Too long; didn't read
+
+Make a mold not block your Emacs by just adding an extra keyword to
+the mold definition (that is =(me-register-mold :key ... :async ((some-var-that-takes-long ...)))=).
+
+(Last blog of the year: have an amazing 2022!)
+
+* The problem
+
+Some computations are long. And we should not be waiting for that.
+Rather [[https://brandur.org/interfaces][the computer should be waiting on us]]. It may happen that molds
+take a while to compute their result. For example, some of my work
+molds queried Jenkins to gather the running statistics of integration
+tests: since that required a chain of API calls, I may wait for
+seconds. Not fun! I had a pattern for these cases: present some
+placeholder text, run the mold with =async.el= and eventually present
+the real results. Since that didn't happen often, I had been
+reinventing the wheel. Ideally, I wanted an annotation of sort to say:
+"this is slow, run it asynchronously".
+
+How difficult would that be?
+
+* It is a problem indeed
+
+If we generalize a bit, we could see that this is a cross-cutting
+concern for molds. Today the issue is synchronicity, but tomorrow? For
+example, what if we would like to add logs to mold? It may likely be
+that the implementation is similar for all molds: should we really add
+logs everywhere by hand?
+
+So the real point is: how could we tell [[https://github.com/ag91/moldable-emacs][moldable-emacs]] to run a mold
+in some special way?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       bfe9f85e-d75c-45a5-a7ce-7b04f95ff76f
+:END:
+
+I described some preparatory work for this [[https://ag91.github.io/blog/2021/09/19/moldable-emacs-making-molds-a-little-easier-to-write/][in one of my last posts]].
+The idea is to add the async concern to the mold definition. A mold
+definition must have a =:then= clause like:
+
+#+begin_src elisp
+(...
+ (:then (:fn ...))
+ ...)
+#+end_src
+
+What we want for a mold to run asynchronously is:
+
+#+begin_src elisp
+(...
+ (:then (:fn ... :async ...))
+ ...)
+#+end_src
+
+If the =:async= is present we want the mold to replay the pattern I
+was writing by hand: create a buffer, put a placeholder text, evaluate
+things asynchronously, fill the buffer with the output once is
+ready.
+
+Let me show the before and after for the "Image To Text" mold.
+
+*Before*.
+
+#+begin_src elisp
+(me-register-mold
+ :key "Image To Text"
+ :docs "Extracts text from the image using `imageclip'."
+ :given (:fn (and
+              (eq major-mode 'image-mode)
+              (executable-find "imgclip")))
+ :then (:fn
+        (let* ((buffer (buffer-name))
+               (img (list :img (or (buffer-file-name) buffer)))
+               (_ (me-async-map            ;; TODO change this when I implement :async
+                   `(lambda (s)
+                      (shell-command-to-string
+                       (format "imgclip -p '%s' --lang eng" s)))
+                   (list (or (buffer-file-name)
+                             ;; otherwise store the open image in /tmp for imgclip to work on a file
+                             (let ((path (concat "/tmp/" buffer)))
+                               (write-region (point-min) (point-max) path)
+                               path)))
+                   `(lambda (_)
+                      (with-current-buffer ,buffername
+                        (erase-buffer)
+                        (clipboard-yank)
+                        (plist-put self :text (buffer-substring-no-properties (point-min) (point-max))))))))
+          (with-current-buffer buffername
+            (erase-buffer)
+            (setq-local self img)
+            (insert "Loading text from image..."))))
+ ...)
+#+end_src
+
+*After*.
+
+#+begin_src elisp
+(me-register-mold
+ :key "Image To Text"
+ :docs "Extracts text from the image using `imageclip'."
+ :let ((file-name (buffer-file-name))
+       (buf-name (buffer-name)))
+ :given (:fn (and
+              (eq major-mode 'image-mode)
+              (executable-find "imgclip")))
+ :then
+ (
+  :async ((_ (shell-command-to-string
+              (format "imgclip -p '%s' --lang eng"
+                      (or file-name
+                          ;; otherwise store the open image in /tmp for imgclip to work on a file
+                          (let ((path (concat "/tmp/" buf-name)))
+                            (write-region (point-min) (point-max) path)
+                            path))))))
+  :fn (let* ((img (list :img (or (buffer-file-name) (buffer-name)))))
+        (with-current-buffer buffername
+          (erase-buffer)
+          (clipboard-yank)
+          (setq-local self img)
+          (plist-put self :text (buffer-substring-no-properties (point-min) (point-max))))))
+ ...)
+#+end_src
+
+My feeling is that the second is simpler to write. [[https://ag91.github.io/blog/2021/07/16/moldable-emacs-capturing-text-from-open-images-with-an-ocr-mold/][This mold
+translates an image to text]]. In the =:then= clause of the "before"
+snippet we use =me-async-map= to run the image recognition software.
+There the placeholder text is "Loading text from image...". The
+=:then= of the "after" snippet introduces a =:async= keyword. This
+lets you define bindings that the content of =:fn= use. Indeed, =:fn=
+will not run until =:async= has returned. However, when =:async= is
+there, moldable-emacs sets a placeholder buffer for you. And you can
+still use your Emacs for other things.
+
+Note: I made it easy to swap between sync and async running. Just
+change =:async= to =:no-async=. That will skip the placeholder text
+and just run things synchronously, if you were to need it. It seemed
+useful to debug things.
+
+Under the hood I achieve this with an interpreter. If I am trying to
+run the =:then= clause of a mold, I check what it contains. If it
+contains =:async=, run the async pattern, if =:no-async= just wrap the
+bindings in a let, otherwise run =:fn='s contents. The function to
+look at is [[https://github.com/ag91/moldable-emacs/blob/da95af6/moldable-emacs.el#L269][me-interpret-then]]. I obtain the async behavior via
+=async-let= (I always wanted to use it!).
+
+Ah! One thing to keep in mind is that the =:async= block runs in the
+=*emacs*= buffer set by async. This means that functions influenced by
+the buffer context return unexpected things. This is why I needed to
+introduce the =:let= clause in the "Image to Text" mold for
+=(buffer-name)= and =(buffer-file-name)=.
+
+Anyway, now you can make molds async more easily!
+
+* Conclusion
+:PROPERTIES:
+:ID:       45a8c0ec-9f81-40db-9330-0ea956fdda2f
+:END:
+
+No more worries for making molds speedy! Add some bindings in the
+=:async= section and you will be done!
+
+Happy async molding and happy 2022!!
