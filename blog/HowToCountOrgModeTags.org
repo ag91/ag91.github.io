@@ -1,0 +1,38 @@
+#+TITLE:       How to count your Org Agenda tags
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-01-03 Mon
+#+URI:         /blog/%y/%m/%d/how-to-count-your-org-agenda-tags
+#+KEYWORDS:    elisp, tips
+#+TAGS:        elisp, tips
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A short Elisp snippet to count your Org agenda tags
+
+You may wonder how many tags are you using in your Org Mode agenda files.
+
+This Elisp snippet does it for you:
+
+#+begin_src elisp
+(require 'dash)
+
+(defmacro with-file (file &rest body)
+  "Open FILE, execute BODY close FILE if it was not already open."
+  `(let ((old-buffer (current-buffer))
+         (kill-buffer-p (not (get-file-buffer ,file))))
+     (unwind-protect
+         (progn
+           (find-file ,file)
+           ,@body)
+       (progn
+         (when kill-buffer-p (kill-buffer))
+         (switch-to-buffer old-buffer)))))
+
+(--> org-agenda-files
+     (--map (with-file it (org-get-buffer-tags)) it)
+     -flatten
+     -distinct
+     length)
+#+end_src
+
+Just remove the last =length= to see the tags.
