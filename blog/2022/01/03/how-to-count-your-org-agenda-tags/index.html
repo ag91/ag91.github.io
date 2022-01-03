@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <title>Tag: elisp - Where parallels cross</title>
+    <title>How to count your Org Agenda tags - Where parallels cross</title>
     <meta charset="utf-8" />
     <meta name="author" content="Andrea" />
+    <meta name="description" content="A short Elisp snippet to count your Org agenda tags" />
+    <meta name="keywords" content="elisp, tips" />
     <link rel="stylesheet" href="/media/css/main.css" type="text/css">
     <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
   </head>
@@ -25,25 +27,57 @@
         </form>
       </header>
     </div>
+
+<div>
+<div class="post">
+<h1>How to count your Org Agenda tags</h1>
+<p>
+You may wonder how many tags are you using in your Org Mode agenda files.
+</p>
+
+<p>
+This Elisp snippet does it for you:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(require 'dash)
+
+(defmacro with-file (file &amp;rest body)
+  "Open FILE, execute BODY close FILE if it was not already open."
+  `(let ((old-buffer (current-buffer))
+         (kill-buffer-p (not (get-file-buffer ,file))))
+     (unwind-protect
+         (progn
+           (find-file ,file)
+           ,@body)
+       (progn
+         (when kill-buffer-p (kill-buffer))
+         (switch-to-buffer old-buffer)))))
+
+(--&gt; org-agenda-files
+     (--map (with-file it (org-get-buffer-tags)) it)
+     -flatten
+     -distinct
+     length)
+</pre>
+</div>
+
+<p>
+Just remove the last <code>length</code> to see the tags.
+</p>
+
+</div>
+</div>
     <div>
-      <div class="post">
-        <h1>Tag: elisp</h1>
-        <ul class="org-ul">
-          <li><a href="/blog/2020/10/09/microsoft-(teams)-notifications-in-your-org-agenda-(through-emacs-slack)">Microsoft (Teams) notifications in your Org Agenda (through Emacs Slack)</a></li>
-          <li><a href="/blog/2020/11/12/write-org-roam-notes-via-elisp">Write org-roam notes via Elisp</a></li>
-          <li><a href="/blog/2020/12/31/top-down-elisping-a-simple-snippet-to-stub-a-function-while-your-are-designing-your-code">Top down Elisping: a simple snippet to stub a function while your are designing your code</a></li>
-          <li><a href="/blog/2020/11/19/org-crypt-do-not-forget-my-point">Org crypt do not forget my point!</a></li>
-          <li><a href="/blog/2021/10/09/on-the-power-of-macros-a-dynamic-lazy-let">On the power of macros: a dynamic lazy let</a></li>
-          <li><a href="/blog/2019/07/01/how-to-jump-to-next-bullet-point-in-org-mode">How to jump to next bullet point in org mode</a></li>
-          <li><a href="/blog/2022/01/03/how-to-count-your-org-agenda-tags">How to count your Org Agenda tags</a></li>
-          <li><a href="/blog/2020/08/07/how-i-inspected-my-emacs-configuration-and-discovered-once-again-org-mode-people-are-smart">How I inspected my Emacs configuration and discovered once again Org-Mode people are smart</a></li>
-          <li><a href="/blog/2020/09/18/emacs-slack-and-my-peaceful-modeline">Emacs Slack and My Peaceful Modeline</a></li>
-          <li><a href="/blog/2021/06/08/emacs-nyxt-and-engine-mode-how-to-browse-urls-via-nyxt-and-slime">Emacs, Nyxt and Engine-mode: how to browse URLs via Nyxt and Slime</a></li>
-          <li><a href="/blog/2021/07/27/moldable-emacs-finding-examples-of-clojure-functions-(with-tests)">Moldable Emacs: finding examples of Clojure functions (with tests)</a></li>
-        </ul>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-01-03</span>
+        <span title="last modification date" class="post-info">2022-01-03</span>
+        <span title="tags" class="post-info"><a href="/tags/elisp/">elisp</a>, <a href="/tags/tips/">tips</a></span>
+        <span title="author" class="post-info">Andrea</span>
       </div>
-    </div>
-    <div>
+      <section>
+        <h1>Comments</h1>
+      </section>
       <script src="//code.jquery.com/jquery-latest.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
       <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -68,5 +102,6 @@
         </p>
       </div>
     </div>
+
   </body>
 </html>
