@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>How to steal another mode keybindings when you define your minor mode. - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Keybinding inheritance allows you to get another mode keybindings for free" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>How to steal another mode keybindings when you define your minor mode.</h1>
+<p>
+I was just trying out <a href="https://github.com/nobiot/org-transclusion">org-transclusion</a>, a fantastic little mode that I
+really needed. Only little problem? When you enable the
+org-transclusion minor-mode, you would lose Org Mode keybindings. <a href="https://github.com/nobiot/org-transclusion/pull/118">So I
+decided to fix it (at least for myself)</a>.
+</p>
+
+<p>
+The secret is in the manual: <a href="https://www.gnu.org/software/emacs/manual/html_node/elisp/Inheritance-and-Keymaps.html">keymaps inheritance</a>. If you are setting
+up a new keymap for your minor-mode (so associating keys to your new
+commands), you can enrich it with an existing keymap by just extending
+it.
+</p>
+
+<p>
+So for org-transclusion we have:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defvar org-transclusion-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "e") #'org-transclusion-live-sync-start)
+    (define-key map (kbd "g") #'org-transclusion-refresh)
+    (define-key map (kbd "d") #'org-transclusion-remove)
+    (define-key map (kbd "P") #'org-transclusion-promote-subtree)
+    (define-key map (kbd "D") #'org-transclusion-demote-subtree)
+    (define-key map (kbd "o") #'org-transclusion-open-source)
+    (define-key map (kbd "O") #'org-transclusion-move-to-source)
+    (define-key map (kbd "TAB") #'org-cycle)
+    (define-key map (kbd "C-c C-c") #'org-ctrl-c-ctrl-c)
+    map)
+  "It is the local-map used within a transclusion.
+As the transcluded text content is read-only, these keybindings
+are meant to be a sort of contextual menu to trigger different
+functions on the transclusion.")
+</pre>
+</div>
+
+<p>
+And with inheritance it becomes:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defvar org-transclusion-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map org-mode-map)
+    (define-key map (kbd "e") #'org-transclusion-live-sync-start)
+    (define-key map (kbd "g") #'org-transclusion-refresh)
+    (define-key map (kbd "d") #'org-transclusion-remove)
+    (define-key map (kbd "P") #'org-transclusion-promote-subtree)
+    (define-key map (kbd "D") #'org-transclusion-demote-subtree)
+    (define-key map (kbd "o") #'org-transclusion-open-source)
+    (define-key map (kbd "O") #'org-transclusion-move-to-source)
+    map)
+  "It is the local-map used within a transclusion.
+As the transcluded text content is read-only, these keybindings
+are meant to be a sort of contextual menu to trigger different
+functions on the transclusion.")
+</pre>
+</div>
+
+<p>
+The trick is <code>(set-keymap-parent map org-mode-map)</code> that does the inheritance.
+</p>
+
+<p>
+Happy key-pressing!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-01-05</span>
+        <span title="last modification date" class="post-info">2022-01-05</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
