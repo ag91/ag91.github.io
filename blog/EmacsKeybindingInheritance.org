@@ -1,0 +1,65 @@
+#+TITLE:       How to steal another mode keybindings when you define your minor mode.
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-01-05 Wed
+#+URI:         /blog/%y/%m/%d/how-to-steal-another-mode-keybindings-when-you-define-your-minor-mode
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Keybinding inheritance allows you to get another mode keybindings for free
+
+I was just trying out [[https://github.com/nobiot/org-transclusion][org-transclusion]], a fantastic little mode that I
+really needed. Only little problem? When you enable the
+org-transclusion minor-mode, you would lose Org Mode keybindings. [[https://github.com/nobiot/org-transclusion/pull/118][So I
+decided to fix it (at least for myself)]].
+
+The secret is in the manual: [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Inheritance-and-Keymaps.html][keymaps inheritance]]. If you are setting
+up a new keymap for your minor-mode (so associating keys to your new
+commands), you can enrich it with an existing keymap by just extending
+it.
+
+So for org-transclusion we have:
+
+#+begin_src elisp
+(defvar org-transclusion-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "e") #'org-transclusion-live-sync-start)
+    (define-key map (kbd "g") #'org-transclusion-refresh)
+    (define-key map (kbd "d") #'org-transclusion-remove)
+    (define-key map (kbd "P") #'org-transclusion-promote-subtree)
+    (define-key map (kbd "D") #'org-transclusion-demote-subtree)
+    (define-key map (kbd "o") #'org-transclusion-open-source)
+    (define-key map (kbd "O") #'org-transclusion-move-to-source)
+    (define-key map (kbd "TAB") #'org-cycle)
+    (define-key map (kbd "C-c C-c") #'org-ctrl-c-ctrl-c)
+    map)
+  "It is the local-map used within a transclusion.
+As the transcluded text content is read-only, these keybindings
+are meant to be a sort of contextual menu to trigger different
+functions on the transclusion.")
+#+end_src
+
+And with inheritance it becomes:
+
+#+begin_src elisp
+(defvar org-transclusion-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map org-mode-map)
+    (define-key map (kbd "e") #'org-transclusion-live-sync-start)
+    (define-key map (kbd "g") #'org-transclusion-refresh)
+    (define-key map (kbd "d") #'org-transclusion-remove)
+    (define-key map (kbd "P") #'org-transclusion-promote-subtree)
+    (define-key map (kbd "D") #'org-transclusion-demote-subtree)
+    (define-key map (kbd "o") #'org-transclusion-open-source)
+    (define-key map (kbd "O") #'org-transclusion-move-to-source)
+    map)
+  "It is the local-map used within a transclusion.
+As the transcluded text content is read-only, these keybindings
+are meant to be a sort of contextual menu to trigger different
+functions on the transclusion.")
+#+end_src
+
+The trick is =(set-keymap-parent map org-mode-map)= that does the inheritance.
+
+Happy key-pressing!
