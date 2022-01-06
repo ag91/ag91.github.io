@@ -1,0 +1,99 @@
+#+TITLE:       Moldable Emacs: the old Org-Roam buffer as a mold (with transclusion)!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-01-06 Thu
+#+URI:         /blog/%y/%m/%d/moldable-emacs-the-old-org-roam-buffer-as-a-mold
+#+KEYWORDS:    moldable-emacs, org-mode
+#+TAGS:        moldable-emacs, org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: The old Org Roam buffer on steroids with org-transclusion!
+
+* Too long; didn't read
+
+Use =Backlinks as Org= mold to get all the backlinks of an org-roam as
+a single buffer. You can easily export to some other format with =ox=
+if you set =(setq org-id-extra-files (org-roam-list-files))=.
+
+* The problem
+
+It's 2022 and I am feeling reminiscing... about the old v1 Org Roam
+buffer XD
+
+[[https://blog.jethro.dev/posts/org_roam_2021/][Jethro]] did a great job at compacting [[https://github.com/org-roam/org-roam][org-roam]] to its essence. I enjoy
+use org-ids more for links. [[https://github.com/org-roam/org-roam/issues/1654][I had to restore the graphviz]] =org-graph=
+export to svg my way to fit my needs, but overall it felt an
+improvement.
+
+There was a thing I wanted still to customize though. The *org-roam*
+buffer! The current one looks trendy because it uses the =magit= UX
+style. Still I like the Org Mode format more. And this sounds a view
+of some data. Mmm... moldable... Emacs...
+
+What would it take to make my own *org-roam* buffer as a mold???
+
+* And there is a solution
+
+Not much really. We just need a note at point, get the contents of its
+backlinks and write them in a Org buffer. The added benefit is that we
+can get the full contents in our Org Mode buffer! I suffer a bit that
+the org-roam buffer removes the notes contents: that forces me to open
+the note manually.
+
+This is how it looks.
+
+[[file:MoldableOrgRoamBufferMold.mp4]]
+
+Anyway, these are the main ingredients of our mold:
+
+- =(org-roam-node-at-point)=: get the note at point as an Elisp data structure
+- =(org-roam-backlinks-get (org-roam-node-at-point))=: get the backlinks of the note at point
+- =(org-roam-node-file (org-roam-backlink-source-node <backlink>))= get the file name of the backlink
+
+With those we can mold!
+
+#+begin_src elisp
+(me-register-mold
+ :key "Backlinks as Org"
+ :given (:fn (and
+              (me-require 'org-roam)
+              (org-roam-node-p (org-roam-node-at-point))))
+ :then (:fn
+        (let* ((backlinks (org-roam-backlinks-get (org-roam-node-at-point))))
+          (with-current-buffer buffername
+            (org-mode)
+            (erase-buffer)
+            (--each backlinks
+              (insert-file-contents-literally (org-roam-node-file (org-roam-backlink-source-node it))))
+            (setq-local self backlinks))))
+ :docs "You can check backlinks for current org-roam node."
+ :examples nil)
+#+end_src
+
+In this buffer we can use all Org Mode functionality. The one I use
+most is org-export! I needed the following setting to export notes
+without a problem: =(setq org-id-extra-files (org-roam-list-files))=.
+That is for org-roam v2 since it uses org ids for links: without that
+org-export would fail to find the backlink references.
+
+* There is a better solution too!
+
+There is a boring drawback with the above mold: it is difficult to
+jump to the original note. While using my mold I discovered that often
+I want to edit some typos or add some link. At the same time I saw
+that [[https://github.com/nobiot/org-transclusion][org-transclusion]] got published on Elpa.
+
+After giving it a little try, this is how the mold looks.
+
+[[file:OrgRoamTransclusionBufferMold.mp4]]
+
+As you can see you can edit the contents in place (=e= keybinding) or
+you can jump to the original note (=O= keybinding). And we can still export!
+
+* Conclusion
+
+Mold out the functionality you need! I could recover the old org-roam
+buffer in a few lines of Elisp. If you like it, you can just get
+moldable-emacs, run =me-mold= on a note and select "Backlinks as Org".
+
+Happy note-exporting!
