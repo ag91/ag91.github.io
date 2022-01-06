@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: the old Org-Roam buffer as a mold (with transclusion)! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="The old Org Roam buffer on steroids with org-transclusion!" />
+    <meta name="keywords" content="moldable-emacs, org-mode" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: the old Org-Roam buffer as a mold (with transclusion)!</h1>
+
+<div id="outline-container-orge2b83cf" class="outline-2">
+<h2 id="orge2b83cf">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orge2b83cf">
+<p>
+Use <code>Backlinks as Org</code> mold to get all the backlinks of an org-roam as
+a single buffer. You can easily export to some other format with <code>ox</code>
+if you set <code>(setq org-id-extra-files (org-roam-list-files))</code>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5ad9bcf" class="outline-2">
+<h2 id="org5ad9bcf">The problem</h2>
+<div class="outline-text-2" id="text-org5ad9bcf">
+<p>
+It's 2022 and I am feeling reminiscing... about the old v1 Org Roam
+buffer XD
+</p>
+
+<p>
+<a href="https://blog.jethro.dev/posts/org_roam_2021/">Jethro</a> did a great job at compacting <a href="https://github.com/org-roam/org-roam">org-roam</a> to its essence. I enjoy
+use org-ids more for links. <a href="https://github.com/org-roam/org-roam/issues/1654">I had to restore the graphviz</a> <code>org-graph</code>
+export to svg my way to fit my needs, but overall it felt an
+improvement.
+</p>
+
+<p>
+There was a thing I wanted still to customize though. The <b>org-roam</b>
+buffer! The current one looks trendy because it uses the <code>magit</code> UX
+style. Still I like the Org Mode format more. And this sounds a view
+of some data. Mmm... moldable... Emacs...
+</p>
+
+<p>
+What would it take to make my own <b>org-roam</b> buffer as a mold???
+</p>
+</div>
+</div>
+
+<div id="outline-container-org09c40bd" class="outline-2">
+<h2 id="org09c40bd">And there is a solution</h2>
+<div class="outline-text-2" id="text-org09c40bd">
+<p>
+Not much really. We just need a note at point, get the contents of its
+backlinks and write them in a Org buffer. The added benefit is that we
+can get the full contents in our Org Mode buffer! I suffer a bit that
+the org-roam buffer removes the notes contents: that forces me to open
+the note manually.
+</p>
+
+<p>
+This is how it looks.
+</p>
+
+<p>
+<a href="/assets/blog/2022/01/06/moldable-emacs-the-old-org-roam-buffer-as-a-mold/MoldableOrgRoamBufferMold.mp4">/assets/blog/2022/01/06/moldable-emacs-the-old-org-roam-buffer-as-a-mold/MoldableOrgRoamBufferMold.mp4</a>
+</p>
+
+<p>
+Anyway, these are the main ingredients of our mold:
+</p>
+
+<ul class="org-ul">
+<li><code>(org-roam-node-at-point)</code>: get the note at point as an Elisp data structure</li>
+<li><code>(org-roam-backlinks-get (org-roam-node-at-point))</code>: get the backlinks of the note at point</li>
+<li><code>(org-roam-node-file (org-roam-backlink-source-node &lt;backlink&gt;))</code> get the file name of the backlink</li>
+</ul>
+
+<p>
+With those we can mold!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me-register-mold
+ :key "Backlinks as Org"
+ :given (:fn (and
+              (me-require 'org-roam)
+              (org-roam-node-p (org-roam-node-at-point))))
+ :then (:fn
+        (let* ((backlinks (org-roam-backlinks-get (org-roam-node-at-point))))
+          (with-current-buffer buffername
+            (org-mode)
+            (erase-buffer)
+            (--each backlinks
+              (insert-file-contents-literally (org-roam-node-file (org-roam-backlink-source-node it))))
+            (setq-local self backlinks))))
+ :docs "You can check backlinks for current org-roam node."
+ :examples nil)
+</pre>
+</div>
+
+<p>
+In this buffer we can use all Org Mode functionality. The one I use
+most is org-export! I needed the following setting to export notes
+without a problem: <code>(setq org-id-extra-files (org-roam-list-files))</code>.
+That is for org-roam v2 since it uses org ids for links: without that
+org-export would fail to find the backlink references.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgeb87503" class="outline-2">
+<h2 id="orgeb87503">There is a better solution too!</h2>
+<div class="outline-text-2" id="text-orgeb87503">
+<p>
+There is a boring drawback with the above mold: it is difficult to
+jump to the original note. While using my mold I discovered that often
+I want to edit some typos or add some link. At the same time I saw
+that <a href="https://github.com/nobiot/org-transclusion">org-transclusion</a> got published on Elpa.
+</p>
+
+<p>
+After giving it a little try, this is how the mold looks.
+</p>
+
+<p>
+<a href="/assets/blog/2022/01/06/moldable-emacs-the-old-org-roam-buffer-as-a-mold/OrgRoamTransclusionBufferMold.mp4">/assets/blog/2022/01/06/moldable-emacs-the-old-org-roam-buffer-as-a-mold/OrgRoamTransclusionBufferMold.mp4</a>
+</p>
+
+<p>
+As you can see you can edit the contents in place (<code>e</code> keybinding) or
+you can jump to the original note (<code>O</code> keybinding). And we can still export!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org681fdd9" class="outline-2">
+<h2 id="org681fdd9">Conclusion</h2>
+<div class="outline-text-2" id="text-org681fdd9">
+<p>
+Mold out the functionality you need! I could recover the old org-roam
+buffer in a few lines of Elisp. If you like it, you can just get
+moldable-emacs, run <code>me-mold</code> on a note and select "Backlinks as Org".
+</p>
+
+<p>
+Happy note-exporting!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-01-06</span>
+        <span title="last modification date" class="post-info">2022-01-06</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/org-mode/">org-mode</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
