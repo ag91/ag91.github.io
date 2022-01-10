@@ -36,3 +36,5 @@ This Elisp snippet does it for you:
 #+end_src
 
 Just remove the last =length= to see the tags.
+
+Update: [[https://irreal.org/blog/?p=10231][at Irreal there is a simpler approach to do this]] :)
