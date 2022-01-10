@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 06 Jan 2022 21:28:18 GMT</pubDate>
-    <lastBuildDate>Thu, 06 Jan 2022 21:28:18 GMT</lastBuildDate>
+    <pubDate>Mon, 10 Jan 2022 17:54:27 GMT</pubDate>
+    <lastBuildDate>Mon, 10 Jan 2022 17:54:27 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>How to count your Org Agenda tags</title>
+      <link>http://ag91.github.io/blog/2022/01/03/how-to-count-your-org-agenda-tags</link>
+      <description><![CDATA[A short Elisp snippet to count your Org agenda tags]]></description>
+      <pubDate>2022-01-10</pubDate>
+      <guid>http://ag91.github.io/blog/2022/01/03/how-to-count-your-org-agenda-tags</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: the old Org-Roam buffer as a mold (with transclusion)!</title>
       <link>http://ag91.github.io/blog/2022/01/06/moldable-emacs-the-old-org-roam-buffer-as-a-mold</link>
-      <description><![CDATA[The old Org Roam buffer on steroids with org-transclusion!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-01-06</pubDate>
       <guid>http://ag91.github.io/blog/2022/01/06/moldable-emacs-the-old-org-roam-buffer-as-a-mold</guid>
     </item>
@@ -21,13 +28,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-01-05</pubDate>
       <guid>http://ag91.github.io/blog/2022/01/05/how-to-steal-another-mode-keybindings-when-you-define-your-minor-mode</guid>
-    </item>
-    <item>
-      <title>How to count your Org Agenda tags</title>
-      <link>http://ag91.github.io/blog/2022/01/03/how-to-count-your-org-agenda-tags</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-01-03</pubDate>
-      <guid>http://ag91.github.io/blog/2022/01/03/how-to-count-your-org-agenda-tags</guid>
     </item>
     <item>
       <title>Moldable Emacs: make your molds async with ease</title>
