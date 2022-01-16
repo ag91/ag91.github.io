@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 10 Jan 2022 17:54:27 GMT</pubDate>
-    <lastBuildDate>Mon, 10 Jan 2022 17:54:27 GMT</lastBuildDate>
+    <pubDate>Sun, 16 Jan 2022 15:04:58 GMT</pubDate>
+    <lastBuildDate>Sun, 16 Jan 2022 15:04:58 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: translate string at point in multiple languages!</title>
+      <link>http://ag91.github.io/blog/2022/01/16/moldable-emacs-translate-string-at-point-in-multiple-languages</link>
+      <description><![CDATA[Translate text selection to multiple languages easily!]]></description>
+      <pubDate>2022-01-16</pubDate>
+      <guid>http://ag91.github.io/blog/2022/01/16/moldable-emacs-translate-string-at-point-in-multiple-languages</guid>
+    </item>
+    <item>
       <title>How to count your Org Agenda tags</title>
       <link>http://ag91.github.io/blog/2022/01/03/how-to-count-your-org-agenda-tags</link>
-      <description><![CDATA[A short Elisp snippet to count your Org agenda tags]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-01-10</pubDate>
       <guid>http://ag91.github.io/blog/2022/01/03/how-to-count-your-org-agenda-tags</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-10-29</pubDate>
       <guid>http://ag91.github.io/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js</guid>
-    </item>
-    <item>
-      <title>Nyxt on MacOS!</title>
-      <link>http://ag91.github.io/blog/2021/10/25/nyxt-on-macos</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-10-25</pubDate>
-      <guid>http://ag91.github.io/blog/2021/10/25/nyxt-on-macos</guid>
     </item>
   </channel>
 </rss>
