@@ -1,0 +1,84 @@
+#+TITLE:       Moldable Emacs: query your Org Roam notes by tag
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-01-21 Fri
+#+URI:         /blog/%y/%m/%d/moldable-emacs-query-your-org-roam-notes-by-tag
+#+KEYWORDS:    moldable-emacs, org-roam
+#+TAGS:        moldable-emacs, org-roam
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Query notes by tag-notes intersection
+
+* Too long; didn't read
+
+I display the Org Roam notes that intersect over a selection of tags
+(i.e., Org Roam notes titled with a single word).
+
+* The problem
+
+Lately I am working on tagging. I recently reworked the way I maintain
+my agenda and yes, Org Mode tags are amazing! Tags are better than
+hierarchy because you can interpret tags as hierarchy or something
+else according to your needs. For example, having a hierarchy like
+king -> lord -> worker is less flexible than labelling/tagging
+something king/lord/worker. With hierarchy you enforce the order with
+structure, while with tags you need an interpreter to do the same. But
+you can also create other interpreters for the same tags.
+
+Anyway, I got side tracked here... I just meant to say: I found out I
+have been creating tags consistently in my Org Roam notes. And these
+tags are notes themselves. For instance, I have a =book= note. When I
+add notes I took from a book I read, I link these notes to =book=. I
+also have a note =management= that explains what I believe management
+is. Moreover I linked to it some notes I collected over time. Now the
+question: what if I want to find all the notes that link to both
+=book= and =management=?
+
+* It is a problem indeed
+
+I thought my enthusiasm for Org Roam would eventually fade. It didn't.
+Also I simply failed the principle from the book [[https://www.goodreads.com/book/show/34507927-how-to-take-smart-notes?from_search=true&from_srp=true&qid=piUNcK5fJE&rank=1][How to take smart notes]]:
+
+#+begin_src text 
+The idea is not to collect, but to develop ideas, arguments and
+discussions. Does the new information contradict, correct, support or
+add to what you already have (in the slip-box or on your mind)? Can
+you combine ideas to generate something new? What questions are
+triggered by them?
+#+end_src
+
+I got 6k-ish notes at the moment. I hoarded a bit. I can find most of what
+I need, but better tools for searching are necessary. And the funny
+thing is that tagging is also a concept in Org Mode. It sounds like
+whatever we devise, we could reuse for our TODO lists!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       90c60214-fcbc-4351-9c00-93628b33f2df
+:END:
+
+Let me show you where I got so far.
+
+[[MoldableOrgTagsQuery.mp4]]
+
+The idea is simple: collect the notes that link to the notes you
+query. How it works is naive: find the notes containing each tags and
+return the intersection of these. Then I show them with
+[[https://github.com/nobiot/org-transclusion][org-transclusion]].
+
+You can find the mold definition [[https://github.com/ag91/moldable-emacs/blob/d06b43d/molds/contrib.el#L836][in the repository here]].
+
+The definition of what is an Org Roam tag is a bit
+custom to my setup. Probably others use a different approach to it.
+Showing this I want to both share how helpful is tagging your notes
+for search and how molds can be also an interface to search your
+notes. Once you have the notes you can compose other molds to learn
+more about your notes. Using the Org Roam Elisp API you can gather the
+notes they link to or when you accessed them last time.
+
+* Conclusion
+
+Grab [[https://github.com/ag91/moldable-emacs][moldable-emacs]] and start investigating your Org Roam notes! And
+try out using tags over hierarchy ;)
+
+Happy searching!
