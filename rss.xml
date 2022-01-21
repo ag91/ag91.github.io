@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 16 Jan 2022 15:04:58 GMT</pubDate>
-    <lastBuildDate>Sun, 16 Jan 2022 15:04:58 GMT</lastBuildDate>
+    <pubDate>Fri, 21 Jan 2022 23:37:24 GMT</pubDate>
+    <lastBuildDate>Fri, 21 Jan 2022 23:37:24 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: query your Org Roam notes by tag</title>
+      <link>http://ag91.github.io/blog/2022/01/21/moldable-emacs-query-your-org-roam-notes-by-tag</link>
+      <description><![CDATA[Query notes by tag-notes intersection]]></description>
+      <pubDate>2022-01-21</pubDate>
+      <guid>http://ag91.github.io/blog/2022/01/21/moldable-emacs-query-your-org-roam-notes-by-tag</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: translate string at point in multiple languages!</title>
       <link>http://ag91.github.io/blog/2022/01/16/moldable-emacs-translate-string-at-point-in-multiple-languages</link>
-      <description><![CDATA[Translate text selection to multiple languages easily!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-01-16</pubDate>
       <guid>http://ag91.github.io/blog/2022/01/16/moldable-emacs-translate-string-at-point-in-multiple-languages</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2021-11-05</pubDate>
       <guid>http://ag91.github.io/blog/2021/11/05/moldable-emacs-a-clojure-playground-with-babashka</guid>
-    </item>
-    <item>
-      <title>Emacs with Nyxt: capturing YouTube links at time and molding Nyxt with JS</title>
-      <link>http://ag91.github.io/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2021-10-29</pubDate>
-      <guid>http://ag91.github.io/blog/2021/10/29/emacs-with-nyxt-capturing-youtube-links-at-time-and-molding-nyxt-with-js</guid>
     </item>
   </channel>
 </rss>

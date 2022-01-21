@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: query your Org Roam notes by tag - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Query notes by tag-notes intersection" />
+    <meta name="keywords" content="moldable-emacs, org-roam" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: query your Org Roam notes by tag</h1>
+
+<div id="outline-container-org8c8001b" class="outline-2">
+<h2 id="org8c8001b">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org8c8001b">
+<p>
+I display the Org Roam notes that intersect over a selection of tags
+(i.e., Org Roam notes titled with a single word).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org35ba494" class="outline-2">
+<h2 id="org35ba494">The problem</h2>
+<div class="outline-text-2" id="text-org35ba494">
+<p>
+Lately I am working on tagging. I recently reworked the way I maintain
+my agenda and yes, Org Mode tags are amazing! Tags are better than
+hierarchy because you can interpret tags as hierarchy or something
+else according to your needs. For example, having a hierarchy like
+king -&gt; lord -&gt; worker is less flexible than labelling/tagging
+something king/lord/worker. With hierarchy you enforce the order with
+structure, while with tags you need an interpreter to do the same. But
+you can also create other interpreters for the same tags.
+</p>
+
+<p>
+Anyway, I got side tracked here... I just meant to say: I found out I
+have been creating tags consistently in my Org Roam notes. And these
+tags are notes themselves. For instance, I have a <code>book</code> note. When I
+add notes I took from a book I read, I link these notes to <code>book</code>. I
+also have a note <code>management</code> that explains what I believe management
+is. Moreover I linked to it some notes I collected over time. Now the
+question: what if I want to find all the notes that link to both
+<code>book</code> and <code>management</code>?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3dc5b37" class="outline-2">
+<h2 id="org3dc5b37">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org3dc5b37">
+<p>
+I thought my enthusiasm for Org Roam would eventually fade. It didn't.
+Also I simply failed the principle from the book <a href="https://www.goodreads.com/book/show/34507927-how-to-take-smart-notes?from_search=true&amp;from_srp=true&amp;qid=piUNcK5fJE&amp;rank=1">How to take smart notes</a>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">The idea is not to collect, but to develop ideas, arguments and
+discussions. Does the new information contradict, correct, support or
+add to what you already have (in the slip-box or on your mind)? Can
+you combine ideas to generate something new? What questions are
+triggered by them?
+</pre>
+</div>
+
+<p>
+I got 6k-ish notes at the moment. I hoarded a bit. I can find most of what
+I need, but better tools for searching are necessary. And the funny
+thing is that tagging is also a concept in Org Mode. It sounds like
+whatever we devise, we could reuse for our TODO lists!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1236b88" class="outline-2">
+<h2 id="org1236b88">And there is a solution</h2>
+<div class="outline-text-2" id="text-org1236b88">
+<p>
+Let me show you where I got so far.
+</p>
+
+<p>
+<a href="/assets/blog/2022/01/21/moldable-emacs-query-your-org-roam-notes-by-tag/MoldableOrgTagsQuery.mp4">/assets/blog/2022/01/21/moldable-emacs-query-your-org-roam-notes-by-tag/MoldableOrgTagsQuery.mp4</a>
+</p>
+
+<p>
+The idea is simple: collect the notes that link to the notes you
+query. How it works is naive: find the notes containing each tags and
+return the intersection of these. Then I show them with
+<a href="https://github.com/nobiot/org-transclusion">org-transclusion</a>.
+</p>
+
+<p>
+You can find the mold definition <a href="https://github.com/ag91/moldable-emacs/blob/d06b43d/molds/contrib.el#L836">in the repository here</a>.
+</p>
+
+<p>
+The definition of what is an Org Roam tag is a bit
+custom to my setup. Probably others use a different approach to it.
+Showing this I want to both share how helpful is tagging your notes
+for search and how molds can be also an interface to search your
+notes. Once you have the notes you can compose other molds to learn
+more about your notes. Using the Org Roam Elisp API you can gather the
+notes they link to or when you accessed them last time.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgea84233" class="outline-2">
+<h2 id="orgea84233">Conclusion</h2>
+<div class="outline-text-2" id="text-orgea84233">
+<p>
+Grab <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> and start investigating your Org Roam notes! And
+try out using tags over hierarchy ;)
+</p>
+
+<p>
+Happy searching!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-01-21</span>
+        <span title="last modification date" class="post-info">2022-01-21</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/org-roam/">org-roam</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
