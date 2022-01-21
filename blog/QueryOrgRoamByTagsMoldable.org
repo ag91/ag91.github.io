@@ -59,7 +59,7 @@ whatever we devise, we could reuse for our TODO lists!
 
 Let me show you where I got so far.
 
-[[MoldableOrgTagsQuery.mp4]]
+[[file:MoldableOrgTagsQuery.mp4]]
 
 The idea is simple: collect the notes that link to the notes you
 query. How it works is naive: find the notes containing each tags and
