@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Use test generators to assess Scala software performance - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to use ScalaCheck to evaluate performance of code" />
+    <meta name="keywords" content="scala" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Use test generators to assess Scala software performance</h1>
+<div id="outline-container-org201f662" class="outline-2">
+<h2 id="org201f662">Too long; didn't read.</h2>
+<div class="outline-text-2" id="text-org201f662">
+<p>
+ScalaCheck generators let you assess how responsive is your
+application. I will show a little example here.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1d1d73a" class="outline-2">
+<h2 id="org1d1d73a">The problem</h2>
+<div class="outline-text-2" id="text-org1d1d73a">
+<p>
+You have a new feature to implement. The user wants some value and she
+wants it fast. We know that correctness, simplicity and performance
+stem all from the same trunk: design. If you want correctness, design
+so that errors cannot happen (from your code at least). If you want
+simplicity, focus on a design that composes little things. If you want
+performance, design <a href="https://blog.nelhage.com/post/why-sorbet-is-fast/#local-only-inference">for locality, locality and locality</a>! Slowness
+comes from latency. A database is slower than memory for accessing
+data because in that case data travel more layers of software and
+hardware. For the same reason a database is quicker than a HTTP
+request. Berkeley University has an <a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html">interactive picture</a> showing that.
+</p>
+
+<p>
+Still, your application (maybe) really needs to store data. Or, worse,
+you may find yourself stuck with an old design that you cannot change
+for now. How do you make sure your feature is fast?
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgeb1dd75" class="outline-2">
+<h2 id="orgeb1dd75">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgeb1dd75">
+<p>
+Performance testing is an art. I remember the first time I paired with
+an engineer to tune a <a href="https://gatling.io/">Gatling</a> scenario. He was trying to mimic a swarm
+of users which would start accessing the application in waves. Once
+written the test, we ran it against the application instances for
+test, and: flop! The application broke after a couple of waves.
+Unsurprisingly, the issue was not the test.
+</p>
+
+<p>
+Although I got a few performance tests under my belt, I remember the
+disappointment in that crash. The <a href="https://en.wikipedia.org/wiki/Shift-left_testing">shifting left movement</a> resonates
+with my feeling. I think we should catch slowness earlier in the
+development cycle. Ideally, the tools we use to write software should
+highlight slow code while we type (I am experimenting with that, but
+not quite there yet). For now though: what is a quick (and cool) way
+to check performance for a (Scala) developer?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd60002b" class="outline-2">
+<h2 id="orgd60002b">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgd60002b">
+<p>
+Slowness appears with data. A function may seem alright for the few
+test cases we test it with. Then it hits production and hell breaks
+loose.
+</p>
+
+<p>
+What has happened? The real worlds hosts the most fearsome data
+generators: humans. I am not joking. People make data and machines
+filter it. Any program is just a filter on many data sources. <a href="https://ag91.github.io/blog/2020/08/14/linux-unix-philosophy-and-why-programs-are-just-filters/">I
+learned that from</a> <a href="https://www.goodreads.com/book/show/2084939.Linux_and_the_Unix_Philosophy?from_search=true&amp;from_srp=true&amp;qid=AcaaFv8PnC&amp;rank=1">Linux and the Unix Philosophy</a> and my experience
+shows that is true.
+</p>
+
+<p>
+So I get that what we need is data generators. If possible, these
+should behave like people. Computers struggle to copy humans though.
+But we can approximate that: randomness!
+</p>
+
+<p>
+You may have heard of <a href="https://github.com/typelevel/scalacheck">ScalaCheck</a> already. Earlier <a href="https://ag91.github.io/blog/2018/10/27/functional-abstraction-in-js-functors/">I wrote about
+jsverify, its JS counterpart</a>. ScalaCheck is a tool for property
+testing. That type of testing is fantastic and you should check it
+out. In this context though, we want only ScalaCheck's generators.
+Also these are more digestible for your team, if they do not know
+property testing yet.
+</p>
+
+<p>
+Let me show you a generator quickly in <a href="https://github.com/com-lihaoyi/Ammonite">Ammonite</a> syntax:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">import $ivy.`org.scalacheck::scalacheck:1.14.1`
+
+import org.scalacheck.Gen
+
+
+val stringGen: Gen[String] = Gen.alphaNumStr
+val listOfStringGen: Gen[List[String]] = Gen.listOf(stringGen)
+listOfStringGen.sample
+</pre>
+</div>
+
+<p>
+import $ivy.$                                  
+</p>
+
+
+<p>
+import org.scalacheck.Gen
+</p>
+
+
+
+<p>
+stringGen: Gen[String] = org.scalacheck.Gen\[anon$5@552fffc8
+listOfStringGen: Gen[List[String]] = org.scalacheck.Gen\]anon$1@368ff8be
+res3_4: Option[List[String]] = Some(
+  List(
+    "QIsEOjnHpyIwbsjfc3epMxupwpzjwgducjyYhmgjgd8ncbttthyq4ezLlimeswgaOpieinqavfou",
+    "oplCvfyrvfwpffnppzw4drD2gwcbyYphva0i0bxrzhcrfgkcoawbvslfwaQktwnv4cfuoyo3",
+    "gtOyf0bsbi0mdcgm5llb",
+    "O0gO4qzud9hspnFrMuw3npslpvenh0lLeueAu5cnb5zbhnsc4ggmwsq0crcstgcp3c",
+    "ggcaiffzsTEvrjxcwhavYifIfJx9ouumer7h8oupzxmjat3KAop",
+    "pb4n9wf4rqwpifboazjittgurxvkgaNld6w8wlhdgsqwxF",
+    "ycsj8ekmawmMsj3gauvh4njo7pd7bbxvp6",
+    "g79afe0obfttnxrlf6r6pes2oWswiiixjnvvBu28a1dcbnqqfrqqsjjx4xIwvfhn",
+    "2jvcuslGpPiglbthzawa39vgsprmrqy4lqUeoegYaR5ylQ5pfaauui3TecbqllnuuhboupuK",
+    "qlgfxg8n3q7u8kacrcad0b30Hyb1akuhnhn5bTwon9wykdHqnIe0fZijdiYTqhnrm",
+    "kjgxslQd6wbgfaopeau7oUfa0c",
+    "gibzsbpRlyKsz2iaHeLbmkkddapensUy9DzqBocUdtxjvnomyf9y8qlknbcbthgHI0qohroweNyRcqtfjsDKylwgj",
+    "bquqvW3rvigWi6aW3udmji1vzqenijzpSmqJerevnWd"
+  )
+)
+</p>
+
+<p>
+In 5 lines of code we generated a list of random strings. That is
+cool! Now let me show you how to setup the data for a performance
+test. Say you have an object, how do you make a generator for that?
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">import $ivy.`org.scalacheck::scalacheck:1.14.1`
+
+import org.scalacheck.{Gen, Arbitrary}
+
+case class SomeObjectToTest(int: Int, maybeString: Option[String])
+
+val someObjectToTestGen: Gen[SomeObjectToTest] = for {
+  int &lt;- Arbitrary.arbitrary[Int]
+  maybeString &lt;- Gen.option(Gen.alphaNumStr)
+} yield SomeObjectToTest(int, maybeString)
+
+Gen.listOfN(2, someObjectToTestGen).sample
+</pre>
+</div>
+
+<p>
+import $ivy.$                                  
+</p>
+
+
+<p>
+import org.scalacheck.{Gen, Arbitrary}
+</p>
+
+
+<p>
+defined class SomeObjectToTest
+someObjectToTestGen: Gen[SomeObjectToTest] = org.scalacheck.Gen$$anon$5@2321c420
+res11_4: Option[List[SomeObjectToTest]] = Some(
+  List(SomeObjectToTest(-2147483648, Some("4wPNvt")), SomeObjectToTest(-924389141, None))
+)
+</p>
+
+<p>
+As you can see, a <code>for</code> comprehension saves you here. We just compose
+generators. And note <code>Gen.listOfN</code>: you can get <code>N</code> pieces of random
+data, once you define your generator.
+</p>
+
+<p>
+Now it is easy to test your function over a million of
+inputs!
+</p>
+
+<p>
+For performance we want to check time. This is what I use to record
+time.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-amm">def time[R](block: =&gt; R): R = {
+  val t0 = System.nanoTime()
+  val result = block
+  val t1 = System.nanoTime()
+  println(Console.GREEN + "Elapsed time: " + (t1 - t0) + "ns, ie, " + ((t1 - t0) / 1000000000) + "s" + Console.RESET)
+  result
+}
+</pre>
+</div>
+
+
+<p>
+If you connect to a database in your test, you can also try to store
+data. Then you can time how long your database takes as
+storing/accessing data. If it feels slow, <a href="https://ag91.github.io/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements/">instrument your database and
+run again to check what queries are slow</a>.
+</p>
+
+<p>
+Generators save you a lot of time but make sure to use them on a good
+design! For example, the class above has Int and String attributes.
+These types can host an infinity of values. Particularly these values
+can be rather big! Generators take these at random, so you may find
+the Bible in one of those strings. Instead, your design should have
+types that allow only the values you want (for example limiting the
+length of the string and the range of the integers).
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-org2fbe916" class="outline-2">
+<h2 id="org2fbe916">Conclusion</h2>
+<div class="outline-text-2" id="text-org2fbe916">
+<p>
+With this knowledge you can start testing performance. You will surely
+catch your biggest bottlenecks. Most of your time will go in setting
+up your generators. This is worthy because you can also use them for
+property testing (and setting up data in a test environment too!). So
+run your Ammonite, paste the code and start generating right now.
+</p>
+
+<p>
+Happy performing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-01-26</span>
+        <span title="last modification date" class="post-info">2022-01-26</span>
+        <span title="tags" class="post-info"><a href="/tags/scala/">scala</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
