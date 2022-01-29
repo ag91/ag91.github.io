@@ -1,0 +1,148 @@
+#+TITLE:       Escalate your helm searches!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-01-29 Sat
+#+URI:         /blog/%y/%m/%d/escalate-your-helm-searches
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Integrate your Helm searchers with an uniform interface
+
+* Escalate your helm searches!
+:PROPERTIES:
+:ID:       f173ce3e-45b1-4112-b3c0-fc027abf885f
+:END:
+- tags :: [[id:58279434-13e9-4aa7-8cce-f9d45995a76f][blog]]
+
+
+* Too long; didn't read
+
+Here I group and integrate Helm search commands to escalate my search
+to more and more computer contents.
+
+* The problem
+
+My searches in Emacs are far from ideal. When I started with it, Helm
+was the cool kid of the block. So I installed that and had a great
+time with it so far. I would say that all these years I have been
+using mostly =helm-find-files= and =helm-buffers-list=. With time I
+kept adding commands: Silver Searcher =helm-ag= and Projectile
+=helm-projectile= and some more. Still, my working memory is pretty
+limited and I consistently failed to use these other helm extensions.
+I got to the point where I need a way of searching for helm commands!
+
+Indeed, this is the problem of my searches. Let's run through what I
+would do to search something.
+
+1. I start with wanting to change the variable =helm-candidate-number-limit= in my configuration
+2. I search for my configuration with =helm-buffers-list=
+3. my configuration is not an open buffer yet, so I search for the configuration with =helm-find-files=
+4. now I use =helm-occur= or =helm-swoop= to find the =use-package helm=
+5. oh, I forgot what =helm-candidate-number-limit= is about, I want to search it online
+
+This is messy. If I didn't memorize the keybindings for all those
+commands, I would be lost. Also, new users may just not know about
+they exist or their names! And why do I need to search so many times?
+
+How about making the same search in a single go and user friendly? Is
+that possible?
+
+* It is a problem indeed
+
+The problem is bigger. We are living a golden age of Emacs (and
+software in general). We have an incredible amount of powerful
+software tools. We can mentally group them but that's it. In my
+[[https://github.com/ag91/moldable-emacs][moldable-emacs]] work I try to make tools contextual (i.e., you can use
+them when they are relevant). That is because I want to save my
+attention and dedicate it to the problem I am facing (instead of the
+new problem: what tool I need to handle my problem).
+
+I think it would save everybody's time if we had tools that grouped
+tools. We need to review our user interfaces!
+
+Take searching as an example. When I search for a string, I should not
+tell the computer the file or directory to look into: the location is
+just what I want to find out! The computer search command asks us a
+starting location to save us some waiting time. But the computer is
+giving us work! We need to remember the whereabouts. Now WE are
+computing, sigh!
+
+A better interface (taking this idea from [[https://goodreads.com/book/show/344726.The_Humane_Interface?from_search=true&amp;from_srp=true&amp;qid=QxoDmtLjhb&amp;rank=1][The Humane Interface]]) would
+be just a search bar. I write text into it, the computer starts its
+hunting. Escalating from the small to the large, from the current file
+you are visiting to the whole Internet.
+
+This interface would allow you to ignore the tools used in the
+process. You would finally focus only on your problem.
+
+Can we do that for searches in Emacs?
+
+* And there is a solution
+
+This kept me awake way past my bed time last week. It was worthy
+though. Let me show you.
+
+[[file:escalatorHelm.mp4]]
+
+In the video, I start a search in my buffer with helm. The word
+(Tarsius) is not there. Instead of losing my search, I escalate it:
+next I search all the open buffers. Still nothing (actually found it
+here but say we didn't). Next I search the file system files. Still
+nothing, now it is my last resort: the Internet.
+
+All this happens with just helm: how cool is that?
+
+What I did is just to create a map between Helm commands and descriptions.
+
+#+begin_src elisp
+(defcustom escalator-commands-map
+  '((:description "search current buffer" :fn escalator-helm-swoop)
+    (:description "find file" :fn escalator-helm-find-files)
+    (:description "search buffers in dir" :fn escalator-helm-buffers-list )
+    (:description "search files content in dir" :fn escalator-helm-do-grep-ag )
+    (:description "search files in project" :fn escalator-helm-projectile-find-file )
+    (:description "search files content in project" :fn escalator-helm-projectile-ag )
+    (:description "search in all buffers" :fn helm-multi-swoop-all)
+    (:description "search filenames in fs" :fn escalator-helm-find-root )
+    (:description "search file contents in fs" :fn escalator-helm-do-grep-ag-root )
+    (:description "search google" :fn escalator-helm-google-suggest ))
+  "Escalator helm commands.")
+#+end_src
+
+As you noticed the search query stays when I switch search command. I
+needed to redefine helm commands with the =escalator-= prefix because
+these don't take the query as input.
+
+For instance, see how I defined =escalator-helm-find-files=.
+
+#+begin_src elisp
+(defun escalator-helm-find-files (&optional input)
+  (helm :sources 'helm-source-findutils
+        :input input
+        :buffer "*helm find*"
+        :ff-transformer-show-only-basename nil
+        :case-fold-search helm-file-name-case-fold-search))
+#+end_src
+
+The original =helm-find-files= would not have the property =:input=,
+which defines the starting string query.
+
+You can add other helm commands yourself by adding an extra element to
+the =escalator-command-map=. I already added something like =helm-mu=
+and even [[https://github.com/Giedriusj1/helm-tree-sitter][helm-tree-sitter]] before the =helm-google-suggest=, because it
+may make sense to query my emails as well before the Internet.
+
+The current work is published as a hack at: https://github.com/ag91/escalator
+
+I guess my next step is to escalate searches automatically: if the
+command finishes without candidates, escalate to the next command. So
+I will get closer to that single search bar ideal situation!
+
+* Conclusion
+
+Think about integrating your favourite tools and abstract them away.
+The more you focus just on the problem you care about, the more
+effective you will be!
+
+Happy searching!
