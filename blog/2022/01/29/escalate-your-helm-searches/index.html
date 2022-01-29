@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Escalate your helm searches! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Integrate your Helm searchers with an uniform interface" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Escalate your helm searches!</h1>
+
+<div id="outline-container-org3f3b8e9" class="outline-2">
+<h2 id="org3f3b8e9">Escalate your helm searches!</h2>
+<div class="outline-text-2" id="text-org3f3b8e9">
+<dl class="org-dl">
+<dt>tags</dt><dd><a href="../agenda/notes/20200221154559_blog.html#ID-58279434-13e9-4aa7-8cce-f9d45995a76f">blog</a></dd>
+</dl>
+</div>
+</div>
+
+
+<div id="outline-container-orge02b715" class="outline-2">
+<h2 id="orge02b715">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orge02b715">
+<p>
+Here I group and integrate Helm search commands to escalate my search
+to more and more computer contents.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdd3e0fe" class="outline-2">
+<h2 id="orgdd3e0fe">The problem</h2>
+<div class="outline-text-2" id="text-orgdd3e0fe">
+<p>
+My searches in Emacs are far from ideal. When I started with it, Helm
+was the cool kid of the block. So I installed that and had a great
+time with it so far. I would say that all these years I have been
+using mostly <code>helm-find-files</code> and <code>helm-buffers-list</code>. With time I
+kept adding commands: Silver Searcher <code>helm-ag</code> and Projectile
+<code>helm-projectile</code> and some more. Still, my working memory is pretty
+limited and I consistently failed to use these other helm extensions.
+I got to the point where I need a way of searching for helm commands!
+</p>
+
+<p>
+Indeed, this is the problem of my searches. Let's run through what I
+would do to search something.
+</p>
+
+<ol class="org-ol">
+<li>I start with wanting to change the variable <code>helm-candidate-number-limit</code> in my configuration</li>
+<li>I search for my configuration with <code>helm-buffers-list</code></li>
+<li>my configuration is not an open buffer yet, so I search for the configuration with <code>helm-find-files</code></li>
+<li>now I use <code>helm-occur</code> or <code>helm-swoop</code> to find the <code>use-package helm</code></li>
+<li>oh, I forgot what <code>helm-candidate-number-limit</code> is about, I want to search it online</li>
+</ol>
+
+<p>
+This is messy. If I didn't memorize the keybindings for all those
+commands, I would be lost. Also, new users may just not know about
+they exist or their names! And why do I need to search so many times?
+</p>
+
+<p>
+How about making the same search in a single go and user friendly? Is
+that possible?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2c43d72" class="outline-2">
+<h2 id="org2c43d72">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org2c43d72">
+<p>
+The problem is bigger. We are living a golden age of Emacs (and
+software in general). We have an incredible amount of powerful
+software tools. We can mentally group them but that's it. In my
+<a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> work I try to make tools contextual (i.e., you can use
+them when they are relevant). That is because I want to save my
+attention and dedicate it to the problem I am facing (instead of the
+new problem: what tool I need to handle my problem).
+</p>
+
+<p>
+I think it would save everybody's time if we had tools that grouped
+tools. We need to review our user interfaces!
+</p>
+
+<p>
+Take searching as an example. When I search for a string, I should not
+tell the computer the file or directory to look into: the location is
+just what I want to find out! The computer search command asks us a
+starting location to save us some waiting time. But the computer is
+giving us work! We need to remember the whereabouts. Now WE are
+computing, sigh!
+</p>
+
+<p>
+A better interface (taking this idea from <a href="https://goodreads.com/book/show/344726.The_Humane_Interface?from_search=true&amp;amp;from_srp=true&amp;amp;qid=QxoDmtLjhb&amp;amp;rank=1">The Humane Interface</a>) would
+be just a search bar. I write text into it, the computer starts its
+hunting. Escalating from the small to the large, from the current file
+you are visiting to the whole Internet.
+</p>
+
+<p>
+This interface would allow you to ignore the tools used in the
+process. You would finally focus only on your problem.
+</p>
+
+<p>
+Can we do that for searches in Emacs?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9cfe0bb" class="outline-2">
+<h2 id="org9cfe0bb">And there is a solution</h2>
+<div class="outline-text-2" id="text-org9cfe0bb">
+<p>
+This kept me awake way past my bed time last week. It was worthy
+though. Let me show you.
+</p>
+
+<p>
+<a href="/assets/blog/2022/01/29/escalate-your-helm-searches/escalatorHelm.mp4">/assets/blog/2022/01/29/escalate-your-helm-searches/escalatorHelm.mp4</a>
+</p>
+
+<p>
+In the video, I start a search in my buffer with helm. The word
+(Tarsius) is not there. Instead of losing my search, I escalate it:
+next I search all the open buffers. Still nothing (actually found it
+here but say we didn't). Next I search the file system files. Still
+nothing, now it is my last resort: the Internet.
+</p>
+
+<p>
+All this happens with just helm: how cool is that?
+</p>
+
+<p>
+What I did is just to create a map between Helm commands and descriptions.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defcustom escalator-commands-map
+  '((:description "search current buffer" :fn escalator-helm-swoop)
+    (:description "find file" :fn escalator-helm-find-files)
+    (:description "search buffers in dir" :fn escalator-helm-buffers-list )
+    (:description "search files content in dir" :fn escalator-helm-do-grep-ag )
+    (:description "search files in project" :fn escalator-helm-projectile-find-file )
+    (:description "search files content in project" :fn escalator-helm-projectile-ag )
+    (:description "search in all buffers" :fn helm-multi-swoop-all)
+    (:description "search filenames in fs" :fn escalator-helm-find-root )
+    (:description "search file contents in fs" :fn escalator-helm-do-grep-ag-root )
+    (:description "search google" :fn escalator-helm-google-suggest ))
+  "Escalator helm commands.")
+</pre>
+</div>
+
+<p>
+As you noticed the search query stays when I switch search command. I
+needed to redefine helm commands with the <code>escalator-</code> prefix because
+these don't take the query as input.
+</p>
+
+<p>
+For instance, see how I defined <code>escalator-helm-find-files</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun escalator-helm-find-files (&amp;optional input)
+  (helm :sources 'helm-source-findutils
+        :input input
+        :buffer "*helm find*"
+        :ff-transformer-show-only-basename nil
+        :case-fold-search helm-file-name-case-fold-search))
+</pre>
+</div>
+
+<p>
+The original <code>helm-find-files</code> would not have the property <code>:input</code>,
+which defines the starting string query.
+</p>
+
+<p>
+You can add other helm commands yourself by adding an extra element to
+the <code>escalator-command-map</code>. I already added something like <code>helm-mu</code>
+and even <a href="https://github.com/Giedriusj1/helm-tree-sitter">helm-tree-sitter</a> before the <code>helm-google-suggest</code>, because it
+may make sense to query my emails as well before the Internet.
+</p>
+
+<p>
+The current work is published as a hack at: <a href="https://github.com/ag91/escalator">https://github.com/ag91/escalator</a>
+</p>
+
+<p>
+I guess my next step is to escalate searches automatically: if the
+command finishes without candidates, escalate to the next command. So
+I will get closer to that single search bar ideal situation!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org92a2a54" class="outline-2">
+<h2 id="org92a2a54">Conclusion</h2>
+<div class="outline-text-2" id="text-org92a2a54">
+<p>
+Think about integrating your favourite tools and abstract them away.
+The more you focus just on the problem you care about, the more
+effective you will be!
+</p>
+
+<p>
+Happy searching!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-01-29</span>
+        <span title="last modification date" class="post-info">2022-01-29</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
