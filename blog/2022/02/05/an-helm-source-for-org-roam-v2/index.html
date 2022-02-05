@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>An Helm source for Org Roam v2 - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="An Helm source for Org Roam v2" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>An Helm source for Org Roam v2</h1>
+
+<div id="outline-container-orgbc23879" class="outline-2">
+<h2 id="orgbc23879">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgbc23879">
+<p>
+How I wrote a Helm source for Org Roam.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org423a033" class="outline-2">
+<h2 id="org423a033">The problem</h2>
+<div class="outline-text-2" id="text-org423a033">
+<p>
+Org Roam is fantastic for my note taking. Still there is <a href="https://github.com/org-roam/org-roam/issues/2066">an ever
+returning bug</a> with Helm: all of a sudden the formatting of your
+completion buffer would change. This makes me aesthetically cringe.
+</p>
+
+<p>
+Since <a href="https://ag91.github.io/blog/2022/01/29/escalate-your-helm-searches/">I have been playing around with Helm lately</a>, I thought why not
+writing an Helm source for Org Roam? One with actions. And that fits
+perfectly with <a href="https://github.com/ag91/escalator">my little escalator mode</a>!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgc8b1023" class="outline-2">
+<h2 id="orgc8b1023">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgc8b1023">
+<p>
+It wasn't hard with the amazing community that Emacs pulled together.
+I started at peeking at <a href="https://github.com/SidharthArya/helm-org-roam">helm-org-roam</a>, which is a functioning source
+for Org Roam v1. Then through browsing I got to a
+<a href="https://kitchingroup.cheme.cmu.edu/blog/2015/11/21/Insert-org-entities-into-org-mode-with-helm/">nice post by John Kitchin</a>, which nudged me into understanding how to
+define Helm actions.
+</p>
+
+<p>
+Anyway I started small:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun helm-org-roam (&amp;optional input candidates)
+  (interactive)
+  (require 'org-roam)
+  (helm
+   :input input
+   :sources (list
+             (helm-build-sync-source "Roam: "
+               :must-match nil
+               :fuzzy-match t
+               :candidates (or candidates (org-roam--get-titles))
+               :action
+               '(("Find File" . (lambda (x)
+                                  (--&gt; x
+                                       org-roam-node-from-title-or-alias
+                                       (org-roam-node-visit it t))))
+                 )))))
+</pre>
+</div>
+
+<p>
+The candidate lists is the titles of my notes. The only action is to
+open a file. The code is copied from Org Roam, naturally.
+</p>
+
+<p>
+But then I thought, I may also want to insert a link. And so I added another action using Org Roam's API:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">("Insert link" . (lambda (x)
+                   (--&gt; x
+                        org-roam-node-from-title-or-alias
+                        (insert
+                         (format
+                          "[[id:%s][%s]]"
+                          (org-roam-node-id it)
+                          (org-roam-node-title it))))))
+</pre>
+</div>
+
+<p>
+That is pretty easy and smooth. Only thing, you need to use TAB to
+pick the right action (or use the F2 key). I still didn't learn how to
+assign keybindings for helm actions.
+</p>
+
+<p>
+It was at this point that I remembered <a href="https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations/">my useful function to navigate
+backlinks</a>. Knowing Helm, I believed I could make it extremely more
+compact as an action:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">("Follow backlinks" . (lambda (x)
+                                         (let ((candidates
+                                                (--&gt; x
+                                                     org-roam-node-from-title-or-alias
+                                                     org-roam-backlinks-get
+                                                     (--map
+                                                      (org-roam-node-title
+                                                       (org-roam-backlink-source-node it))
+                                                      it))))
+                                           (helm-org-roam nil (or candidates (list x))))))
+</pre>
+</div>
+
+<p>
+How cool is that? An huge improvement over my many lines function that
+needed to implement recursion. Helm is my recursion with
+<code>(helm-org-roam nil (or candidates (list x)))</code>, where I start it with
+a new list of candidates.
+</p>
+
+<p>
+The only bit missing at this point is to create a note, if it does not
+exist already. So I discovered that Helm allows multiple sources for a
+searcher and so I wrote my dummy source to create a note:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(helm-build-dummy-source
+                 "Create note"
+               :action '(("Capture note" . (lambda (candidate)
+                                             (org-roam-capture-
+                                              :node (org-roam-node-create :title candidate)
+                                              :props '(:finalize find-file))))))
+</pre>
+</div>
+
+<p>
+The result is beautiful! I finally can compose navigation (of
+backlinks), insertion and opening notes as I want: Helm is really
+powerful.
+</p>
+
+<p>
+I am now thinking about how to make <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> molds available to use as
+actions!
+</p>
+
+<p>
+The overall code is <a href="https://github.com/ag91/escalator/blob/dcfabb2/escalator.el#L137">in my escalator.el code</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8e84f02" class="outline-2">
+<h2 id="org8e84f02">Conclusion</h2>
+<div class="outline-text-2" id="text-org8e84f02">
+<p>
+Writing Helm searchers is simpler than I thought! And the modular
+actions mixed with recursion provide a powerful engine to search and
+act. If you are an Org Roam user, you may really like to try this
+version of <a href="https://github.com/ag91/escalator/blob/dcfabb2/escalator.el#L137">helm-org-roam</a>: load it and invoke it.
+</p>
+
+<p>
+Happy searching!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-02-05</span>
+        <span title="last modification date" class="post-info">2022-02-05</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
