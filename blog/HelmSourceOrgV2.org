@@ -1,0 +1,129 @@
+#+TITLE:       An Helm source for Org Roam v2
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-02-05 Sat
+#+URI:         /blog/%y/%m/%d/an-helm-source-for-org-roam-v2
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: An Helm source for Org Roam v2
+
+* Too long; didn't read
+
+How I wrote a Helm source for Org Roam.
+
+* The problem
+
+Org Roam is fantastic for my note taking. Still there is [[https://github.com/org-roam/org-roam/issues/2066][an ever
+returning bug]] with Helm: all of a sudden the formatting of your
+completion buffer would change. This makes me aesthetically cringe.
+
+Since [[https://ag91.github.io/blog/2022/01/29/escalate-your-helm-searches/][I have been playing around with Helm lately]], I thought why not
+writing an Helm source for Org Roam? One with actions. And that fits
+perfectly with [[https://github.com/ag91/escalator][my little escalator mode]]!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       8a75d764-374f-4351-8177-874f30af1bf9
+:END:
+
+It wasn't hard with the amazing community that Emacs pulled together.
+I started at peeking at [[https://github.com/SidharthArya/helm-org-roam][helm-org-roam]], which is a functioning source
+for Org Roam v1. Then through browsing I got to a
+[[https://kitchingroup.cheme.cmu.edu/blog/2015/11/21/Insert-org-entities-into-org-mode-with-helm/][nice post by John Kitchin]], which nudged me into understanding how to
+define Helm actions.
+
+Anyway I started small:
+
+#+begin_src elisp
+(defun helm-org-roam (&optional input candidates)
+  (interactive)
+  (require 'org-roam)
+  (helm
+   :input input
+   :sources (list
+             (helm-build-sync-source "Roam: "
+               :must-match nil
+               :fuzzy-match t
+               :candidates (or candidates (org-roam--get-titles))
+               :action
+               '(("Find File" . (lambda (x)
+                                  (--> x
+                                       org-roam-node-from-title-or-alias
+                                       (org-roam-node-visit it t))))
+                 )))))
+#+end_src
+
+The candidate lists is the titles of my notes. The only action is to
+open a file. The code is copied from Org Roam, naturally.
+
+But then I thought, I may also want to insert a link. And so I added another action using Org Roam's API:
+
+#+begin_src elisp
+("Insert link" . (lambda (x)
+                   (--> x
+                        org-roam-node-from-title-or-alias
+                        (insert
+                         (format
+                          "[[id:%s][%s]]"
+                          (org-roam-node-id it)
+                          (org-roam-node-title it))))))
+#+end_src
+
+That is pretty easy and smooth. Only thing, you need to use TAB to
+pick the right action (or use the F2 key). I still didn't learn how to
+assign keybindings for helm actions.
+
+It was at this point that I remembered [[https://ag91.github.io/blog/2021/03/12/find-org-roam-notes-via-their-relations/][my useful function to navigate
+backlinks]]. Knowing Helm, I believed I could make it extremely more
+compact as an action:
+
+#+begin_src elisp
+("Follow backlinks" . (lambda (x)
+                                         (let ((candidates
+                                                (--> x
+                                                     org-roam-node-from-title-or-alias
+                                                     org-roam-backlinks-get
+                                                     (--map
+                                                      (org-roam-node-title
+                                                       (org-roam-backlink-source-node it))
+                                                      it))))
+                                           (helm-org-roam nil (or candidates (list x))))))
+#+end_src
+
+How cool is that? An huge improvement over my many lines function that
+needed to implement recursion. Helm is my recursion with
+=(helm-org-roam nil (or candidates (list x)))=, where I start it with
+a new list of candidates.
+
+The only bit missing at this point is to create a note, if it does not
+exist already. So I discovered that Helm allows multiple sources for a
+searcher and so I wrote my dummy source to create a note:
+
+#+begin_src elisp
+(helm-build-dummy-source
+                 "Create note"
+               :action '(("Capture note" . (lambda (candidate)
+                                             (org-roam-capture-
+                                              :node (org-roam-node-create :title candidate)
+                                              :props '(:finalize find-file))))))
+#+end_src
+
+The result is beautiful! I finally can compose navigation (of
+backlinks), insertion and opening notes as I want: Helm is really
+powerful.
+
+I am now thinking about how to make [[https://github.com/ag91/moldable-emacs][moldable-emacs]] molds available to use as
+actions!
+
+The overall code is [[https://github.com/ag91/escalator/blob/dcfabb2/escalator.el#L137][in my escalator.el code]].
+
+* Conclusion
+
+Writing Helm searchers is simpler than I thought! And the modular
+actions mixed with recursion provide a powerful engine to search and
+act. If you are an Org Roam user, you may really like to try this
+version of [[https://github.com/ag91/escalator/blob/dcfabb2/escalator.el#L137][helm-org-roam]]: load it and invoke it.
+
+Happy searching!
