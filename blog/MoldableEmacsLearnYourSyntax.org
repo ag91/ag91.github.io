@@ -1,0 +1,99 @@
+#+TITLE:       Moldable Emacs: learning syntax from your editor!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-02-11 Fri
+#+URI:         /blog/%y/%m/%d/moldable-emacs-learning-syntax-from-your-editor
+#+KEYWORDS:    moldable-emacs
+#+TAGS:        moldable-emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Learning software and English syntax with Emacs
+
+* Too long; didn't read
+
+How [[https://github.com/ag91/moldable-emacs][moldable-emacs]] highlights and (tries to) explain syntax of
+code and English.
+
+* The problem
+
+If you read my blog, you must have tried to learn a language in your
+life. It is hard. I bet that even some syntax of your own native
+language can be arcane to you! For spoken languages you rely on
+teachers because rules be pretty ambiguous (take English past tenses
+as an example: verbs don't follow the same rule). But programming
+languages should not require a teacher. At least not for their syntax.
+Indeed, the computer itself needs a translator program that teaches it
+how to consume a language. It is funny that we don't use the same
+program to teach us that language as well!
+
+So I wondered: can moldable-emacs teach me syntax?
+
+* It is a problem indeed
+
+This is a focal point of my work on moldable-emacs. Following the
+steps of [[https://moldabledevelopment.com/][Moldable Development]], I want to make complex information easy
+to grok. Receiving support in understanding the syntax of a
+programming language is a first step. The second step is recognizing
+that an =if-else= block in a programming language is a pattern for
+choice. The most important bit is _pattern_.
+
+If moldable-emacs can highlight patterns to users and explain that to
+them, we open an interesting path. At the end of the day, isn't
+recursion a pattern as well? We can define the syntax needed to define
+a recursion pattern in code. So I imagine that we can go down the
+rabbit hole and describe complex patterns to our peers via molds! For
+example, a poem is full of patterns (as [[https://emacs.stackexchange.com/questions/911/is-there-an-emacs-mode-convenient-for-writing-poetry/9429#9429][poetry.el]] shows us!).
+
+Indeed, there are many steps in front of us, but first things first.
+
+* And there is a solution
+
+I will rely on [[https://github.com/tree-sitter/tree-sitter][tree-sitter]] and [[https://github.com/emorynlp/elit][elit]] for this demonstration.
+Tree-sitter parses programming languages with plug-and-play grammars,
+while elit parses natural language with machine learning. The lovely
+thing is that I could explain both syntax with the same code because
+my molds produce the same data format.
+
+Let me show how moldable-emacs can explain syntax.
+
+[[file:moldableEmacsLearnSyntax.mp4]]
+
+I have a piece of C code and I produce an Org Mode buffer that allows
+me to visualize the syntax used. Then I swap to a Java file and again
+I can do the same! Finally, I highlight a piece of text and you can
+see I get to a similar view, with nice syntax explanations!
+
+The English syntax has better description because the type of nodes
+are standard: Elit uses the Stanford notation of Natural Language
+Processing. I extracted the description (with a Playground mold) and
+used in my LearnSyntax mold. The idea is that if you define syntax,
+you should provide an explanation and examples. If you have those, the
+LearnSyntax mold can look beautiful.
+
+In the case of tree-sitter, the grammar developers don't use a common
+standard and the best fallback for now is to have an Org Mode link
+that browse for the type of node and the language used.
+
+All in all this is a powerful teaching tool. If you want to teach a
+programming language this can help your pupil (or yourself) visualize
+the syntax you are teaching.
+
+By the way, to run this mold you just need an =emacs-lisp= buffer with
+a list of plists looking like:
+
+#+begin_src elisp
+((:type my-type :begin 1 :end 2 :mode some-mode :buffer "my-buffer"))
+#+end_src
+
+This format makes it easy to define your own syntax types: you get the
+highlighting for free then! (Generalizing the nice looking syntax
+description is a TODO for next time!)
+
+* Conclusion
+
+Software can become self explaining. Even natural language can. We
+just have to refine our tools. Feel free to try this by installing
+[[https://github.com/ag91/moldable-emacs][moldable-emacs]] and running the "LearnSyntax" mold after another like
+"CodeAsTree".
+
+Happy learning!
