@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: learning syntax from your editor! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Learning software and English syntax with Emacs" />
+    <meta name="keywords" content="moldable-emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: learning syntax from your editor!</h1>
+
+<div id="outline-container-org8cda0f0" class="outline-2">
+<h2 id="org8cda0f0">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org8cda0f0">
+<p>
+How <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> highlights and (tries to) explain syntax of
+code and English.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5efab67" class="outline-2">
+<h2 id="org5efab67">The problem</h2>
+<div class="outline-text-2" id="text-org5efab67">
+<p>
+If you read my blog, you must have tried to learn a language in your
+life. It is hard. I bet that even some syntax of your own native
+language can be arcane to you! For spoken languages you rely on
+teachers because rules be pretty ambiguous (take English past tenses
+as an example: verbs don't follow the same rule). But programming
+languages should not require a teacher. At least not for their syntax.
+Indeed, the computer itself needs a translator program that teaches it
+how to consume a language. It is funny that we don't use the same
+program to teach us that language as well!
+</p>
+
+<p>
+So I wondered: can moldable-emacs teach me syntax?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb2937c3" class="outline-2">
+<h2 id="orgb2937c3">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgb2937c3">
+<p>
+This is a focal point of my work on moldable-emacs. Following the
+steps of <a href="https://moldabledevelopment.com/">Moldable Development</a>, I want to make complex information easy
+to grok. Receiving support in understanding the syntax of a
+programming language is a first step. The second step is recognizing
+that an <code>if-else</code> block in a programming language is a pattern for
+choice. The most important bit is <span class="underline">pattern</span>.
+</p>
+
+<p>
+If moldable-emacs can highlight patterns to users and explain that to
+them, we open an interesting path. At the end of the day, isn't
+recursion a pattern as well? We can define the syntax needed to define
+a recursion pattern in code. So I imagine that we can go down the
+rabbit hole and describe complex patterns to our peers via molds! For
+example, a poem is full of patterns (as <a href="https://emacs.stackexchange.com/questions/911/is-there-an-emacs-mode-convenient-for-writing-poetry/9429#9429">poetry.el</a> shows us!).
+</p>
+
+<p>
+Indeed, there are many steps in front of us, but first things first.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org92114d8" class="outline-2">
+<h2 id="org92114d8">And there is a solution</h2>
+<div class="outline-text-2" id="text-org92114d8">
+<p>
+I will rely on <a href="https://github.com/tree-sitter/tree-sitter">tree-sitter</a> and <a href="https://github.com/emorynlp/elit">elit</a> for this demonstration.
+Tree-sitter parses programming languages with plug-and-play grammars,
+while elit parses natural language with machine learning. The lovely
+thing is that I could explain both syntax with the same code because
+my molds produce the same data format.
+</p>
+
+<p>
+Let me show how moldable-emacs can explain syntax.
+</p>
+
+<p>
+<a href="/assets/blog/2022/02/11/moldable-emacs-learning-syntax-from-your-editor/moldableEmacsLearnSyntax.mp4">/assets/blog/2022/02/11/moldable-emacs-learning-syntax-from-your-editor/moldableEmacsLearnSyntax.mp4</a>
+</p>
+
+<p>
+I have a piece of C code and I produce an Org Mode buffer that allows
+me to visualize the syntax used. Then I swap to a Java file and again
+I can do the same! Finally, I highlight a piece of text and you can
+see I get to a similar view, with nice syntax explanations!
+</p>
+
+<p>
+The English syntax has better description because the type of nodes
+are standard: Elit uses the Stanford notation of Natural Language
+Processing. I extracted the description (with a Playground mold) and
+used in my LearnSyntax mold. The idea is that if you define syntax,
+you should provide an explanation and examples. If you have those, the
+LearnSyntax mold can look beautiful.
+</p>
+
+<p>
+In the case of tree-sitter, the grammar developers don't use a common
+standard and the best fallback for now is to have an Org Mode link
+that browse for the type of node and the language used.
+</p>
+
+<p>
+All in all this is a powerful teaching tool. If you want to teach a
+programming language this can help your pupil (or yourself) visualize
+the syntax you are teaching.
+</p>
+
+<p>
+By the way, to run this mold you just need an <code>emacs-lisp</code> buffer with
+a list of plists looking like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">((:type my-type :begin 1 :end 2 :mode some-mode :buffer "my-buffer"))
+</pre>
+</div>
+
+<p>
+This format makes it easy to define your own syntax types: you get the
+highlighting for free then! (Generalizing the nice looking syntax
+description is a TODO for next time!)
+</p>
+</div>
+</div>
+
+<div id="outline-container-org41bb127" class="outline-2">
+<h2 id="org41bb127">Conclusion</h2>
+<div class="outline-text-2" id="text-org41bb127">
+<p>
+Software can become self explaining. Even natural language can. We
+just have to refine our tools. Feel free to try this by installing
+<a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> and running the "LearnSyntax" mold after another like
+"CodeAsTree".
+</p>
+
+<p>
+Happy learning!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-02-11</span>
+        <span title="last modification date" class="post-info">2022-02-11</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
