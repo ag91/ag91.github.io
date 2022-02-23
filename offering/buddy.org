@@ -1,0 +1,44 @@
+#+TITLE:       Would you like an Emacs buddy? I can help!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-02-23 Wed
+#+URI:         /blog/%y/%m/%d/would-you-like-an-emacs-buddy-i-can-help
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: My ideas about an Emacs buddy initiative
+
+Learning Emacs by yourself can be difficult. I think it is too much of
+a great tool to not make others enjoy it too! And would be better to
+lower the barriers to entry.
+
+[[https://www.reddit.com/r/emacs/comments/sviw6n/getting_started_with_emacs_is_really_hard/hxg81lf/][I propose an Emacs buddy mentoring]]. By that I mean somebody more
+experienced with Emacs who you can ask for support when you are
+struggling. Or even better when you look for inspiration on how to get
+more out of your editor. I imagine a buddy chat to be more personal
+than what you get in a forum.
+
+If you want to try, please get in touch [[mailto:andrea-dev@hotmail.com][here]]. Just write a line about
+you and we can get going from there.
+
+On how I would run things: in my own mentoring I enjoyed going with
+mostly email conversations and sporadic video-calls when they feel
+right.
+
+If you instead expect frequent support from your buddy (thinking
+weekly calls or the like), that is okay too but expect also to be
+asked for a donation to compensate the scheduled time.
+
+Another thing to mention is that I don't expect the buddy to write
+Emacs extensions for you: that is the fun of your journey towards
+Emacs enlightenment. If you really would wish me to work on the Emacs
+extension you dreamt about, I would be happy to help with that but I
+would consider it a software project and again I would negotiate a
+compensation as a professional (not anymore as a buddy). That is fun
+too but a bit different.
+
+I just came up with these ideas and probably they require refinement,
+so please share your thoughts if you are interested.
+
+Happy enlightenment!
