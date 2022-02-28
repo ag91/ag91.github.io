@@ -1,0 +1,23 @@
+#+TITLE:       Repository to find your Emacs buddy
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-02-28 Mon
+#+URI:         /blog/%y/%m/%d/repository-to-find-your-emacs-buddy
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Just an announcement that I made a repo to keep track of Emacs buddies available to help
+
+So, this is just a mini announcement and a little of status report about the Emacs Buddy initiative.
+
+The announcement: I have created a repository to add people that wish to be buddies to other Emacs users
+
+https://github.com/ag91/emacs-buddy
+
+The status report: 3 people got in touch so far and they are all nice!
+We exchanged just a few mails and I think I know a thing or two that
+can help them. And it was a great surprise that Justin got in touch to
+offer himself as a buddy! That is why I made the repository in the
+weekend: I didn't prepare for that. A great surprise!
+
