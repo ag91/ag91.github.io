@@ -1,0 +1,57 @@
+#+TITLE:       Set all incoming emails as read with Mu4e
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-02-28 Mon
+#+URI:         /blog/%y/%m/%d/set-all-incoming-emails-as-read-with-mu4e
+#+KEYWORDS:    emacs, mu4e
+#+TAGS:        emacs, mu4e
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A little hack to set all unread emails as read
+
+Last week I decided to make my Org Agenda even more my Emacs control
+room: now my emails appear directly as tasks in my agenda.
+
+I already wrote about this [[https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/][in an older blog]], where I make Slack
+messages appear in my agenda. The idea is that this decreases
+distraction and helps me manage my async chats better. I just repeated
+the same for emails, and I plan to share how you can do that in
+another blog.
+
+Here I want to share a little [[https://github.com/djcb/mu/tree/master/mu4e][Mu4e]] (my Emacs email client) trick: how
+to make all unread emails read using a single command. The reason I
+need this is that some mails are just noise and I need to discard them
+without opening them. When I mark them as DONE in the Org Agenda, they
+stay unread though! That is why I nead a "cleanup" functions that sets
+them all as read.
+
+Anyway, if you ever need a similar bulk execution, this is the code:
+
+#+begin_src elisp
+(defun my/emails-set-all-as-read ()
+  "Make all emails read."
+  (interactive)
+  (require 'mu4e-contrib)
+  (with-temp-buffer
+    (mu4e-headers-search-bookmark "flag:unread AND NOT flag:trashed")
+    (sleep-for 0.15)
+    (mu4e-headers-mark-all-unread-read)
+    (mu4e-mark-execute-all 'no-confirmation)))
+#+end_src
+
+I mostly found out how via this issue:
+https://github.com/djcb/mu/issues/128
+
+Through that I discovered you can already mark all mails as unread,
+using =mu4e-headers-mark-all-unread-read=, which lives in the
+=mu4e-contrib= file. This function works in the header view (the
+buffer where emails are shown in Mu4e), so the search-bookmark and the
+sleep-for are to get there. =mu4e-mark-execute-all= is what executes
+the marking for us.
+
+You can adapt this to something useful to you by changing
+="flag:unread AND NOT flag:trashed"= which is the =mu= expression to
+filter emails and the marking you need (you can mark emails for other
+things, like thrashing).
+
+That's it, just a tiny bit of Elisp to save some time.
