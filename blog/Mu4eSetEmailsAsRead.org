@@ -12,11 +12,10 @@
 Last week I decided to make my Org Agenda even more my Emacs control
 room: now my emails appear directly as tasks in my agenda.
 
-I already wrote about this [[https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/][in an older blog]], where I make Slack
-messages appear in my agenda. The idea is that this decreases
-distraction and helps me manage my async chats better. I just repeated
-the same for emails, and I plan to share how you can do that in
-another blog.
+I already wrote about this [[https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/][in an older blog]], where I do the same for
+Slack messages. The idea is that this decreases distraction and helps
+me feel in control of my async chats. I just repeated the same for
+emails, and I plan to share how you can do that in another blog.
 
 Here I want to share a little [[https://github.com/djcb/mu/tree/master/mu4e][Mu4e]] (my Emacs email client) trick: how
 to make all unread emails read using a single command. The reason I
@@ -39,19 +38,21 @@ Anyway, if you ever need a similar bulk execution, this is the code:
     (mu4e-mark-execute-all 'no-confirmation)))
 #+end_src
 
-I mostly found out how via this issue:
+I mostly found out how to do that via this issue:
 https://github.com/djcb/mu/issues/128
 
-Through that I discovered you can already mark all mails as unread,
-using =mu4e-headers-mark-all-unread-read=, which lives in the
-=mu4e-contrib= file. This function works in the header view (the
-buffer where emails are shown in Mu4e), so the search-bookmark and the
-sleep-for are to get there. =mu4e-mark-execute-all= is what executes
-the marking for us.
+Through that I discovered you can already mark all unread mails as
+read, by using =mu4e-headers-mark-all-unread-read= (that function
+belongs to the =mu4e-contrib= file). That works only within the header
+view (the buffer where emails are shown in Mu4e), so the
+=search-bookmark= and the =sleep-for= are to get there.
+=mu4e-mark-execute-all= is what executes the marking for us.
 
 You can adapt this to something useful to you by changing
 ="flag:unread AND NOT flag:trashed"= which is the =mu= expression to
-filter emails and the marking you need (you can mark emails for other
-things, like thrashing).
+filter for unread emails and the marking you need (you can mark emails
+for other things, like thrashing).
 
-That's it, just a tiny bit of Elisp to save some time.
+That's it, just a tiny bit of Elisp to save some of (my) time.
+
+Happy emailing!
