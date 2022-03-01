@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Set all incoming emails as read with Mu4e - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A little hack to set all unread emails as read" />
+    <meta name="keywords" content="emacs, mu4e" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Set all incoming emails as read with Mu4e</h1>
+<p>
+Last week I decided to make my Org Agenda even more my Emacs control
+room: now my emails appear directly as tasks in my agenda.
+</p>
+
+<p>
+I already wrote about this <a href="https://ag91.github.io/blog/2020/08/14/slack-messages-in-your-org-agenda/">in an older blog</a>, where I do the same for
+Slack messages. The idea is that this decreases distraction and helps
+me feel in control of my async chats. I just repeated the same for
+emails, and I plan to share how you can do that in another blog.
+</p>
+
+<p>
+Here I want to share a little <a href="https://github.com/djcb/mu/tree/master/mu4e">Mu4e</a> (my Emacs email client) trick: how
+to make all unread emails read using a single command. The reason I
+need this is that some mails are just noise and I need to discard them
+without opening them. When I mark them as DONE in the Org Agenda, they
+stay unread though! That is why I nead a "cleanup" functions that sets
+them all as read.
+</p>
+
+<p>
+Anyway, if you ever need a similar bulk execution, this is the code:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/emails-set-all-as-read ()
+  "Make all emails read."
+  (interactive)
+  (require 'mu4e-contrib)
+  (with-temp-buffer
+    (mu4e-headers-search-bookmark "flag:unread AND NOT flag:trashed")
+    (sleep-for 0.15)
+    (mu4e-headers-mark-all-unread-read)
+    (mu4e-mark-execute-all 'no-confirmation)))
+</pre>
+</div>
+
+<p>
+I mostly found out how to do that via this issue:
+<a href="https://github.com/djcb/mu/issues/128">https://github.com/djcb/mu/issues/128</a>
+</p>
+
+<p>
+Through that I discovered you can already mark all unread mails as
+read, by using <code>mu4e-headers-mark-all-unread-read</code> (that function
+belongs to the <code>mu4e-contrib</code> file). That works only within the header
+view (the buffer where emails are shown in Mu4e), so the
+<code>search-bookmark</code> and the <code>sleep-for</code> are to get there.
+<code>mu4e-mark-execute-all</code> is what executes the marking for us.
+</p>
+
+<p>
+You can adapt this to something useful to you by changing
+<code>"flag:unread AND NOT flag:trashed"</code> which is the <code>mu</code> expression to
+filter for unread emails and the marking you need (you can mark emails
+for other things, like thrashing).
+</p>
+
+<p>
+That's it, just a tiny bit of Elisp to save some of (my) time.
+</p>
+
+<p>
+Happy emailing!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-02-28</span>
+        <span title="last modification date" class="post-info">2022-03-01</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/mu4e/">mu4e</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
