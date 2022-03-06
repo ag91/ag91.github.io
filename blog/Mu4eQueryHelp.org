@@ -1,0 +1,66 @@
+#+TITLE:       Mu4e: jump to manual to get help in writing queries
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-03-06 Sun
+#+URI:         /blog/%y/%m/%d/mu4e-jump-to-manual-to-get-help-in-writing-queries
+#+KEYWORDS:    emacs, mu4e
+#+TAGS:        emacs, mu4e
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A little hack to get support in writing Mu queries
+
+This is a mini blog. I use the amazing [[https://www.djcbsoftware.nl/code/mu/mu4e/index.html#SEC_Contents][Mu4e]] to manage my emails from
+Emacs. Sometimes I struggle querying them though! Often I want to
+filter dates in between dates and I forget how to define that
+predicate in the Mu query language.
+
+This has become boring now that I have shortened my feedback loop by
+using [[https://github.com/emacs-helm/helm-mu][helm-mu]]: Helm updates the result of my query in real time, so if
+it is broken, I feel the pain of my error!
+
+Naturally =mu= has an explanation of the query language in the manual
+(and there is also a [[https://www.djcbsoftware.nl/code/mu/mu4e/Queries.html][nice blog about that]]). So I decided to change my
+setup to add a shortcut to get to the manpage when I need to:
+
+#+begin_src elisp
+(defun my/mu4e-queries-help ()
+    (interactive)
+    (split-window-vertically)
+    (woman "mu-query")
+    (search-forward "FIELDS
+"))
+#+end_src
+
+After binding this to a keybinding, I can access the Mu manual on the fly.
+
+That does not work well with helm-mu though. To fix that I redefined
+the source in my configuration:
+
+#+begin_src elisp
+(let ((system-package
+       (when (eq system-type 'darwin)
+         '(wn . "brew install gnu-sed --with-default-names"))))
+  (eval `(use-package helm-mu
+           :ensure-system-package ,system-package
+           :config
+           (setq helm-source-mu
+                 (helm-build-async-source "Search email with mu"
+                   :candidates-process #'helm-mu-init
+                   :candidate-transformer
+                   '(helm-mu-candidate-parser helm-mu-candidates-formatter)
+                   :multimatch nil
+                   :nohighlight t
+                   :requires-pattern 3
+                   :persistent-action #'helm-mu-persistent-action
+                   :help-message (concat "* Mu Manual\n\n" (let ((buf (current-buffer)) ; adding some help I can access with C-h m when in the Helm session
+                                                                 (_ (woman "mu-query"))
+                                                                 (contents (buffer-string)))
+                                                             (switch-to-buffer buf)
+                                                             contents))
+                   :action '(("Display message in mu4e" . helm-mu-display-email)))))))
+#+end_src
+
+That lets me read the manual without losing my Helm session with the
+keys =C-h m=.
+
+Happy querying!
