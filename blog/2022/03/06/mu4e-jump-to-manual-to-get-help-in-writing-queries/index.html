@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Mu4e: jump to manual to get help in writing queries - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A little hack to get support in writing Mu queries" />
+    <meta name="keywords" content="emacs, mu4e" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Mu4e: jump to manual to get help in writing queries</h1>
+<p>
+This is a mini blog. I use the amazing <a href="https://www.djcbsoftware.nl/code/mu/mu4e/index.html#SEC_Contents">Mu4e</a> to manage my emails from
+Emacs. Sometimes I struggle querying them though! Often I want to
+filter dates in between dates and I forget how to define that
+predicate in the Mu query language.
+</p>
+
+<p>
+This has become boring now that I have shortened my feedback loop by
+using <a href="https://github.com/emacs-helm/helm-mu">helm-mu</a>: Helm updates the result of my query in real time, so if
+it is broken, I feel the pain of my error!
+</p>
+
+<p>
+Naturally <code>mu</code> has an explanation of the query language in the manual
+(and there is also a <a href="https://www.djcbsoftware.nl/code/mu/mu4e/Queries.html">nice blog about that</a>). So I decided to change my
+setup to add a shortcut to get to the manpage when I need to:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/mu4e-queries-help ()
+    (interactive)
+    (split-window-vertically)
+    (woman "mu-query")
+    (search-forward "FIELDS
+"))
+</pre>
+</div>
+
+<p>
+After binding this to a keybinding, I can access the Mu manual on the fly.
+</p>
+
+<p>
+That does not work well with helm-mu though. To fix that I redefined
+the source in my configuration:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(let ((system-package
+       (when (eq system-type 'darwin)
+         '(wn . "brew install gnu-sed --with-default-names"))))
+  (eval `(use-package helm-mu
+           :ensure-system-package ,system-package
+           :config
+           (setq helm-source-mu
+                 (helm-build-async-source "Search email with mu"
+                   :candidates-process #'helm-mu-init
+                   :candidate-transformer
+                   '(helm-mu-candidate-parser helm-mu-candidates-formatter)
+                   :multimatch nil
+                   :nohighlight t
+                   :requires-pattern 3
+                   :persistent-action #'helm-mu-persistent-action
+                   :help-message (concat "* Mu Manual\n\n" (let ((buf (current-buffer)) ; adding some help I can access with C-h m when in the Helm session
+                                                                 (_ (woman "mu-query"))
+                                                                 (contents (buffer-string)))
+                                                             (switch-to-buffer buf)
+                                                             contents))
+                   :action '(("Display message in mu4e" . helm-mu-display-email)))))))
+</pre>
+</div>
+
+<p>
+That lets me read the manual without losing my Helm session with the
+keys <code>C-h m</code>.
+</p>
+
+<p>
+Happy querying!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-03-06</span>
+        <span title="last modification date" class="post-info">2022-03-06</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/mu4e/">mu4e</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

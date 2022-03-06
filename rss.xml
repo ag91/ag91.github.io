@@ -4,21 +4,28 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 01 Mar 2022 18:45:48 GMT</pubDate>
-    <lastBuildDate>Tue, 01 Mar 2022 18:45:48 GMT</lastBuildDate>
+    <pubDate>Sun, 06 Mar 2022 18:58:42 GMT</pubDate>
+    <lastBuildDate>Sun, 06 Mar 2022 18:58:42 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Mu4e: jump to manual to get help in writing queries</title>
+      <link>http://ag91.github.io/blog/2022/03/06/mu4e-jump-to-manual-to-get-help-in-writing-queries</link>
+      <description><![CDATA[A little hack to get support in writing Mu queries]]></description>
+      <pubDate>2022-03-06</pubDate>
+      <guid>http://ag91.github.io/blog/2022/03/06/mu4e-jump-to-manual-to-get-help-in-writing-queries</guid>
+    </item>
+    <item>
       <title>Repository to find your Emacs buddy</title>
       <link>http://ag91.github.io/blog/2022/02/28/repository-to-find-your-emacs-buddy</link>
-      <description><![CDATA[Just an announcement that I made a repo to keep track of Emacs buddies available to help]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-03-01</pubDate>
       <guid>http://ag91.github.io/blog/2022/02/28/repository-to-find-your-emacs-buddy</guid>
     </item>
     <item>
       <title>Set all incoming emails as read with Mu4e</title>
       <link>http://ag91.github.io/blog/2022/02/28/set-all-incoming-emails-as-read-with-mu4e</link>
-      <description><![CDATA[A little hack to set all unread emails as read]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-03-01</pubDate>
       <guid>http://ag91.github.io/blog/2022/02/28/set-all-incoming-emails-as-read-with-mu4e</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-01-16</pubDate>
       <guid>http://ag91.github.io/blog/2022/01/16/moldable-emacs-translate-string-at-point-in-multiple-languages</guid>
-    </item>
-    <item>
-      <title>How to count your Org Agenda tags</title>
-      <link>http://ag91.github.io/blog/2022/01/03/how-to-count-your-org-agenda-tags</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-01-10</pubDate>
-      <guid>http://ag91.github.io/blog/2022/01/03/how-to-count-your-org-agenda-tags</guid>
     </item>
   </channel>
 </rss>
