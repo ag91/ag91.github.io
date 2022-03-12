@@ -1,0 +1,65 @@
+#+TITLE:       Org Agenda: keep the buffer order untouched after saving all modified org buffers
+
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-03-12 Sat
+#+URI:         /blog/%y/%m/%d/org-agenda-keep-the-buffer-order-untouched-after-saving-all-modified-org-buffers
+#+KEYWORDS:    emacs, org-mode
+#+TAGS:        emacs, org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A little hack to keep buffer order consistent after saving all org buffers
+
+I am managing emails from my Org Agenda. This implies that I save more
+often buffers from there. In the Org Agenda buffer the =s= key is
+bound to =org-save-all-org-buffers=, which quickly saves all modified
+Org buffers.
+
+A side effect of saving buffers is that the order of buffers changes.
+Say you have this order of buffers (tip: you can use the Elisp
+function =(buffer-list)= to get it):
+
+#+begin_src text
+test.el        
+agenda.org
+#+end_src
+
+And you call =org-save-all-org-buffers=, then the order changes to
+
+#+begin_src text
+agenda.org
+test.el        
+#+end_src
+
+because there was a visit to the Org file for saving.
+
+This is a problem for me because while I am working, I get my buffer
+order messed up and I get distracted.
+
+The fix is an advice:
+
+#+begin_src elisp
+(defun ag/reorder-buffer-list (new-list)
+  "https://www.gnu.org/software/emacs/manual/html_node/elisp/Buffer-List.html"
+  (while new-list
+    (bury-buffer (car new-list))
+    (setq new-list (cdr new-list))))
+
+(defun ag/keep-buffer-list-unaltered (orig-fun &rest args)
+  (let ((buffers (buffer-list))
+        (result (apply orig-fun args)))
+    (reorder-buffer-list buffers)
+    result))
+
+(advice-add 'org-save-all-org-buffers :around #'ag/keep-buffer-list-unaltered)
+#+end_src
+
+The =ag/reorder-buffer-list= function orders buffers by exploiting
+=bury-buffer= side effect to push the buried buffer at the end of the
+list. The =ag/keep-buffer-list-unaltered= stores the buffers order
+before saving buffers and reorder buffers after saving (i.e.,
+=orig-fun=).
+
+Finally a little advice =:around= our =org-save-all-org-buffers= saves the day!
+
+Happy saving!
