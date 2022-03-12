@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 06 Mar 2022 18:58:42 GMT</pubDate>
-    <lastBuildDate>Sun, 06 Mar 2022 18:58:42 GMT</lastBuildDate>
+    <pubDate>Sat, 12 Mar 2022 00:11:40 GMT</pubDate>
+    <lastBuildDate>Sat, 12 Mar 2022 00:11:40 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Org Agenda: keep the buffer order untouched after saving all modified org buffers</title>
+      <link>http://ag91.github.io/blog/2022/03/12/org-agenda-keep-the-buffer-order-untouched-after-saving-all-modified-org-buffers</link>
+      <description><![CDATA[A little hack to keep buffer order consistent after saving all org buffers]]></description>
+      <pubDate>2022-03-12</pubDate>
+      <guid>http://ag91.github.io/blog/2022/03/12/org-agenda-keep-the-buffer-order-untouched-after-saving-all-modified-org-buffers</guid>
+    </item>
+    <item>
       <title>Mu4e: jump to manual to get help in writing queries</title>
       <link>http://ag91.github.io/blog/2022/03/06/mu4e-jump-to-manual-to-get-help-in-writing-queries</link>
-      <description><![CDATA[A little hack to get support in writing Mu queries]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-03-06</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/06/mu4e-jump-to-manual-to-get-help-in-writing-queries</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-01-21</pubDate>
       <guid>http://ag91.github.io/blog/2022/01/21/moldable-emacs-query-your-org-roam-notes-by-tag</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: translate string at point in multiple languages!</title>
-      <link>http://ag91.github.io/blog/2022/01/16/moldable-emacs-translate-string-at-point-in-multiple-languages</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-01-16</pubDate>
-      <guid>http://ag91.github.io/blog/2022/01/16/moldable-emacs-translate-string-at-point-in-multiple-languages</guid>
     </item>
   </channel>
 </rss>
