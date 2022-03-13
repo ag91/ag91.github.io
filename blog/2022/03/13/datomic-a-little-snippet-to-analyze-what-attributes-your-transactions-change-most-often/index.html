@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Datomic: a little snippet to analyze what attributes your transactions change most often - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to find the attributes that have changed most often in Datomic" />
+    <meta name="keywords" content="clojure" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Datomic: a little snippet to analyze what attributes your transactions change most often</h1>
+
+<div id="outline-container-org6609fde" class="outline-2">
+<h2 id="org6609fde">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org6609fde">
+<p>
+Use Datomic's log index to find out which attributes have been
+transacted most often.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge53cf24" class="outline-2">
+<h2 id="orge53cf24">The problem</h2>
+<div class="outline-text-2" id="text-orge53cf24">
+<p>
+I picked an interesting task at work. We use <a href="https://www.datomic.com/">Datomic</a> as our main
+database. It is one of a kind among databases: you use a Prolog like
+syntax to query it and it is very powerful even if fundamentally based
+on tuples. Anyway, I am still pretty new to it and my task was to
+review its performance.
+</p>
+
+<p>
+The bottleneck of Datomic is its transactor: a piece of software
+dedicated to persist data. If you <code>transact</code> too often, the writes
+have to queue, slowing down your response time.
+</p>
+
+<p>
+So our team question: are we using wisely our transactor? In more
+useful terms, I wanted to discover the group of Datomic attributes
+that our transactions changed most often. Knowing those groups of
+attributes, I will be able to find the bits of code that cause extra
+writes and look for ways to improve user experience.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcfd9ec2" class="outline-2">
+<h2 id="orgcfd9ec2">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgcfd9ec2">
+<p>
+Luckily the power of Clojure and Datomic API made this a simple task
+to solve. All you need is to use Datomic's log API. This API access
+the Log index of Datomic, which list all transactions the transactor
+worked on (for a useful article about Datomic internals see
+<a href="https://tonsky.me/blog/unofficial-guide-to-datomic-internals/">https://tonsky.me/blog/unofficial-guide-to-datomic-internals/</a>).
+</p>
+
+<p>
+The API offers a <a href="https://docs.datomic.com/cloud/time/log.html">tx-range function</a> that returns all the transactions
+happened between two instants. When you have a transaction, you can
+retrieve the attributes it transacted. If you extract a list of those,
+then you can calculate a distribution with the built-in <a href="https://clojuredocs.org/clojure.core/frequencies">Clojure
+function frequencies</a>.
+</p>
+
+<p>
+This is the snippet I used:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">; after requiring datomic.api as d
+(let [conn (d/connect "some-datomic-url")
+      get-attribute-name (fn [x]
+                           (-&gt;&gt; x
+                                :a
+                                (d/ident (d/db conn))))]
+  (-&gt;&gt; (d/tx-range (d/log conn) #inst"2022-03-03" #inst"2022-03-04")
+       (map #(-&gt;&gt; %
+                  :data
+                  (map get-attribute-name)))
+       frequencies
+       (sort-by (comp - second))))
+</pre>
+</div>
+
+<p>
+The <code>d/ident</code> is necessary to make a transaction attribute readable:
+in the transaction's field <code>:data</code> the attribute is kept as an
+identifying integer, while its corresponding keyword is what I needed
+(to search our codebase).
+</p>
+
+<p>
+Also note that I sort the frequencies in descending order, so that I
+can see the most transacted (and problematic) groups first.
+</p>
+
+<p>
+Using Emacs and the fantastic <a href="https://github.com/clojure-emacs/cider">Cider</a>, I can just run <code>cider-inspect</code> at
+the end of that snippet (given I have a cider session running in that
+buffer) and inspect its result (after a little bit of waiting).
+</p>
+
+<p>
+What you would see in Cider looks like the following (in cider I can
+click on text to inspect things further).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">Class: clojure.lang.ArraySeq
+Contents: 
+  0. ( :db/txInstant :dlog.checkpoint/tx-t :dlog.checkpoint/tx-t :tx/system ) 259685
+  1. ( :db/txInstant :attribute1 :attribute2 ) 69322
+  2. ( :db/txInstant :some-attribute1 :some-attribute2 :some-attribute3 ... ) 59239
+  3. ( :db/txInstant :some-other-attribute ) 41077
+  ...
+  Page size: 32, showing page: 1 of 33
+
+</pre>
+</div>
+
+<p>
+In the original of this (highly-edited) example, I discovered that the
+<code>some-other-attribute</code> should not have been updated so often! A simple
+analysis like this, allows to significantly improve Datomic
+performance and so improve latency for users.
+</p>
+
+<p>
+That's it! Simple no?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga87162a" class="outline-2">
+<h2 id="orga87162a">Conclusion</h2>
+<div class="outline-text-2" id="text-orga87162a">
+<p>
+So after all your querying Datomic, keep an eye on its performance!
+You can query the Log API to discover the transactor's update patterns
+and improve your code.
+</p>
+
+<p>
+Happy analysing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-03-13</span>
+        <span title="last modification date" class="post-info">2022-03-13</span>
+        <span title="tags" class="post-info"><a href="/tags/clojure/">clojure</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
