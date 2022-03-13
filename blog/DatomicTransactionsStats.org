@@ -1,0 +1,106 @@
+#+TITLE:       Datomic: a little snippet to analyze what attributes your transactions change most often
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-03-13 Sun
+#+URI:         /blog/%y/%m/%d/datomic-a-little-snippet-to-analyze-what-attributes-your-transactions-change-most-often
+#+KEYWORDS:    clojure
+#+TAGS:        clojure
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to find the attributes that have changed most often in Datomic
+
+* Too long; didn't read
+
+Use Datomic's log index to find out which attributes have been
+transacted most often.
+
+* The problem
+
+I picked an interesting task at work. We use [[https://www.datomic.com/][Datomic]] as our main
+database. It is one of a kind among databases: you use a Prolog like
+syntax to query it and it is very powerful even if fundamentally based
+on tuples. Anyway, I am still pretty new to it and my task was to
+review its performance.
+
+The bottleneck of Datomic is its transactor: a piece of software
+dedicated to persist data. If you =transact= too often, the writes
+have to queue, slowing down your response time.
+
+So our team question: are we using wisely our transactor? In more
+useful terms, I wanted to discover the group of Datomic attributes
+that our transactions changed most often. Knowing those groups of
+attributes, I will be able to find the bits of code that cause extra
+writes and look for ways to improve user experience.
+
+* And there is a solution
+
+Luckily the power of Clojure and Datomic API made this a simple task
+to solve. All you need is to use Datomic's log API. This API access
+the Log index of Datomic, which list all transactions the transactor
+worked on (for a useful article about Datomic internals see
+https://tonsky.me/blog/unofficial-guide-to-datomic-internals/).
+
+The API offers a [[https://docs.datomic.com/cloud/time/log.html][tx-range function]] that returns all the transactions
+happened between two instants. When you have a transaction, you can
+retrieve the attributes it transacted. If you extract a list of those,
+then you can calculate a distribution with the built-in [[https://clojuredocs.org/clojure.core/frequencies][Clojure
+function frequencies]].
+
+This is the snippet I used:
+
+#+begin_src clojure
+; after requiring datomic.api as d
+(let [conn (d/connect "some-datomic-url")
+      get-attribute-name (fn [x]
+                           (->> x
+                                :a
+                                (d/ident (d/db conn))))]
+  (->> (d/tx-range (d/log conn) #inst"2022-03-03" #inst"2022-03-04")
+       (map #(->> %
+                  :data
+                  (map get-attribute-name)))
+       frequencies
+       (sort-by (comp - second))))
+#+end_src
+
+The =d/ident= is necessary to make a transaction attribute readable:
+in the transaction's field =:data= the attribute is kept as an
+identifying integer, while its corresponding keyword is what I needed
+(to search our codebase).
+
+Also note that I sort the frequencies in descending order, so that I
+can see the most transacted (and problematic) groups first.
+
+Using Emacs and the fantastic [[https://github.com/clojure-emacs/cider][Cider]], I can just run =cider-inspect= at
+the end of that snippet (given I have a cider session running in that
+buffer) and inspect its result (after a little bit of waiting).
+
+What you would see in Cider looks like the following (in cider I can
+click on text to inspect things further).
+
+#+begin_src text 
+Class: clojure.lang.ArraySeq
+Contents: 
+  0. ( :db/txInstant :dlog.checkpoint/tx-t :dlog.checkpoint/tx-t :tx/system ) 259685
+  1. ( :db/txInstant :attribute1 :attribute2 ) 69322
+  2. ( :db/txInstant :some-attribute1 :some-attribute2 :some-attribute3 ... ) 59239
+  3. ( :db/txInstant :some-other-attribute ) 41077
+  ...
+  Page size: 32, showing page: 1 of 33
+
+#+end_src
+
+In the original of this (highly-edited) example, I discovered that the
+=some-other-attribute= should not have been updated so often! A simple
+analysis like this, allows to significantly improve Datomic
+performance and so improve latency for users.
+
+That's it! Simple no?
+
+* Conclusion
+
+So after all your querying Datomic, keep an eye on its performance!
+You can query the Log API to discover the transactor's update patterns
+and improve your code.
+
+Happy analysing!
