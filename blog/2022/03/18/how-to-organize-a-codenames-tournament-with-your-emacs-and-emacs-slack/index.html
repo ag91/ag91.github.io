@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>How to organize a CodeNames tournament with your Emacs and emacs-slack - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Emacs, emacs-slack and a CodeNames tournament" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>How to organize a CodeNames tournament with your Emacs and emacs-slack</h1>
+<div id="outline-container-orgf025028" class="outline-2">
+<h2 id="orgf025028">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgf025028">
+<p>
+I partition Slack users via emacs-slack to form teams for the online
+game CodeNames.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org864c09d" class="outline-2">
+<h2 id="org864c09d">The problem</h2>
+<div class="outline-text-2" id="text-org864c09d">
+<p>
+I joined into an effort to make the remote-first company I work for
+more social. A friend initiated me to <a href="https://codenames.game/">CodeNames</a>, a nice little game in
+which you have to guess words following a clue of your teammate (<a href="https://www.youtube.com/watch?v=zQVHkl8oQEU">rules
+here</a>). So I proposed to my colleagues to have a tournament! People
+liked the idea and so I started organizing it.
+</p>
+
+<p>
+So I asked myself: how can I do that with Emacs?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfe17033" class="outline-2">
+<h2 id="orgfe17033">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgfe17033">
+<p>
+After some thought I came up with these todos:
+</p>
+
+<ol class="org-ol">
+<li>find all my colleagues names</li>
+<li>partition them in teams of two</li>
+<li>produce a nice little tournament bracket graph to make things look professional</li>
+</ol>
+
+<p>
+I could achieve the first two points within Emacs! For the last I
+hoped to do it via Graphviz, but an online solution was just easier.
+</p>
+
+<p>
+Anyway, the first bit is easy: <a href="https://github.com/yuya373/emacs-slack">emacs-slack</a>! Being a remote-first
+company, we use a chat tool. Luckily emacs-slack opens the Slack API
+to Emacs. So, given a configured emacs-slack, gathering my colleagues
+names is easy:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq my/teammates (slack-team-users slack-current-team))
+</pre>
+</div>
+
+<p>
+That's it! With this snippet you have all the users in your team.
+</p>
+
+<p>
+Now if we want to form some teams, we need some cool names:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq my/team-names '(
+                            "Nacho Kings"
+                            "McPerfect"
+                            "Crypto fries"
+                            "The Potato Sacks"
+                            "Tequila on Oats"
+                            "Corny Corn Dogs"
+                            "The Pizza Party"
+                            "Food Critics"
+                            "Apple_Pen_Pineapple_Pen"
+                            "Chunky Dunkers"
+                            "Stoned Cookies"
+                            "Dumb Dumplings"
+                            "Smoked Salmons"
+                            "Snack Attacks"
+                            "Stud Potatoes"
+                            "Addicted to Cookies"
+                            "Cheeses and Chips"
+                            "Boozed Boys"
+                            "Give_us_booze"
+                            "Hung&amp;Over"))
+</pre>
+</div>
+
+<p>
+And finally we split our colleagues and assign them a team name using
+the amazing <a href="https://github.com/magnars/dash.el">dash.el</a>!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq my/codenames-teams
+            (--&gt; my/teammates
+                 (--keep (and (not (-contains? '("slackbot" "other-user-you-don't-want") (plist-get it :name)))
+                              (eq (plist-get it :deleted) :json-false)
+                              (me-get-in it '(:profile :real_name_normalized)))
+                         it)
+                 (-shuffle it)
+                 (-partition-all 2 it)
+                 (--map-indexed (list :team-name (nth it-index my/team-names) :participants it) it))
+</pre>
+</div>
+
+<p>
+I use <code>-partition-all</code> because I don't want to lose users
+(<code>-partition</code> would drop the last partition that hasn't reached 2
+members), but if you have an odd number you will have a team of one.
+For CodeNames, just add that user to another team: the game works fine
+like that too. Note that the above removes some users (i.e., bots that
+Slack considers as users in the team). Also, we get only the names of
+users here. It's a good idea to keep the whole user plist, if for
+example you want to send automated messages with a little script.
+</p>
+
+<p>
+I printed the names that way because I wanted to share the teams
+composition with my colleagues. Here the snippet for printing out
+that info in a nice format.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(concat "|Team Name | Participants |\n" (s-join "\n" (--map (format "| %s | %s |" (plist-get it :team-name) (s-join ", " (plist-get it :participants))) my/codenames-teams)))
+</pre>
+</div>
+
+<p>
+If you want to use the same online tool I used to form the tournament
+bracket, just extract the right number of team names and copy the
+output in the textbox here:
+<a href="https://challonge.com/tournaments/bracket_generator">https://challonge.com/tournaments/bracket_generator</a>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(s-join "\n" (--map (plist-get it :team-name) my/codenames-teams ))
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org3f8cb5f" class="outline-2">
+<h2 id="org3f8cb5f">Conclusion</h2>
+<div class="outline-text-2" id="text-org3f8cb5f">
+<p>
+That's it! A creative and social way to use our favourite editor and
+its extensions to have fun together. And if you are a fan of
+CodeNames, get in touch and we can organize a match :D
+</p>
+
+<p>
+Happy gaming!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-03-18</span>
+        <span title="last modification date" class="post-info">2022-03-19</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
