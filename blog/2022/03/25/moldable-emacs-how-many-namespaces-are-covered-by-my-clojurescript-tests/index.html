@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: how many namespaces are covered by my ClojureScript tests? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="An approximation of test coverage for ClojureScript with moldable-emacs and tree-sitter" />
+    <meta name="keywords" content="clojure, moldable-emacs, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: how many namespaces are covered by my ClojureScript tests?</h1>
+
+<div id="outline-container-org64f73a6" class="outline-2">
+<h2 id="org64f73a6">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org64f73a6">
+<p>
+Since ClojureScript lacks a way to do test coverage, I use static
+analysis in Emacs to compare the namespaces I tested against all the
+namespace to get a rough coverage metrics.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org96f72a4" class="outline-2">
+<h2 id="org96f72a4">The problem</h2>
+<div class="outline-text-2" id="text-org96f72a4">
+<p>
+The other day, trying to encourage automated testing in the company I
+work for, I was looking for a test coverage tool for ClojureScript
+(cljs). If you are a cljs developer, you know that my search was
+invane.
+</p>
+
+<p>
+Cljs transpiles to JavaScript in order to work. This means that if you
+write a test, it will run as JavaScript. Test coverage tools
+instrument source code to mark the bits of code a test exercises. Now
+if the original code is cljs but the execution happens in JavaScript,
+you see that it is difficult to do this tracing.
+</p>
+
+<p>
+So I had to surrender to not keeping track of our testing progress.
+Or not?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd4957f5" class="outline-2">
+<h2 id="orgd4957f5">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgd4957f5">
+<p>
+Looking for test coverage is only one way to explore your code. I
+often wished to have an on-demand static analysis tool. By that I mean
+a consistent interface to query code. For example, I would like to be
+able to find iterations in code no matter the language the code is
+written in. Imagine if we could easily answer: are there more
+iterations in the Clojure language code base or in the Scala one? Or
+what about state, objects, gotos?
+</p>
+
+<p>
+A consistent interface to static analysis should allow that. I should
+be able to define what is an iteration, a module, state, objects and
+so on. But also my own patterns! For example, I can come up with my
+own software entity and want to find all its instances in the code.
+For instance, in the <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> code I came up with the concept of
+a "mold". One day, I may be curious about how many mold definitions
+are in moldable-emacs!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4663201" class="outline-2">
+<h2 id="org4663201">And there is a solution</h2>
+<div class="outline-text-2" id="text-org4663201">
+<p>
+Well, I have a prototype for answering my questions. I implemented a
+function in moldable-emacs called <code>me-project-to-flattened-nodes</code>.
+This function takes a directory path and returns a list of plists
+representing all the syntax nodes that <a href="https://github.com/tree-sitter/tree-sitter">tree-sitter</a> could produce. The
+schema of a node contains these keys <code>(:type :text :begin :end :buffer
+:buffer-file)</code>. The value of <code>:type</code> depends on tree-sitter's
+grammars.
+</p>
+
+<p>
+Let's try this out. Say I want to explore the test coverage of the
+<a href="https://github.com/day8/re-frame">re-frame</a> project. Given you have moldable-emacs loaded in Emacs, you
+can run the following code to find all tree-sitter parsed nodes in
+<code>re-frame/src</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(length (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src"))
+</pre>
+</div>
+
+<pre class="example">
+9770
+</pre>
+
+
+<p>
+Let's take a sample of nodes:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(-take 2 (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src"))
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-elisp">((:type map_lit :text "{:npm-dev-deps {\"shadow-cljs\"              \"2.15.12\"\n                \"karma\"                    \"6.3.7\"\n                \"karma-phantomjs-launcher\" \"1.0.4\"\n                \"karma-chrome-launcher\"    \"3.1.0\"\n                \"karma-cljs-test\"          \"0.1.0\"\n                \"karma-junit-reporter\"     \"2.0.1\"}}" :begin 1 :end 310 :buffer " *temp*" :buffer-file "~/workspace/re-frame/src/deps.cljs" :mode fundamental-mode :level 0)
+ (:type "{" :text "{" :begin 1 :end 2 :buffer " *temp*" :buffer-file "~/workspace/re-frame/src/deps.cljs" :mode fundamental-mode :level 1))
+</pre>
+</div>
+
+<p>
+In this example we got a cljs map structure and a parenthesis.
+</p>
+
+<p>
+This was a warm up, let's get to business. The code to get all
+namespaces to test becomes a string manipulation challenge.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(-take 1 (--&gt; (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src")
+              (--filter (and ; find only the nodes starting with (ns
+                         (eq 'list_lit (plist-get it :type))
+                         (s-starts-with-p "(ns " (plist-get it :text)))
+                        it)
+              (--map (list :ns (--&gt; (plist-get it :text) ; cleaning to geth only the namespacea
+                                    (s-split "ns " it)
+                                    (nth 1 it)
+                                    (s-split " " it)
+                                    car
+                                    s-trim)
+                           :file (plist-get it :buffer-file))
+                     it)))
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">:ns</td>
+<td class="org-left">re-frame.cofx</td>
+<td class="org-left">:file</td>
+<td class="org-left">~/workspace/re-frame/src/re_frame/cofx.cljc</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+So we go through all the nodes and filter the ones that have the right
+type and the right content. This is fragile because our pattern may
+easily be incomplete. But is also very lightweight! Easy to change and
+useful.
+</p>
+
+<p>
+Let's reuse something I baked early on for Clojure projects, so we can
+find the tested namespaces easily:
+<code>me-clj-project-to-nodes-categories</code>. This function is similar to
+<code>me-project-to-flattened-nodes=</code>, but already splits groups nodes in
+Clojure categories of nodes.
+</p>
+
+<p>
+Let's look at the categories I programmed already.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me-keys (me-clj-project-to-nodes-categories "/home/andrea/workspace/re-frame/test" "cljs"))
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">:fns</td>
+<td class="org-left">:datomic-queries</td>
+<td class="org-left">:vars</td>
+<td class="org-left">:atoms</td>
+<td class="org-left">:requires</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+So functions, datomic queries, vars, atoms and require statements. We
+are going to use "requires" in this case. The idea is that if a test
+requires a namespace, this namespace have been covered by tests. It is
+an approximation because we don't know how much namespace
+functionality was covered, but it is still better than nothing!
+</p>
+
+<p>
+The code looks like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt; (me-clj-project-to-nodes-categories "/home/andrea/workspace/re-frame/test" "cljs") ; focus only on cljs files
+     (plist-get it :requires)
+     (-flatten-n 1 it) ; the requires are grouped by file by default, we flatten that grouping
+     (--filter (s-ends-with-p "_test.cljs" (plist-get it :buffer-file)) it) ; we want to ignore nodes that are not in test files
+     (--map (list
+             :required-modules (--&gt; (plist-get it :text) ; this code is a hacky way to get only the namespace required
+                                    (s-split "\\[" it)
+                                    (--map (car (s-split " " it)) (cdr it))
+                                    (--map (car (s-split "]" it)) (cdr it))
+                                    -flatten
+                                    (--filter (s-starts-with-p "re-" it) it))
+             :file (plist-get it :buffer-file))
+            it))
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">:required-modules</td>
+<td class="org-left">(re-frame.db re-frame.core)</td>
+<td class="org-left">:file</td>
+<td class="org-left">~/workspace/re-frame/test/re_frame/event_test.cljs</td>
+</tr>
+
+<tr>
+<td class="org-left">:required-modules</td>
+<td class="org-left">(re-frame.core re-frame.fx re-frame.interop re-frame.loggers)</td>
+<td class="org-left">:file</td>
+<td class="org-left">~/workspace/re-frame/test/re_frame/fx_test.cljs</td>
+</tr>
+
+<tr>
+<td class="org-left">:required-modules</td>
+<td class="org-left">(re-frame.interceptor re-frame.std-interceptors re-frame.interceptor re-frame.core)</td>
+<td class="org-left">:file</td>
+<td class="org-left">~/workspace/re-frame/test/re_frame/interceptor_test.cljs</td>
+</tr>
+
+<tr>
+<td class="org-left">:required-modules</td>
+<td class="org-left">(re-frame.core re-frame.subs)</td>
+<td class="org-left">:file</td>
+<td class="org-left">~/workspace/re-frame/test/re_frame/restore_test.cljs</td>
+</tr>
+
+<tr>
+<td class="org-left">:required-modules</td>
+<td class="org-left">(re-frame.subs re-frame.db re-frame.core)</td>
+<td class="org-left">:file</td>
+<td class="org-left">~/workspace/re-frame/test/re_frame/subs_test.cljs</td>
+</tr>
+
+<tr>
+<td class="org-left">:required-modules</td>
+<td class="org-left">(re-frame.trace re-frame.core)</td>
+<td class="org-left">:file</td>
+<td class="org-left">~/workspace/re-frame/test/re_frame/trace_test.cljs</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+As you can see it is hacky. But it does the job! We now have the
+re-frame namespaces used by tests!
+</p>
+
+<p>
+Now let's put everything together and get some stats for the test
+coverage of the re-frame code base.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(let* ((all-nodes-to-test (--&gt; (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src")
+                               (--filter (and
+                                          (eq 'list_lit (plist-get it :type))
+                                          (s-starts-with-p "(ns " (plist-get it :text)))
+                                         it)
+                               (--map (list :ns (--&gt; (plist-get it :text)
+                                                     (s-split "ns " it)
+                                                     (nth 1 it)
+                                                     (s-split " " it)
+                                                     car
+                                                     s-trim)
+                                            :file (plist-get it :buffer-file))
+                                      it)))
+       (all-namespaces-to-test (-distinct (--map (plist-get it :ns) all-nodes-to-test)))
+       (all-tested-nodes (--&gt; (me-clj-project-to-nodes-categories "/home/andrea/workspace/re-frame/test" "cljs")
+                              (plist-get it :requires)
+                              (-flatten-n 1 it)
+                              (--filter (s-ends-with-p "_test.cljs" (plist-get it :buffer-file)) it)
+                              (--map (list
+                                      :required-modules (--&gt; (plist-get it :text)
+                                                             (s-split "\\[" it)
+                                                             (--map (car (s-split " " it)) (cdr it))
+                                                             (--map (car (s-split "]" it)) (cdr it))
+                                                             -flatten
+                                                             (--filter (s-starts-with-p "re-" it) it))
+                                      :file (plist-get it :buffer-file))
+                                     it)))
+       (all-tested-namespaces (-distinct (-flatten (--map (plist-get it :required-modules) all-tested-nodes)))))
+  (concat (format "Rate: %s/%s" (length all-tested-namespaces) (length all-namespaces-to-test))
+          "\n"
+          (format "Namespaces that may miss tests: %s" (-difference all-namespaces-to-test all-tested-namespaces))))
+</pre>
+</div>
+
+<pre class="example">
+Rate: 9/15
+Namespaces that may miss tests: (re-frame.cofx re-frame.events re-frame.registrar re-frame.router re-frame.settings re-frame.utils)
+</pre>
+
+
+<p>
+This is helpful, no? Now we know how many namespaces we have touched
+with our tests and those we didn't.
+</p>
+
+<p>
+Again this may be incorrect though. If in your test files you require
+unused namespaces (use <a href="https://github.com/clj-kondo/clj-kondo">clj-kondo</a> for that, it is amazing!) we will
+consider them tested. Also we fail to catch if tested namespaces use
+the untested ones. In that case chances are that we are implicitly
+testing more files than we catch with this analyisis. So the analyisis
+is a high level approximation. And it took 10 minutes to make. That
+means it is inexpensive and could be refined if you really need to.
+</p>
+
+<p>
+Most of the time we need a high level analysis to roughly answer our
+question. We can refine our answer if the question needs it. In my
+case I just needed a rough sense of coverage. If a critical namespace
+of my code base is in the to-test list, well I know what to do.
+</p>
+
+<p>
+All in all, this shall make me excited about adding more tests and see
+my progress!
+</p>
+
+<p>
+Even better, I have a way to answer my questions with static analysis.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb2241b8" class="outline-2">
+<h2 id="orgb2241b8">Conclusion</h2>
+<div class="outline-text-2" id="text-orgb2241b8">
+<p>
+So if you want to try, you just need to <code>git clone
+https://github.com/day8/re-frame.git</code> and install <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> and
+<a href="https://github.com/emacs-tree-sitter/elisp-tree-sitter">emacs-tree-sitter</a> and the <a href="https://github.com/sogaiu/tree-sitter-clojure">tree-sitter Clojure grammar</a> and.. oh my it
+is quite a bit of stuff. I need to fix that, sorry! But you get the
+gist: this is a first step towards a consistent static analysis
+experience :)
+</p>
+
+<p>
+Happy analyzing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-03-25</span>
+        <span title="last modification date" class="post-info">2022-03-25</span>
+        <span title="tags" class="post-info"><a href="/tags/clojure/">clojure</a>, <a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
