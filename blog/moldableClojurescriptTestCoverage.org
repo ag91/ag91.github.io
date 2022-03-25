@@ -1,0 +1,238 @@
+#+TITLE:       Moldable Emacs: how many namespaces are covered by my ClojureScript tests?
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-03-25 Fri
+#+URI:         /blog/%y/%m/%d/moldable-emacs-how-many-namespaces-are-covered-by-my-clojurescript-tests
+#+KEYWORDS:    clojure, moldable-emacs, emacs
+#+TAGS:        clojure, moldable-emacs, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: An approximation of test coverage for ClojureScript with moldable-emacs and tree-sitter
+
+* Too long; didn't read
+Since ClojureScript lacks a way to do test coverage, I use static
+analysis in Emacs to compare the namespaces I tested against all the
+namespace to get a rough coverage metrics.
+
+* The problem
+
+The other day, trying to encourage automated testing in the company I
+work for, I was looking for a test coverage tool for ClojureScript
+(cljs). If you are a cljs developer, you know that my search was
+invane.
+
+Cljs transpiles to JavaScript in order to work. This means that if you
+write a test, it will run as JavaScript. Test coverage tools
+instrument source code to mark the bits of code a test exercises. Now
+if the original code is cljs but the execution happens in JavaScript,
+you see that it is difficult to do this tracing.
+
+So I had to surrender to not keeping track of our testing progress.
+Or not?
+
+* It is a problem indeed
+
+Looking for test coverage is only one way to explore your code. I
+often wished to have an on-demand static analysis tool. By that I mean
+a consistent interface to query code. For example, I would like to be
+able to find iterations in code no matter the language the code is
+written in. Imagine if we could easily answer: are there more
+iterations in the Clojure language code base or in the Scala one? Or
+what about state, objects, gotos?
+
+A consistent interface to static analysis should allow that. I should
+be able to define what is an iteration, a module, state, objects and
+so on. But also my own patterns! For example, I can come up with my
+own software entity and want to find all its instances in the code.
+For instance, in the [[https://github.com/ag91/moldable-emacs][moldable-emacs]] code I came up with the concept of
+a "mold". One day, I may be curious about how many mold definitions
+are in moldable-emacs!
+
+* And there is a solution
+:PROPERTIES:
+:ID:       d39e0eaf-3ad0-47a4-a194-19f7635c7be9
+:END:
+
+Well, I have a prototype for answering my questions. I implemented a
+function in moldable-emacs called =me-project-to-flattened-nodes=.
+This function takes a directory path and returns a list of plists
+representing all the syntax nodes that [[https://github.com/tree-sitter/tree-sitter][tree-sitter]] could produce. The
+schema of a node contains these keys =(:type :text :begin :end :buffer
+:buffer-file)=. The value of =:type= depends on tree-sitter's
+grammars.
+
+Let's try this out. Say I want to explore the test coverage of the
+[[https://github.com/day8/re-frame][re-frame]] project. Given you have moldable-emacs loaded in Emacs, you
+can run the following code to find all tree-sitter parsed nodes in
+=re-frame/src=.
+
+#+begin_src elisp :exports both
+(length (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src"))
+#+end_src
+
+#+RESULTS:
+: 9770
+
+Let's take a sample of nodes:
+
+#+begin_src elisp :exports both :results code
+(-take 2 (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src"))
+#+end_src
+
+#+RESULTS:
+#+begin_src elisp
+((:type map_lit :text "{:npm-dev-deps {\"shadow-cljs\"              \"2.15.12\"\n                \"karma\"                    \"6.3.7\"\n                \"karma-phantomjs-launcher\" \"1.0.4\"\n                \"karma-chrome-launcher\"    \"3.1.0\"\n                \"karma-cljs-test\"          \"0.1.0\"\n                \"karma-junit-reporter\"     \"2.0.1\"}}" :begin 1 :end 310 :buffer " *temp*" :buffer-file "~/workspace/re-frame/src/deps.cljs" :mode fundamental-mode :level 0)
+ (:type "{" :text "{" :begin 1 :end 2 :buffer " *temp*" :buffer-file "~/workspace/re-frame/src/deps.cljs" :mode fundamental-mode :level 1))
+#+end_src
+
+In this example we got a cljs map structure and a parenthesis.
+
+This was a warm up, let's get to business. The code to get all
+namespaces to test becomes a string manipulation challenge.
+
+#+begin_src elisp :exports both
+(-take 1 (--> (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src")
+              (--filter (and ; find only the nodes starting with (ns
+                         (eq 'list_lit (plist-get it :type))
+                         (s-starts-with-p "(ns " (plist-get it :text)))
+                        it)
+              (--map (list :ns (--> (plist-get it :text) ; cleaning to geth only the namespacea
+                                    (s-split "ns " it)
+                                    (nth 1 it)
+                                    (s-split " " it)
+                                    car
+                                    s-trim)
+                           :file (plist-get it :buffer-file))
+                     it)))
+#+end_src
+
+#+RESULTS:
+| :ns | re-frame.cofx | :file | ~/workspace/re-frame/src/re_frame/cofx.cljc |
+
+So we go through all the nodes and filter the ones that have the right
+type and the right content. This is fragile because our pattern may
+easily be incomplete. But is also very lightweight! Easy to change and
+useful.
+
+Let's reuse something I baked early on for Clojure projects, so we can
+find the tested namespaces easily:
+=me-clj-project-to-nodes-categories=. This function is similar to
+=me-project-to-flattened-nodes==, but already splits groups nodes in
+Clojure categories of nodes.
+
+Let's look at the categories I programmed already.
+
+#+begin_src elisp :exports both
+(me-keys (me-clj-project-to-nodes-categories "/home/andrea/workspace/re-frame/test" "cljs"))
+#+end_src
+
+#+RESULTS:
+| :fns | :datomic-queries | :vars | :atoms | :requires |
+
+So functions, datomic queries, vars, atoms and require statements. We
+are going to use "requires" in this case. The idea is that if a test
+requires a namespace, this namespace have been covered by tests. It is
+an approximation because we don't know how much namespace
+functionality was covered, but it is still better than nothing!
+
+The code looks like this:
+
+#+begin_src elisp :exports both
+(--> (me-clj-project-to-nodes-categories "/home/andrea/workspace/re-frame/test" "cljs") ; focus only on cljs files
+     (plist-get it :requires)
+     (-flatten-n 1 it) ; the requires are grouped by file by default, we flatten that grouping
+     (--filter (s-ends-with-p "_test.cljs" (plist-get it :buffer-file)) it) ; we want to ignore nodes that are not in test files
+     (--map (list
+             :required-modules (--> (plist-get it :text) ; this code is a hacky way to get only the namespace required
+                                    (s-split "\\[" it)
+                                    (--map (car (s-split " " it)) (cdr it))
+                                    (--map (car (s-split "]" it)) (cdr it))
+                                    -flatten
+                                    (--filter (s-starts-with-p "re-" it) it))
+             :file (plist-get it :buffer-file))
+            it))
+#+end_src
+
+#+RESULTS:
+| :required-modules | (re-frame.db re-frame.core)                                                         | :file | ~/workspace/re-frame/test/re_frame/event_test.cljs       |
+| :required-modules | (re-frame.core re-frame.fx re-frame.interop re-frame.loggers)                       | :file | ~/workspace/re-frame/test/re_frame/fx_test.cljs          |
+| :required-modules | (re-frame.interceptor re-frame.std-interceptors re-frame.interceptor re-frame.core) | :file | ~/workspace/re-frame/test/re_frame/interceptor_test.cljs |
+| :required-modules | (re-frame.core re-frame.subs)                                                       | :file | ~/workspace/re-frame/test/re_frame/restore_test.cljs     |
+| :required-modules | (re-frame.subs re-frame.db re-frame.core)                                           | :file | ~/workspace/re-frame/test/re_frame/subs_test.cljs        |
+| :required-modules | (re-frame.trace re-frame.core)                                                      | :file | ~/workspace/re-frame/test/re_frame/trace_test.cljs       |
+
+As you can see it is hacky. But it does the job! We now have the
+re-frame namespaces used by tests!
+
+Now let's put everything together and get some stats for the test
+coverage of the re-frame code base.
+
+#+begin_src elisp :exports both
+(let* ((all-nodes-to-test (--> (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src")
+                               (--filter (and
+                                          (eq 'list_lit (plist-get it :type))
+                                          (s-starts-with-p "(ns " (plist-get it :text)))
+                                         it)
+                               (--map (list :ns (--> (plist-get it :text)
+                                                     (s-split "ns " it)
+                                                     (nth 1 it)
+                                                     (s-split " " it)
+                                                     car
+                                                     s-trim)
+                                            :file (plist-get it :buffer-file))
+                                      it)))
+       (all-namespaces-to-test (-distinct (--map (plist-get it :ns) all-nodes-to-test)))
+       (all-tested-nodes (--> (me-clj-project-to-nodes-categories "/home/andrea/workspace/re-frame/test" "cljs")
+                              (plist-get it :requires)
+                              (-flatten-n 1 it)
+                              (--filter (s-ends-with-p "_test.cljs" (plist-get it :buffer-file)) it)
+                              (--map (list
+                                      :required-modules (--> (plist-get it :text)
+                                                             (s-split "\\[" it)
+                                                             (--map (car (s-split " " it)) (cdr it))
+                                                             (--map (car (s-split "]" it)) (cdr it))
+                                                             -flatten
+                                                             (--filter (s-starts-with-p "re-" it) it))
+                                      :file (plist-get it :buffer-file))
+                                     it)))
+       (all-tested-namespaces (-distinct (-flatten (--map (plist-get it :required-modules) all-tested-nodes)))))
+  (concat (format "Rate: %s/%s" (length all-tested-namespaces) (length all-namespaces-to-test))
+          "\n"
+          (format "Namespaces that may miss tests: %s" (-difference all-namespaces-to-test all-tested-namespaces))))
+#+end_src
+
+#+RESULTS:
+: Rate: 9/15
+: Namespaces that may miss tests: (re-frame.cofx re-frame.events re-frame.registrar re-frame.router re-frame.settings re-frame.utils)
+
+This is helpful, no? Now we know how many namespaces we have touched
+with our tests and those we didn't.
+
+Again this may be incorrect though. If in your test files you require
+unused namespaces (use [[https://github.com/clj-kondo/clj-kondo][clj-kondo]] for that, it is amazing!) we will
+consider them tested. Also we fail to catch if tested namespaces use
+the untested ones. In that case chances are that we are implicitly
+testing more files than we catch with this analyisis. So the analyisis
+is a high level approximation. And it took 10 minutes to make. That
+means it is inexpensive and could be refined if you really need to.
+
+Most of the time we need a high level analysis to roughly answer our
+question. We can refine our answer if the question needs it. In my
+case I just needed a rough sense of coverage. If a critical namespace
+of my code base is in the to-test list, well I know what to do.
+
+All in all, this shall make me excited about adding more tests and see
+my progress!
+
+Even better, I have a way to answer my questions with static analysis.
+
+* Conclusion
+
+So if you want to try, you just need to =git clone
+https://github.com/day8/re-frame.git= and install [[https://github.com/ag91/moldable-emacs][moldable-emacs]] and
+[[https://github.com/emacs-tree-sitter/elisp-tree-sitter][emacs-tree-sitter]] and the [[https://github.com/sogaiu/tree-sitter-clojure][tree-sitter Clojure grammar]] and.. oh my it
+is quite a bit of stuff. I need to fix that, sorry! But you get the
+gist: this is a first step towards a consistent static analysis
+experience :)
+
+Happy analyzing!
