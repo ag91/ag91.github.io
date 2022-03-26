@@ -33,9 +33,9 @@
 <div class="post">
 <h1>Moldable Emacs: how many namespaces are covered by my ClojureScript tests?</h1>
 
-<div id="outline-container-org64f73a6" class="outline-2">
-<h2 id="org64f73a6">Too long; didn't read</h2>
-<div class="outline-text-2" id="text-org64f73a6">
+<div id="outline-container-org37bda71" class="outline-2">
+<h2 id="org37bda71">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org37bda71">
 <p>
 Since ClojureScript lacks a way to do test coverage, I use static
 analysis in Emacs to compare the namespaces I tested against all the
@@ -44,9 +44,9 @@ namespace to get a rough coverage metrics.
 </div>
 </div>
 
-<div id="outline-container-org96f72a4" class="outline-2">
-<h2 id="org96f72a4">The problem</h2>
-<div class="outline-text-2" id="text-org96f72a4">
+<div id="outline-container-org35d7d8a" class="outline-2">
+<h2 id="org35d7d8a">The problem</h2>
+<div class="outline-text-2" id="text-org35d7d8a">
 <p>
 The other day, trying to encourage automated testing in the company I
 work for, I was looking for a test coverage tool for ClojureScript
@@ -69,9 +69,9 @@ Or not?
 </div>
 </div>
 
-<div id="outline-container-orgd4957f5" class="outline-2">
-<h2 id="orgd4957f5">It is a problem indeed</h2>
-<div class="outline-text-2" id="text-orgd4957f5">
+<div id="outline-container-org19d9c98" class="outline-2">
+<h2 id="org19d9c98">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org19d9c98">
 <p>
 Looking for test coverage is only one way to explore your code. I
 often wished to have an on-demand static analysis tool. By that I mean
@@ -94,9 +94,9 @@ are in moldable-emacs!
 </div>
 </div>
 
-<div id="outline-container-org4663201" class="outline-2">
-<h2 id="org4663201">And there is a solution</h2>
-<div class="outline-text-2" id="text-org4663201">
+<div id="outline-container-org7b0c143" class="outline-2">
+<h2 id="org7b0c143">And there is a solution</h2>
+<div class="outline-text-2" id="text-org7b0c143">
 <p>
 Well, I have a prototype for answering my questions. I implemented a
 function in moldable-emacs called <code>me-project-to-flattened-nodes</code>.
@@ -165,27 +165,10 @@ namespaces to test becomes a string manipulation challenge.
 </pre>
 </div>
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">:ns</td>
-<td class="org-left">re-frame.cofx</td>
-<td class="org-left">:file</td>
-<td class="org-left">~/workspace/re-frame/src/re_frame/cofx.cljc</td>
-</tr>
-</tbody>
-</table>
+<div class="org-src-container">
+<pre class="src src-elisp">((:ns "re-frame.cofx" :file "~/workspace/re-frame/src/re_frame/cofx.cljc"))
+</pre>
+</div>
 
 <p>
 So we go through all the nodes and filter the ones that have the right
@@ -211,30 +194,10 @@ Let's look at the categories I programmed already.
 </pre>
 </div>
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">:fns</td>
-<td class="org-left">:datomic-queries</td>
-<td class="org-left">:vars</td>
-<td class="org-left">:atoms</td>
-<td class="org-left">:requires</td>
-</tr>
-</tbody>
-</table>
+<div class="org-src-container">
+<pre class="src src-elisp">(:fns :datomic-queries :vars :atoms :requires)
+</pre>
+</div>
 
 <p>
 So functions, datomic queries, vars, atoms and require statements. We
@@ -265,62 +228,27 @@ The code looks like this:
 </pre>
 </div>
 
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">:required-modules</td>
-<td class="org-left">(re-frame.db re-frame.core)</td>
-<td class="org-left">:file</td>
-<td class="org-left">~/workspace/re-frame/test/re_frame/event_test.cljs</td>
-</tr>
-
-<tr>
-<td class="org-left">:required-modules</td>
-<td class="org-left">(re-frame.core re-frame.fx re-frame.interop re-frame.loggers)</td>
-<td class="org-left">:file</td>
-<td class="org-left">~/workspace/re-frame/test/re_frame/fx_test.cljs</td>
-</tr>
-
-<tr>
-<td class="org-left">:required-modules</td>
-<td class="org-left">(re-frame.interceptor re-frame.std-interceptors re-frame.interceptor re-frame.core)</td>
-<td class="org-left">:file</td>
-<td class="org-left">~/workspace/re-frame/test/re_frame/interceptor_test.cljs</td>
-</tr>
-
-<tr>
-<td class="org-left">:required-modules</td>
-<td class="org-left">(re-frame.core re-frame.subs)</td>
-<td class="org-left">:file</td>
-<td class="org-left">~/workspace/re-frame/test/re_frame/restore_test.cljs</td>
-</tr>
-
-<tr>
-<td class="org-left">:required-modules</td>
-<td class="org-left">(re-frame.subs re-frame.db re-frame.core)</td>
-<td class="org-left">:file</td>
-<td class="org-left">~/workspace/re-frame/test/re_frame/subs_test.cljs</td>
-</tr>
-
-<tr>
-<td class="org-left">:required-modules</td>
-<td class="org-left">(re-frame.trace re-frame.core)</td>
-<td class="org-left">:file</td>
-<td class="org-left">~/workspace/re-frame/test/re_frame/trace_test.cljs</td>
-</tr>
-</tbody>
-</table>
+<div class="org-src-container">
+<pre class="src src-elisp">((:required-modules
+  ("re-frame.db" "re-frame.core")
+  :file "~/workspace/re-frame/test/re_frame/event_test.cljs")
+ (:required-modules
+  ("re-frame.core" "re-frame.fx" "re-frame.interop" "re-frame.loggers")
+  :file "~/workspace/re-frame/test/re_frame/fx_test.cljs")
+ (:required-modules
+  ("re-frame.interceptor" "re-frame.std-interceptors" "re-frame.interceptor" "re-frame.core")
+  :file "~/workspace/re-frame/test/re_frame/interceptor_test.cljs")
+ (:required-modules
+  ("re-frame.core" "re-frame.subs")
+  :file "~/workspace/re-frame/test/re_frame/restore_test.cljs")
+ (:required-modules
+  ("re-frame.subs" "re-frame.db" "re-frame.core")
+  :file "~/workspace/re-frame/test/re_frame/subs_test.cljs")
+ (:required-modules
+  ("re-frame.trace" "re-frame.core")
+  :file "~/workspace/re-frame/test/re_frame/trace_test.cljs"))
+</pre>
+</div>
 
 <p>
 As you can see it is hacky. But it does the job! We now have the
@@ -406,9 +334,9 @@ Even better, I have a way to answer my questions with static analysis.
 </div>
 </div>
 
-<div id="outline-container-orgb2241b8" class="outline-2">
-<h2 id="orgb2241b8">Conclusion</h2>
-<div class="outline-text-2" id="text-orgb2241b8">
+<div id="outline-container-org2aca8e9" class="outline-2">
+<h2 id="org2aca8e9">Conclusion</h2>
+<div class="outline-text-2" id="text-org2aca8e9">
 <p>
 So if you want to try, you just need to <code>git clone
 https://github.com/day8/re-frame.git</code> and install <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> and
@@ -429,7 +357,7 @@ Happy analyzing!
     <div>
       <div class="post-meta">
         <span title="post date" class="post-info">2022-03-25</span>
-        <span title="last modification date" class="post-info">2022-03-25</span>
+        <span title="last modification date" class="post-info">2022-03-26</span>
         <span title="tags" class="post-info"><a href="/tags/clojure/">clojure</a>, <a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
         <span title="author" class="post-info">Andrea</span>
       </div>

@@ -4,15 +4,15 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 25 Mar 2022 23:22:46 GMT</pubDate>
-    <lastBuildDate>Fri, 25 Mar 2022 23:22:46 GMT</lastBuildDate>
+    <pubDate>Sat, 26 Mar 2022 00:45:18 GMT</pubDate>
+    <lastBuildDate>Sat, 26 Mar 2022 00:45:18 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
       <title>Moldable Emacs: how many namespaces are covered by my ClojureScript tests?</title>
       <link>http://ag91.github.io/blog/2022/03/25/moldable-emacs-how-many-namespaces-are-covered-by-my-clojurescript-tests</link>
       <description><![CDATA[An approximation of test coverage for ClojureScript with moldable-emacs and tree-sitter]]></description>
-      <pubDate>2022-03-25</pubDate>
+      <pubDate>2022-03-26</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/25/moldable-emacs-how-many-namespaces-are-covered-by-my-clojurescript-tests</guid>
     </item>
     <item>
