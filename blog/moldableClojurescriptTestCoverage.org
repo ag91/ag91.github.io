@@ -90,7 +90,7 @@ In this example we got a cljs map structure and a parenthesis.
 This was a warm up, let's get to business. The code to get all
 namespaces to test becomes a string manipulation challenge.
 
-#+begin_src elisp :exports both
+#+begin_src elisp :exports both :results code
 (-take 1 (--> (me-project-to-flattened-nodes "/home/andrea/workspace/re-frame/src")
               (--filter (and ; find only the nodes starting with (ns
                          (eq 'list_lit (plist-get it :type))
@@ -107,7 +107,9 @@ namespaces to test becomes a string manipulation challenge.
 #+end_src
 
 #+RESULTS:
-| :ns | re-frame.cofx | :file | ~/workspace/re-frame/src/re_frame/cofx.cljc |
+#+begin_src elisp
+((:ns "re-frame.cofx" :file "~/workspace/re-frame/src/re_frame/cofx.cljc"))
+#+end_src
 
 So we go through all the nodes and filter the ones that have the right
 type and the right content. This is fragile because our pattern may
@@ -122,12 +124,14 @@ Clojure categories of nodes.
 
 Let's look at the categories I programmed already.
 
-#+begin_src elisp :exports both
+#+begin_src elisp :exports both :results code
 (me-keys (me-clj-project-to-nodes-categories "/home/andrea/workspace/re-frame/test" "cljs"))
 #+end_src
 
 #+RESULTS:
-| :fns | :datomic-queries | :vars | :atoms | :requires |
+#+begin_src elisp
+(:fns :datomic-queries :vars :atoms :requires)
+#+end_src
 
 So functions, datomic queries, vars, atoms and require statements. We
 are going to use "requires" in this case. The idea is that if a test
@@ -137,7 +141,7 @@ functionality was covered, but it is still better than nothing!
 
 The code looks like this:
 
-#+begin_src elisp :exports both
+#+begin_src elisp :exports both :results code
 (--> (me-clj-project-to-nodes-categories "/home/andrea/workspace/re-frame/test" "cljs") ; focus only on cljs files
      (plist-get it :requires)
      (-flatten-n 1 it) ; the requires are grouped by file by default, we flatten that grouping
@@ -154,12 +158,26 @@ The code looks like this:
 #+end_src
 
 #+RESULTS:
-| :required-modules | (re-frame.db re-frame.core)                                                         | :file | ~/workspace/re-frame/test/re_frame/event_test.cljs       |
-| :required-modules | (re-frame.core re-frame.fx re-frame.interop re-frame.loggers)                       | :file | ~/workspace/re-frame/test/re_frame/fx_test.cljs          |
-| :required-modules | (re-frame.interceptor re-frame.std-interceptors re-frame.interceptor re-frame.core) | :file | ~/workspace/re-frame/test/re_frame/interceptor_test.cljs |
-| :required-modules | (re-frame.core re-frame.subs)                                                       | :file | ~/workspace/re-frame/test/re_frame/restore_test.cljs     |
-| :required-modules | (re-frame.subs re-frame.db re-frame.core)                                           | :file | ~/workspace/re-frame/test/re_frame/subs_test.cljs        |
-| :required-modules | (re-frame.trace re-frame.core)                                                      | :file | ~/workspace/re-frame/test/re_frame/trace_test.cljs       |
+#+begin_src elisp
+((:required-modules
+  ("re-frame.db" "re-frame.core")
+  :file "~/workspace/re-frame/test/re_frame/event_test.cljs")
+ (:required-modules
+  ("re-frame.core" "re-frame.fx" "re-frame.interop" "re-frame.loggers")
+  :file "~/workspace/re-frame/test/re_frame/fx_test.cljs")
+ (:required-modules
+  ("re-frame.interceptor" "re-frame.std-interceptors" "re-frame.interceptor" "re-frame.core")
+  :file "~/workspace/re-frame/test/re_frame/interceptor_test.cljs")
+ (:required-modules
+  ("re-frame.core" "re-frame.subs")
+  :file "~/workspace/re-frame/test/re_frame/restore_test.cljs")
+ (:required-modules
+  ("re-frame.subs" "re-frame.db" "re-frame.core")
+  :file "~/workspace/re-frame/test/re_frame/subs_test.cljs")
+ (:required-modules
+  ("re-frame.trace" "re-frame.core")
+  :file "~/workspace/re-frame/test/re_frame/trace_test.cljs"))
+#+end_src
 
 As you can see it is hacky. But it does the job! We now have the
 re-frame namespaces used by tests!
