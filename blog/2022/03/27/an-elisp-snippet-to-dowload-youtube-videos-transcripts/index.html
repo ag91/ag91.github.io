@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <title>Tag: gt - Where parallels cross</title>
+    <title>An Elisp snippet to dowload YouTube videos transcripts - Where parallels cross</title>
     <meta charset="utf-8" />
     <meta name="author" content="Andrea" />
+    <meta name="description" content="Wrapping pip moule youtube_transcript_downloader to download YouTube transcripts in Emacs" />
+    <meta name="keywords" content="emacs" />
     <link rel="stylesheet" href="/media/css/main.css" type="text/css">
     <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
   </head>
@@ -26,18 +28,63 @@
         </form>
       </header>
     </div>
+
+<div>
+<div class="post">
+<h1>An Elisp snippet to dowload YouTube videos transcripts</h1>
+<p>
+I was watching <a href="https://www.youtube.com/watch?v=vJ1STks8MUU">an amazing lecture by Donella Meadows</a> and I wanted to
+save some quotes in my notes. I just checked if the Python community
+had a package for it and lucky me: the pythonist t4skmanag3r made
+<a href="https://github.com/t4skmanag3r/youtube_transcript_downloader">https://github.com/t4skmanag3r/youtube_transcript_downloader</a>!!
+</p>
+
+<p>
+So after installing it with <code>pip install youtube_transcript_downloader</code>
+I made a nice little Elisp wrapper to get the transcript as a plist:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun get-youtube-transcript (url)
+  "Get YouTube transcript of URL."
+  (if (s-contains-p "youtube-transcript-downloader" (shell-command-to-string "pip list"))
+      (progn (with-temp-file "/tmp/yt-transcr-downloader.py"
+               (insert
+                (format "
+import youtube_transcript_downloader
+
+url = \"%s\"
+transcript = youtube_transcript_downloader.get_transcript(url)
+print(\"(\")
+for key, val in transcript.items():
+        print(f\"(:key \\\"{key}\\\" :text \\\"{val}\\\")\")
+print(\")\")
+" url)))
+             (read (shell-command-to-string "python3 /tmp/yt-transcr-downloader.py")))
+    (error "Please install youtube_transcript_downloader via pip install youtube_transcript_downloader")))
+</pre>
+</div>
+
+<p>
+You can use it like this <code>(get-youtube-transcript "https://www.youtube.com/watch?v=vJ1STks8MUU")</code>.
+</p>
+
+<p>
+Happy transcripting!
+</p>
+
+</div>
+</div>
     <div>
-      <div class="post">
-        <h1>Tag: gt</h1>
-        <ul class="org-ul">
-          <li><a href="/blog/2021/05/03/becoming-glamorous-from-0-to-a-wardley-map-in-glamoroustoolkit">Becoming Glamorous: from 0 to a Wardley map in GlamorousToolkit</a></li>
-          <li><a href="/blog/2021/10/02/moldable-emacs-molds-need-examples-too">Moldable Emacs: molds need examples too!</a></li>
-          <li><a href="/blog/2021/10/15/moldable-emacs-moldable-tutorials">Moldable Emacs: moldable tutorials</a></li>
-          <li><a href="/blog/2021/05/09/becoming-glamorous-how-glamoroustoolkit-can-run-emacs-lisp">Becoming Glamorous: how GlamorousToolkit can run Emacs Lisp.</a></li>
-        </ul>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-03-27</span>
+        <span title="last modification date" class="post-info">2022-03-27</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
       </div>
-    </div>
-    <div>
+      <section>
+        <h1>Comments</h1>
+      </section>
       <script src="//code.jquery.com/jquery-latest.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
       <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -62,5 +109,6 @@
         </p>
       </div>
     </div>
+
   </body>
 </html>

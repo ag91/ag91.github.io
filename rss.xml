@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 26 Mar 2022 00:45:18 GMT</pubDate>
-    <lastBuildDate>Sat, 26 Mar 2022 00:45:18 GMT</lastBuildDate>
+    <pubDate>Sun, 27 Mar 2022 23:31:20 BST</pubDate>
+    <lastBuildDate>Sun, 27 Mar 2022 23:31:20 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>An Elisp snippet to dowload YouTube videos transcripts</title>
+      <link>http://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts</link>
+      <description><![CDATA[Wrapping pip moule youtube_transcript_downloader to download YouTube transcripts in Emacs]]></description>
+      <pubDate>2022-03-27</pubDate>
+      <guid>http://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: how many namespaces are covered by my ClojureScript tests?</title>
       <link>http://ag91.github.io/blog/2022/03/25/moldable-emacs-how-many-namespaces-are-covered-by-my-clojurescript-tests</link>
-      <description><![CDATA[An approximation of test coverage for ClojureScript with moldable-emacs and tree-sitter]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-03-26</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/25/moldable-emacs-how-many-namespaces-are-covered-by-my-clojurescript-tests</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-02-11</pubDate>
       <guid>http://ag91.github.io/blog/2022/02/11/moldable-emacs-learning-syntax-from-your-editor</guid>
-    </item>
-    <item>
-      <title>An Helm source for Org Roam v2</title>
-      <link>http://ag91.github.io/blog/2022/02/05/an-helm-source-for-org-roam-v2</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-02-05</pubDate>
-      <guid>http://ag91.github.io/blog/2022/02/05/an-helm-source-for-org-roam-v2</guid>
     </item>
   </channel>
 </rss>
