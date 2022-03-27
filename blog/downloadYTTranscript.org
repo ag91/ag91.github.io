@@ -1,0 +1,42 @@
+#+TITLE:       An Elisp snippet to dowload YouTube videos transcripts
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-03-27 Sun
+#+URI:         /blog/%y/%m/%d/an-elisp-snippet-to-dowload-youtube-videos-transcripts
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Wrapping pip moule youtube_transcript_downloader to download YouTube transcripts in Emacs
+
+I was watching [[https://www.youtube.com/watch?v=vJ1STks8MUU][an amazing lecture by Donella Meadows]] and I wanted to
+save some quotes in my notes. I just checked if the Python community
+had a package for it and lucky me: the pythonist t4skmanag3r made
+https://github.com/t4skmanag3r/youtube_transcript_downloader!!
+
+So after installing it with =pip install youtube_transcript_downloader=
+I made a nice little Elisp wrapper to get the transcript as a plist:
+
+#+begin_src elisp :noeval
+(defun get-youtube-transcript (url)
+  "Get YouTube transcript of URL."
+  (if (s-contains-p "youtube-transcript-downloader" (shell-command-to-string "pip list"))
+      (progn (with-temp-file "/tmp/yt-transcr-downloader.py"
+               (insert
+                (format "
+import youtube_transcript_downloader
+
+url = \"%s\"
+transcript = youtube_transcript_downloader.get_transcript(url)
+print(\"(\")
+for key, val in transcript.items():
+        print(f\"(:key \\\"{key}\\\" :text \\\"{val}\\\")\")
+print(\")\")
+" url)))
+             (read (shell-command-to-string "python3 /tmp/yt-transcr-downloader.py")))
+    (error "Please install youtube_transcript_downloader via pip install youtube_transcript_downloader")))
+#+end_src
+
+You can use it like this =(get-youtube-transcript "https://www.youtube.com/watch?v=vJ1STks8MUU")=.
+
+Happy transcripting!
