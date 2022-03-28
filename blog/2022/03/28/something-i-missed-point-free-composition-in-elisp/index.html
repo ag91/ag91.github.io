@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Something I missed: point free composition in Elisp! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="I compose writing YouTube transcripts to files in point-free style." />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Something I missed: point free composition in Elisp!</h1>
+<p>
+I enjoy writing code in a functional style. This means that, yes, I am
+a fan of point-free composition. This means writing functions without
+defining their arguments.
+</p>
+
+<p>
+It is not the most readable approach, but is terse. If you come up
+with good function names it is pretty good. Also no need to test
+point-free functions because they are covered by the tests of their
+components.
+</p>
+
+<p>
+Anyway I just realized I can do that in Elisp! I was just improving <a href="https://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts/">my
+function to download YouTube scripts</a> to get the results into a file.
+My first go:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun yt-transcript-to-file (url)
+  (--&gt; (get-youtube-transcript url)
+       (--map (plist-get it :text) it)
+       (s-join "\n" it)
+       (write-region it nil "/tmp/yt-transcript.txt"))  
+</pre>
+</div>
+
+<p>
+While developing it I thought: "it would be cool to write in
+point-free style".
+</p>
+
+<p>
+First split the functions:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun extract-text-from-yt-video (transcript-plist)
+  "Make a transcript string out of youtube TRANSCRIPT-PLIST."
+  (--&gt; transcript-plist
+       (--map (plist-get it :text) it)
+       (s-join "\n" it)))
+
+(defun text-to-file (text)
+  (write-region text nil "/tmp/yt-transcript.txt"))
+</pre>
+</div>
+
+<p>
+Note that each function above does its own independent transformation.
+Data transformation is the core of functional programming. This is a
+great setup for function composition.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(-compose 'text-to-file
+          'extract-text-from-yt-video
+          'me-get-youtube-transcript)
+</pre>
+</div>
+
+<p>
+That uses <a href="https://github.com/magnars/dash.el">dash.el</a> <code>-compose</code> function.
+</p>
+
+<p>
+Then I tried to make a named function of that:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(setq extract-file-out-of-yt-video (-compose 'text-to-file
+                                             'extract-text-from-yt-video
+                                             'me-get-youtube-transcript))
+</pre>
+</div>
+
+<p>
+This fails! Indeed, <code>setq</code> assigns values to variable symbols. These
+symbols cannot be treated as functions.
+</p>
+
+<p>
+Instead you can assign function symbols with <code>fset</code>!
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(fset 'extract-file-out-of-yt-video (-compose 'text-to-file
+                                              'extract-text-from-yt-video
+                                              'me-get-youtube-transcript))
+</pre>
+</div>
+
+<p>
+And that makes our point-free function! Note that composition is
+reversed: the last function is the first to run.
+</p>
+
+<p>
+The last thing I need to discover is how to attach some doc-string to
+that function... Something for another day!
+</p>
+
+<p>
+Happy point-free-ing!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-03-28</span>
+        <span title="last modification date" class="post-info">2022-03-28</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

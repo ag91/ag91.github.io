@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 27 Mar 2022 23:31:20 BST</pubDate>
-    <lastBuildDate>Sun, 27 Mar 2022 23:31:20 BST</lastBuildDate>
+    <pubDate>Mon, 28 Mar 2022 22:35:38 BST</pubDate>
+    <lastBuildDate>Mon, 28 Mar 2022 22:35:38 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Something I missed: point free composition in Elisp!</title>
+      <link>http://ag91.github.io/blog/2022/03/28/something-i-missed-point-free-composition-in-elisp</link>
+      <description><![CDATA[I compose writing YouTube transcripts to files in point-free style.]]></description>
+      <pubDate>2022-03-28</pubDate>
+      <guid>http://ag91.github.io/blog/2022/03/28/something-i-missed-point-free-composition-in-elisp</guid>
+    </item>
+    <item>
       <title>An Elisp snippet to dowload YouTube videos transcripts</title>
       <link>http://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts</link>
-      <description><![CDATA[Wrapping pip moule youtube_transcript_downloader to download YouTube transcripts in Emacs]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-03-27</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-02-23</pubDate>
       <guid>http://ag91.github.io/blog/2022/02/23/would-you-like-an-emacs-buddy-i-can-help</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: learning syntax from your editor!</title>
-      <link>http://ag91.github.io/blog/2022/02/11/moldable-emacs-learning-syntax-from-your-editor</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-02-11</pubDate>
-      <guid>http://ag91.github.io/blog/2022/02/11/moldable-emacs-learning-syntax-from-your-editor</guid>
     </item>
   </channel>
 </rss>
