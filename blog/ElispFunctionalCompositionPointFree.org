@@ -1,0 +1,86 @@
+#+TITLE:       Something I missed: point free composition in Elisp!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-03-28 Mon
+#+URI:         /blog/%y/%m/%d/something-i-missed-point-free-composition-in-elisp
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: I compose writing YouTube transcripts to files in point-free style.
+
+I enjoy writing code in a functional style. This means that, yes, I am
+a fan of point-free composition. This means writing functions without
+defining their arguments.
+
+It is not the most readable approach, but is terse. If you come up
+with good function names it is pretty good. Also no need to test
+point-free functions because they are covered by the tests of their
+components.
+
+Anyway I just realized I can do that in Elisp! I was just improving [[https://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts/][my
+function to download YouTube scripts]] to get the results into a file.
+My first go:
+
+#+begin_src elisp :noeval
+(defun yt-transcript-to-file (url)
+  (--> (get-youtube-transcript url)
+       (--map (plist-get it :text) it)
+       (s-join "\n" it)
+       (write-region it nil "/tmp/yt-transcript.txt"))  
+#+end_src
+
+While developing it I thought: "it would be cool to write in
+point-free style".
+
+First split the functions:
+
+#+begin_src elisp :noeval
+(defun extract-text-from-yt-video (transcript-plist)
+  "Make a transcript string out of youtube TRANSCRIPT-PLIST."
+  (--> transcript-plist
+       (--map (plist-get it :text) it)
+       (s-join "\n" it)))
+
+(defun text-to-file (text)
+  (write-region text nil "/tmp/yt-transcript.txt"))
+#+end_src
+
+Note that each function above does its own independent transformation.
+Data transformation is the core of functional programming. This is a
+great setup for function composition.
+
+#+begin_src elisp
+(-compose 'text-to-file
+          'extract-text-from-yt-video
+          'me-get-youtube-transcript)
+#+end_src
+
+That uses [[https://github.com/magnars/dash.el][dash.el]] =-compose= function.
+
+Then I tried to make a named function of that:
+
+#+begin_src elisp :noeval
+(setq extract-file-out-of-yt-video (-compose 'text-to-file
+                                             'extract-text-from-yt-video
+                                             'me-get-youtube-transcript))
+#+end_src
+
+This fails! Indeed, =setq= assigns values to variable symbols. These
+symbols cannot be treated as functions.
+
+Instead you can assign function symbols with =fset=!
+
+#+begin_src elisp :noeval
+(fset 'extract-file-out-of-yt-video (-compose 'text-to-file
+                                              'extract-text-from-yt-video
+                                              'me-get-youtube-transcript))
+#+end_src
+
+And that makes our point-free function! Note that composition is
+reversed: the last function is the first to run.
+
+The last thing I need to discover is how to attach some doc-string to
+that function... Something for another day!
+
+Happy point-free-ing!
