@@ -1,0 +1,59 @@
+#+TITLE:       ol-emacs-slack: Added support for thread links
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-04-01 Fri
+#+URI:         /blog/%y/%m/%d/ol-emacs-slack-added-support-for-thread-links
+#+KEYWORDS:    emacs, slack
+#+TAGS:        emacs, slack
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: I added support to thread links for Org Mode links in emacs-slack
+
+This is just a quick announcement: today I managed to add support of
+thread links to my [[https://github.com/ag91/ol-emacs-slack][ol-emacs-slack]].
+
+This ol-emacs-slack is a way to create Org Mode links for the
+[[https://github.com/yuya373/emacs-slack][emacs-slack]] extension. This is pretty useful if you want to track
+Slack message in your Org Agenda:
+https://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda/.
+
+Here the updated code for getting alerts in your Org Agenda:
+
+#+begin_src elisp
+(use-package alert
+  :after slack
+  :init
+  (alert-define-style
+   'my/alert-style :title
+   "Make Org headings for messages I receive - Style"
+   :notifier
+   (lambda (info)
+     (when (get-buffer "Slack.org") (with-current-buffer "Slack.org" (save-buffer)))
+     (message "%s" info)
+     (setq my/alert info)
+     (write-region
+      (concat
+       "* TODO "
+       (plist-get info :title)
+       " : "
+       (format
+        "[[emacs-slack:%s][%s]] :slack:"
+        (if (plist-get info :data)
+            (format "%s|%s|ts:%s"
+                    (plist-get (plist-get info :data) :team-id)
+                    (plist-get (plist-get info :data) :room-id)
+                    (plist-get (plist-get info :data) :ts))
+          (plist-get info :title))
+        (s-truncate 127 (s-replace "\n" ";" (plist-get info :message))))
+       "\n"
+       (format "<%s>" (format-time-string "%Y-%m-%d %H:%M"))
+       "\n"
+       (plist-get info :message)
+       "\n")
+      nil
+      "/your/path/to/Slack.org"
+      t)))
+  (setq alert-default-style 'message)
+  (add-to-list 'alert-user-configuration
+               '(((:category . "slack")) my/alert-style nil)))
+#+end_src
