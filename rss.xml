@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 28 Mar 2022 22:35:38 BST</pubDate>
-    <lastBuildDate>Mon, 28 Mar 2022 22:35:38 BST</lastBuildDate>
+    <pubDate>Fri, 01 Apr 2022 19:35:27 BST</pubDate>
+    <lastBuildDate>Fri, 01 Apr 2022 19:35:27 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>ol-emacs-slack: Added support for thread links</title>
+      <link>http://ag91.github.io/blog/2022/04/01/ol-emacs-slack-added-support-for-thread-links</link>
+      <description><![CDATA[I added support to thread links for Org Mode links in emacs-slack]]></description>
+      <pubDate>2022-04-01</pubDate>
+      <guid>http://ag91.github.io/blog/2022/04/01/ol-emacs-slack-added-support-for-thread-links</guid>
+    </item>
+    <item>
       <title>Something I missed: point free composition in Elisp!</title>
       <link>http://ag91.github.io/blog/2022/03/28/something-i-missed-point-free-composition-in-elisp</link>
-      <description><![CDATA[I compose writing YouTube transcripts to files in point-free style.]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-03-28</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/28/something-i-missed-point-free-composition-in-elisp</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-03-01</pubDate>
       <guid>http://ag91.github.io/blog/2022/02/28/set-all-incoming-emails-as-read-with-mu4e</guid>
-    </item>
-    <item>
-      <title>Would you like an Emacs buddy? I can help!</title>
-      <link>http://ag91.github.io/blog/2022/02/23/would-you-like-an-emacs-buddy-i-can-help</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-02-23</pubDate>
-      <guid>http://ag91.github.io/blog/2022/02/23/would-you-like-an-emacs-buddy-i-can-help</guid>
     </item>
   </channel>
 </rss>
