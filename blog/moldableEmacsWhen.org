@@ -1,0 +1,82 @@
+#+TITLE:       Moldable Emacs: mold can now update themselves with their :when clause!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-04-14 Thu
+#+URI:         /blog/%y/%m/%d/moldable-emacs-mold-can-now-update-themselves-with-their-when-clause
+#+KEYWORDS:    moldable-emacs
+#+TAGS:        moldable-emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Molds finally react to the context autonomously.
+
+* Too long; didn't read
+
+I added a mechanism to refresh mold buffers contents: define a =:when=
+clause for the mold looking like =(:when (:fn 't)= and the mold
+content will reload periodically.
+
+* The problem
+
+Molds take a buffer (or parts of it) and transform its information
+into a new buffer. The manipulated data remains in the output buffer
+as local variables (=self= and =mold-data=). That is important because
+now you can develop your data exploration as a cascade of
+transformations. Indeed molds are also compo sable.
+
+Now, what happens if the original buffer on which you applied a mold
+changed? So far, a user would need to apply the mold again. That
+worked for me until now: I started using the "OrgTablesToDotPicture"
+mold more seriously and this repetition started troubling me.
+
+That mold transforms Org Tables with the right schema to a Graphviz
+picture. That means that each time I was changing my Org Tables I had
+to re-run my mold. I needed a faster feedback loop to produce my
+graphs! And many more molds would became amazing with an updating
+mechanism.
+
+How can we make this update automatic?
+
+* And there is a solution
+
+An idle timer! Actually we need a predicate to know when to update. If
+the predicate is true and we are in the right context (i.e, we see the
+original and the result buffer of the mold), we want to update the
+resulting buffer.
+
+Let me give you a sense of this with my "OrgTablesToDotPicture" mold.
+
+[[file:moldableEmacsWhen.mp4]]
+
+This is just very useful to me. I can see how my tables look as a
+graph AND I can access their data as Elisp. (I can even generate these
+tables via Elisp but that is a story for later)
+
+This particular mold is a composite one: it calls two molds in
+sequence (i.e., "OrgTablesToDot" and "DotToPicture").
+
+The =:when= predicate looks like this:
+
+#+begin_src elisp
+:when (:fn
+       (progn
+         (ignore-errors (unless (s-contains-p "| key" (thing-at-point 'line)) (goto-char (search-backward "| key"))))
+         (not
+          (equal (ignore-errors me-org-tables-to-dot) ;first time this is undefined
+                 (setq-local me-org-tables-to-dot (me-all-flat-org-tables))))))
+#+end_src
+
+It searches the first Org Table with the right schema (very hacky!)
+and checks if the table data has changed from last time.
+
+This is the only mold with such a condition for now. Still this is
+very exciting for me. I have been thinking about a mold that can
+explain errors from a while (I mean if a regexp appears in the buffer,
+the mold should explain what it is about from a note you have
+somewhere) and I feel this could make it super useful.
+
+* Conclusion
+
+Auto-update your molds and make your feedback loop short! Define the
+=:when= clause and let [[https://github.com/ag91/moldable-emacs][moldable-emacs]] do the heavy load for you.
+
+Happy refreshing!
