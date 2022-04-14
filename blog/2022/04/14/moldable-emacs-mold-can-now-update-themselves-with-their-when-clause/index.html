@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: mold can now update themselves with their :when clause! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Molds finally react to the context autonomously." />
+    <meta name="keywords" content="moldable-emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: mold can now update themselves with their :when clause!</h1>
+
+<div id="outline-container-orgd3d3d7f" class="outline-2">
+<h2 id="orgd3d3d7f">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgd3d3d7f">
+<p>
+I added a mechanism to refresh mold buffers contents: define a <code>:when</code>
+clause for the mold looking like <code>(:when (:fn 't)</code> and the mold
+content will reload periodically.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6de66a0" class="outline-2">
+<h2 id="org6de66a0">The problem</h2>
+<div class="outline-text-2" id="text-org6de66a0">
+<p>
+Molds take a buffer (or parts of it) and transform its information
+into a new buffer. The manipulated data remains in the output buffer
+as local variables (<code>self</code> and <code>mold-data</code>). That is important because
+now you can develop your data exploration as a cascade of
+transformations. Indeed molds are also compo sable.
+</p>
+
+<p>
+Now, what happens if the original buffer on which you applied a mold
+changed? So far, a user would need to apply the mold again. That
+worked for me until now: I started using the "OrgTablesToDotPicture"
+mold more seriously and this repetition started troubling me.
+</p>
+
+<p>
+That mold transforms Org Tables with the right schema to a Graphviz
+picture. That means that each time I was changing my Org Tables I had
+to re-run my mold. I needed a faster feedback loop to produce my
+graphs! And many more molds would became amazing with an updating
+mechanism.
+</p>
+
+<p>
+How can we make this update automatic?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf5610b1" class="outline-2">
+<h2 id="orgf5610b1">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgf5610b1">
+<p>
+An idle timer! Actually we need a predicate to know when to update. If
+the predicate is true and we are in the right context (i.e, we see the
+original and the result buffer of the mold), we want to update the
+resulting buffer.
+</p>
+
+<p>
+Let me give you a sense of this with my "OrgTablesToDotPicture" mold.
+</p>
+
+<p>
+<a href="/assets/blog/2022/04/14/moldable-emacs-mold-can-now-update-themselves-with-their-when-clause/moldableEmacsWhen.mp4">/assets/blog/2022/04/14/moldable-emacs-mold-can-now-update-themselves-with-their-when-clause/moldableEmacsWhen.mp4</a>
+</p>
+
+<p>
+This is just very useful to me. I can see how my tables look as a
+graph AND I can access their data as Elisp. (I can even generate these
+tables via Elisp but that is a story for later)
+</p>
+
+<p>
+This particular mold is a composite one: it calls two molds in
+sequence (i.e., "OrgTablesToDot" and "DotToPicture").
+</p>
+
+<p>
+The <code>:when</code> predicate looks like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">:when (:fn
+       (progn
+         (ignore-errors (unless (s-contains-p "| key" (thing-at-point 'line)) (goto-char (search-backward "| key"))))
+         (not
+          (equal (ignore-errors me-org-tables-to-dot) ;first time this is undefined
+                 (setq-local me-org-tables-to-dot (me-all-flat-org-tables))))))
+</pre>
+</div>
+
+<p>
+It searches the first Org Table with the right schema (very hacky!)
+and checks if the table data has changed from last time.
+</p>
+
+<p>
+This is the only mold with such a condition for now. Still this is
+very exciting for me. I have been thinking about a mold that can
+explain errors from a while (I mean if a regexp appears in the buffer,
+the mold should explain what it is about from a note you have
+somewhere) and I feel this could make it super useful.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbe19a38" class="outline-2">
+<h2 id="orgbe19a38">Conclusion</h2>
+<div class="outline-text-2" id="text-orgbe19a38">
+<p>
+Auto-update your molds and make your feedback loop short! Define the
+<code>:when</code> clause and let <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> do the heavy load for you.
+</p>
+
+<p>
+Happy refreshing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-04-14</span>
+        <span title="last modification date" class="post-info">2022-04-14</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

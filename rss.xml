@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 01 Apr 2022 19:35:27 BST</pubDate>
-    <lastBuildDate>Fri, 01 Apr 2022 19:35:27 BST</lastBuildDate>
+    <pubDate>Thu, 14 Apr 2022 23:45:29 BST</pubDate>
+    <lastBuildDate>Thu, 14 Apr 2022 23:45:29 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: mold can now update themselves with their :when clause!</title>
+      <link>http://ag91.github.io/blog/2022/04/14/moldable-emacs-mold-can-now-update-themselves-with-their-when-clause</link>
+      <description><![CDATA[Molds finally react to the context autonomously.]]></description>
+      <pubDate>2022-04-14</pubDate>
+      <guid>http://ag91.github.io/blog/2022/04/14/moldable-emacs-mold-can-now-update-themselves-with-their-when-clause</guid>
+    </item>
+    <item>
       <title>ol-emacs-slack: Added support for thread links</title>
       <link>http://ag91.github.io/blog/2022/04/01/ol-emacs-slack-added-support-for-thread-links</link>
-      <description><![CDATA[I added support to thread links for Org Mode links in emacs-slack]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-04-01</pubDate>
       <guid>http://ag91.github.io/blog/2022/04/01/ol-emacs-slack-added-support-for-thread-links</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-03-01</pubDate>
       <guid>http://ag91.github.io/blog/2022/02/28/repository-to-find-your-emacs-buddy</guid>
-    </item>
-    <item>
-      <title>Set all incoming emails as read with Mu4e</title>
-      <link>http://ag91.github.io/blog/2022/02/28/set-all-incoming-emails-as-read-with-mu4e</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-03-01</pubDate>
-      <guid>http://ag91.github.io/blog/2022/02/28/set-all-incoming-emails-as-read-with-mu4e</guid>
     </item>
   </channel>
 </rss>
