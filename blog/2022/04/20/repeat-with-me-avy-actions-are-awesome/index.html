@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Repeat with me: Avy actions are awesome! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Repealt last Avy action for super efficiency!" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Repeat with me: Avy actions are awesome!</h1>
+
+<div id="outline-container-org1dc05ff" class="outline-2">
+<h2 id="org1dc05ff">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org1dc05ff">
+<p>
+Repeat the last Avy action to multiple places in the buffer.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf98a596" class="outline-2">
+<h2 id="orgf98a596">The problem</h2>
+<div class="outline-text-2" id="text-orgf98a596">
+<p>
+Somebody on the Emacs Reddit channel shared a link to an amazing blog
+post by Karthik: <a href="https://karthinks.com/software/avy-can-do-anything/">https://karthinks.com/software/avy-can-do-anything/</a>.
+That was greatly inspiring for me and made me finally move into a way
+of navigating and acting on text that is really rewarding for me.
+</p>
+
+<p>
+Also what a combination that Karthik jumped onto the <a href="https://github.com/ag91/emacs-buddy">Emacs Buddy</a>
+initiative! That gave me chance to discuss to him the problem that I
+am presenting to you now.
+</p>
+
+<p>
+Given you read his post, you know that using Avy is not only about
+moving to a place in the visible buffer. Avy also lets you act on
+that.
+</p>
+
+<p>
+Then my issue is simple: what about repeating the same action on many
+matches? Imagine I am in the Org Agenda buffer and I want to mark many
+entries done: the plan is making an Avy command for that and repeating
+it on matches until I am satisfied.
+</p>
+
+<p>
+Since you can create a command for anything, you could have one to
+open links or even reply the same Slack message to many recipients.
+</p>
+
+<p>
+How difficult would that be?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org51966a3" class="outline-2">
+<h2 id="org51966a3">And there is a solution</h2>
+<div class="outline-text-2" id="text-org51966a3">
+<p>
+Well if you get Karthik as a buddy, that is pretty straightforward! He
+helped me understand where to modify things.
+</p>
+
+<p>
+Let me show you the result:
+</p>
+
+<p>
+<a href="/assets/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome/repeatAvy.mp4">/assets/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome/repeatAvy.mp4</a>
+</p>
+
+<p>
+This is how Avy <code>avy-goto-char-timer</code> works:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun avy-goto-char-timer (&amp;optional arg)
+  "Read one or many consecutive chars and jump to the first one.
+The window scope is determined by `avy-all-windows' (ARG negates it)."
+  (interactive "P")
+  (let ((avy-all-windows (if arg
+                             (not avy-all-windows)
+                           avy-all-windows)))
+    (avy-with avy-goto-char-timer
+      (setq avy--old-cands (avy--read-candidates))
+      (avy-process avy--old-cands))))
+</pre>
+</div>
+
+<p>
+Basically <code>(avy--read-candidates)</code> asks you the input and selects your
+candidates overlaying letters on them. <code>(avy-process avy--old-cands)</code>
+instead applies the action on one of them.
+</p>
+
+<p>
+After reading Karthik's advice I thought I could manage by simply
+running <code>(avy-process avy--old-cands)</code> again in my action, and that
+worked badly. The highlights would be broken after my first match.
+</p>
+
+<p>
+So, after another email exchange I was given a plan: refactor Avy in
+smaller functions to reuse the bits I needed for my feature.
+</p>
+
+<p>
+And I (mostly) followed it. This is what I got to:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/avy--read-candidates ()
+  (let ((re-builder #'regexp-quote)
+        break overlays regex)
+    (unwind-protect
+        (progn
+          (avy--make-backgrounds
+           (avy-window-list))
+          ;; Unhighlight
+          (dolist (ov overlays)
+            (delete-overlay ov))
+          (setq overlays nil)
+          ;; Highlight
+          (when (&gt;= (length avy-text) 1)
+            (let ((case-fold-search
+                   (or avy-case-fold-search (string= avy-text (downcase avy-text))))
+                  found)
+              (avy-dowindows current-prefix-arg
+                (dolist (pair (avy--find-visible-regions
+                               (window-start)
+                               (window-end (selected-window) t)))
+                  (save-excursion
+                    (goto-char (car pair))
+                    (setq regex (funcall re-builder avy-text))
+                    (while (re-search-forward regex (cdr pair) t)
+                      (unless (not (avy--visible-p (1- (point))))
+                        (let* ((idx (if (= (length (match-data)) 4) 1 0))
+                               (ov (make-overlay
+                                    (match-beginning idx) (match-end idx))))
+                          (setq found t)
+                          (push ov overlays)
+                          (overlay-put
+                           ov 'window (selected-window))
+                          (overlay-put
+                           ov 'face 'avy-goto-char-timer-face)))))))
+              ;; No matches at all, so there's surely a typo in the input.
+              (unless found (beep))))
+          (nreverse (mapcar (lambda (ov)
+                              (cons (cons (overlay-start ov)
+                                          (overlay-end ov))
+                                    (overlay-get ov 'window)))
+                            overlays)))
+      (dolist (ov overlays)
+        (delete-overlay ov))
+      (avy--done))))
+
+(defun my/avy-repeat-action ()
+  (setq avy--old-cands (my/avy--read-candidates))
+  (avy-process avy--old-cands))
+</pre>
+</div>
+
+<p>
+I extracted only the bits I needed of <code>avy--read-candidates</code> into
+<code>my/avy--read-candidates</code>. The driving idea is that since I am
+repeating an action, I don't want to ask the user again for input, but
+reuse the old one. So I removed that part of <code>avy--read-candidates</code>.
+The rest looks like the original Avy function.
+</p>
+
+<p>
+So how do we use this? Define your Avy action like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun avy-action-org-agenda-done (pt)
+    (save-excursion
+      (goto-char pt)
+      (org-agenda-todo))
+    (select-window
+     (cdr (ring-ref avy-ring 0)))
+    (my/avy-repeat-action)
+    t)
+
+(setf (alist-get ?D avy-dispatch-alist) 'avy-action-org-agenda-done)
+</pre>
+</div>
+
+<p>
+This uses <code>(org-agenda-todo)</code> to change the state of your Org Agenda
+entry. So if you match over TODO and press the D key and start
+following Avy's hints you can keep marking tasks done until you need.
+When you are finished just press C-g.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4186ac9" class="outline-2">
+<h2 id="org4186ac9">Conclusion</h2>
+<div class="outline-text-2" id="text-org4186ac9">
+<p>
+Now you can repeat Avy commands without a sweat! I hope this
+repetition will save me tons of (little) time :)
+</p>
+
+<p>
+Happy repeating!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-04-20</span>
+        <span title="last modification date" class="post-info">2022-04-20</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

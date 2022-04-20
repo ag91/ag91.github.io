@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 14 Apr 2022 23:45:29 BST</pubDate>
-    <lastBuildDate>Thu, 14 Apr 2022 23:45:29 BST</lastBuildDate>
+    <pubDate>Wed, 20 Apr 2022 23:24:41 BST</pubDate>
+    <lastBuildDate>Wed, 20 Apr 2022 23:24:41 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Repeat with me: Avy actions are awesome!</title>
+      <link>http://ag91.github.io/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome</link>
+      <description><![CDATA[Repealt last Avy action for super efficiency!]]></description>
+      <pubDate>2022-04-20</pubDate>
+      <guid>http://ag91.github.io/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: mold can now update themselves with their :when clause!</title>
       <link>http://ag91.github.io/blog/2022/04/14/moldable-emacs-mold-can-now-update-themselves-with-their-when-clause</link>
-      <description><![CDATA[Molds finally react to the context autonomously.]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-04-14</pubDate>
       <guid>http://ag91.github.io/blog/2022/04/14/moldable-emacs-mold-can-now-update-themselves-with-their-when-clause</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-03-06</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/06/mu4e-jump-to-manual-to-get-help-in-writing-queries</guid>
-    </item>
-    <item>
-      <title>Repository to find your Emacs buddy</title>
-      <link>http://ag91.github.io/blog/2022/02/28/repository-to-find-your-emacs-buddy</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-03-01</pubDate>
-      <guid>http://ag91.github.io/blog/2022/02/28/repository-to-find-your-emacs-buddy</guid>
     </item>
   </channel>
 </rss>
