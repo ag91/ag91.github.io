@@ -1,0 +1,160 @@
+#+TITLE:       Repeat with me: Avy actions are awesome!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-04-20 Wed
+#+URI:         /blog/%y/%m/%d/repeat-with-me-avy-actions-are-awesome
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Repealt last Avy action for super efficiency!
+
+* Too long; didn't read
+
+Repeat the last Avy action to multiple places in the buffer.
+
+* The problem
+
+Somebody on the Emacs Reddit channel shared a link to an amazing blog
+post by Karthik: https://karthinks.com/software/avy-can-do-anything/.
+That was greatly inspiring for me and made me finally move into a way
+of navigating and acting on text that is really rewarding for me.
+
+Also what a combination that Karthik jumped onto the [[https://github.com/ag91/emacs-buddy][Emacs Buddy]]
+initiative! That gave me chance to discuss to him the problem that I
+am presenting to you now.
+
+Given you read his post, you know that using Avy is not only about
+moving to a place in the visible buffer. Avy also lets you act on
+that.
+
+Then my issue is simple: what about repeating the same action on many
+matches? Imagine I am in the Org Agenda buffer and I want to mark many
+entries done: the plan is making an Avy command for that and repeating
+it on matches until I am satisfied.
+
+Since you can create a command for anything, you could have one to
+open links or even reply the same Slack message to many recipients.
+
+How difficult would that be?
+
+* And there is a solution
+
+Well if you get Karthik as a buddy, that is pretty straightforward! He
+helped me understand where to modify things.
+
+Let me show you the result:
+
+[[file:repeatAvy.mp4]]
+
+This is how Avy =avy-goto-char-timer= works:
+
+#+begin_src elisp
+(defun avy-goto-char-timer (&optional arg)
+  "Read one or many consecutive chars and jump to the first one.
+The window scope is determined by `avy-all-windows' (ARG negates it)."
+  (interactive "P")
+  (let ((avy-all-windows (if arg
+                             (not avy-all-windows)
+                           avy-all-windows)))
+    (avy-with avy-goto-char-timer
+      (setq avy--old-cands (avy--read-candidates))
+      (avy-process avy--old-cands))))
+#+end_src
+
+Basically =(avy--read-candidates)= asks you the input and selects your
+candidates overlaying letters on them. =(avy-process avy--old-cands)=
+instead applies the action on one of them.
+
+After reading Karthik's advice I thought I could manage by simply
+running =(avy-process avy--old-cands)= again in my action, and that
+worked badly. The highlights would be broken after my first match.
+
+So, after another email exchange I was given a plan: refactor Avy in
+smaller functions to reuse the bits I needed for my feature.
+
+And I (mostly) followed it. This is what I got to:
+
+#+begin_src elisp :noeval
+(defun my/avy--read-candidates ()
+  (let ((re-builder #'regexp-quote)
+        break overlays regex)
+    (unwind-protect
+        (progn
+          (avy--make-backgrounds
+           (avy-window-list))
+          ;; Unhighlight
+          (dolist (ov overlays)
+            (delete-overlay ov))
+          (setq overlays nil)
+          ;; Highlight
+          (when (>= (length avy-text) 1)
+            (let ((case-fold-search
+                   (or avy-case-fold-search (string= avy-text (downcase avy-text))))
+                  found)
+              (avy-dowindows current-prefix-arg
+                (dolist (pair (avy--find-visible-regions
+                               (window-start)
+                               (window-end (selected-window) t)))
+                  (save-excursion
+                    (goto-char (car pair))
+                    (setq regex (funcall re-builder avy-text))
+                    (while (re-search-forward regex (cdr pair) t)
+                      (unless (not (avy--visible-p (1- (point))))
+                        (let* ((idx (if (= (length (match-data)) 4) 1 0))
+                               (ov (make-overlay
+                                    (match-beginning idx) (match-end idx))))
+                          (setq found t)
+                          (push ov overlays)
+                          (overlay-put
+                           ov 'window (selected-window))
+                          (overlay-put
+                           ov 'face 'avy-goto-char-timer-face)))))))
+              ;; No matches at all, so there's surely a typo in the input.
+              (unless found (beep))))
+          (nreverse (mapcar (lambda (ov)
+                              (cons (cons (overlay-start ov)
+                                          (overlay-end ov))
+                                    (overlay-get ov 'window)))
+                            overlays)))
+      (dolist (ov overlays)
+        (delete-overlay ov))
+      (avy--done))))
+
+(defun my/avy-repeat-action ()
+  (setq avy--old-cands (my/avy--read-candidates))
+  (avy-process avy--old-cands))
+#+end_src
+
+I extracted only the bits I needed of =avy--read-candidates= into
+=my/avy--read-candidates=. The driving idea is that since I am
+repeating an action, I don't want to ask the user again for input, but
+reuse the old one. So I removed that part of =avy--read-candidates=.
+The rest looks like the original Avy function.
+
+So how do we use this? Define your Avy action like this:
+
+#+begin_src elisp :noeval
+(defun avy-action-org-agenda-done (pt)
+    (save-excursion
+      (goto-char pt)
+      (org-agenda-todo))
+    (select-window
+     (cdr (ring-ref avy-ring 0)))
+    (my/avy-repeat-action)
+    t)
+
+(setf (alist-get ?D avy-dispatch-alist) 'avy-action-org-agenda-done)
+#+end_src
+
+This uses =(org-agenda-todo)= to change the state of your Org Agenda
+entry. So if you match over TODO and press the D key and start
+following Avy's hints you can keep marking tasks done until you need.
+When you are finished just press C-g.
+
+* Conclusion
+
+Now you can repeat Avy commands without a sweat! I hope this
+repetition will save me tons of (little) time :)
+
+Happy repeating!
