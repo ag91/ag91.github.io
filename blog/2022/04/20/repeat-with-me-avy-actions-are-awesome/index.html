@@ -95,15 +95,18 @@ Let me show you the result:
 </p>
 
 <p>
-<a href="/assets/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome/repeatAvy.mp4">/assets/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome/repeatAvy.mp4</a>
+  <video width="420" height="240" controls>
+    <source src="/assets/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome/repeatAvy.mp4" type="video/mp4">
+    <a href="/assets/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome/repeatAvy.mp4">/assets/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome/repeatAvy.mp4</a>
+  </video>
 </p>
 
 <p>
-This is how Avy <code>avy-goto-char-timer</code> works:
+  This is how Avy <code>avy-goto-char-timer</code> works:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-elisp">(defun avy-goto-char-timer (&amp;optional arg)
+  <pre class="src src-elisp">(defun avy-goto-char-timer (&amp;optional arg)
   "Read one or many consecutive chars and jump to the first one.
 The window scope is determined by `avy-all-windows' (ARG negates it)."
   (interactive "P")
