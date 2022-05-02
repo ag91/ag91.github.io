@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Wed, 20 Apr 2022 23:24:41 BST</pubDate>
-    <lastBuildDate>Wed, 20 Apr 2022 23:24:41 BST</lastBuildDate>
+    <pubDate>Mon, 02 May 2022 21:49:26 BST</pubDate>
+    <lastBuildDate>Mon, 02 May 2022 21:49:26 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Emms + Org Roam: YouTube playlists with titles!</title>
+      <link>http://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles</link>
+      <description><![CDATA[Listen to your EXTM3U playlists and see the titles in Emms]]></description>
+      <pubDate>2022-05-02</pubDate>
+      <guid>http://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles</guid>
+    </item>
+    <item>
       <title>Repeat with me: Avy actions are awesome!</title>
       <link>http://ag91.github.io/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome</link>
-      <description><![CDATA[Repealt last Avy action for super efficiency!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-04-20</pubDate>
       <guid>http://ag91.github.io/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-03-12</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/12/org-agenda-keep-the-buffer-order-untouched-after-saving-all-modified-org-buffers</guid>
-    </item>
-    <item>
-      <title>Mu4e: jump to manual to get help in writing queries</title>
-      <link>http://ag91.github.io/blog/2022/03/06/mu4e-jump-to-manual-to-get-help-in-writing-queries</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-03-06</pubDate>
-      <guid>http://ag91.github.io/blog/2022/03/06/mu4e-jump-to-manual-to-get-help-in-writing-queries</guid>
     </item>
   </channel>
 </rss>

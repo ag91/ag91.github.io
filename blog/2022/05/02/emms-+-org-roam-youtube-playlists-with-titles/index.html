@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Emms + Org Roam: YouTube playlists with titles! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Listen to your EXTM3U playlists and see the titles in Emms" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Emms + Org Roam: YouTube playlists with titles!</h1>
+
+<div id="outline-container-org477f07d" class="outline-2">
+<h2 id="org477f07d">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org477f07d">
+<p>
+I extend Emms to parse EXTM3U playlists of youtube links so I can
+listen to songs with MPV and read their titles!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org701015c" class="outline-2">
+<h2 id="org701015c">The problem</h2>
+<div class="outline-text-2" id="text-org701015c">
+<p>
+I like music. And lucky me YouTube is a treasure chest of songs! I
+already wrote how I made <a href="https://ag91.github.io/blog/2021/01/25/vlc-via-emacs-how-to-open-a-youtube-link/">VLC become my YouTube music player</a>. Well
+somehow that stopped working: YouTube API changes often enough to
+break VLC plugins. Also what a pity I wasn't using <a href="https://www.gnu.org/software/emms/">GNU Emms</a>! That is a
+great mode for playing a song with a few keybindings.
+</p>
+
+<p>
+I got also used to capture music I like as Org Roam notes: I <a href="https://ag91.github.io/blog/2017/01/29/how-to-fit-rss-feeds-into-an-org-file/">use
+Org-Feed</a> with a Reddit RSS that sends me some random music that
+redditors like, and <a href="https://ag91.github.io/blog/2020/11/12/write-org-roam-notes-via-elisp/">I extract Org Roam notes</a> for those songs I like.
+</p>
+
+<p>
+Now I have musical notes that can make a playlist: how to get them
+played?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4324a08" class="outline-2">
+<h2 id="org4324a08">And there is a solution</h2>
+<div class="outline-text-2" id="text-org4324a08">
+<p>
+Emms + Mpv + youtube-dl is the answer :) At least part of it. Let me
+explain.
+</p>
+
+<p>
+<a href="https://ytdl-org.github.io/youtube-dl/">Youtube-dl</a> is a software that lets you download YouTube videos. Since
+that is its core feature, it should not fail when the API changes.
+</p>
+
+<p>
+<a href="https://github.com/mpv-player/mpv">Mpv</a> is a free media player and leverages youtube-dl to play YouTube
+links: it downloads them in a temporary directory and plays them while
+youtube-dl is downloading (i.e., streaming).
+</p>
+
+<p>
+Emms supports Mpv by default. So after you install these dependencies
+you are already at a good point.
+</p>
+
+<p>
+The next step is to produce a list of your links and feed them to Mpv.
+Mpv accepts playlist files in the <a href="https://en.wikipedia.org/wiki/M3U">M3U format</a>. This is basically a list
+of files or urls in a text file.
+</p>
+
+<p>
+With that you can run <code>mpv your-playlist.m3u</code> and it will start
+playing. Before we move on the next issue, let's plugin Emms. If you
+run <code>emms-play-m3u-playlist</code> giving that file, the music will play.
+BUT also the video! In my case that wasn't necessary: I want to listen
+to songs and not watch their videos. You can fix that by setting some
+Emms variables. Here my Emms config code:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(emms-all)
+(emms-default-players)
+(setq-default
+   emms-source-file-default-directory "~/Music/"
+
+   emms-source-playlist-default-format 'm3u
+   emms-playlist-mode-center-when-go t
+   emms-playlist-default-major-mode 'emms-playlist-mode
+   emms-show-format "NP: %s"
+
+   emms-player-list '(emms-player-mpv)
+   emms-player-mpv-environment '("PULSE_PROP_media.role=music")
+   emms-player-mpv-parameters '("--quiet" "--really-quiet" "--no-video" "--no-audio-display" "--force-window=no" "--vo=null"))
+</pre>
+</div>
+
+<p>
+The relevant bit is <code>'("--quiet" "--really-quiet" "--no-video"
+"--no-audio-display" "--force-window=no" "--vo=null")</code>, which is
+telling to avoid displaying Mpv window AND to skip the video.
+</p>
+
+<p>
+This is probably something you don't want to set if you also watch
+videos with Mpv from Emms, but that is not my case.
+</p>
+
+<p>
+Now to the fun part: how do you create the playlist? Well Org Roam API
+to the rescue: since I backlink songs to a common note, I just need to
+gather these notes with some Elisp and print their links in a M3U
+file.
+</p>
+
+<p>
+When you open a playlist of YouTube urls (the M3U file), you will
+discover that running <code>emms-playlist-mode-go</code> will show just a list of
+links. If you want to know the title of this song, or if you want to
+listen to a particular song, you have to memorize YouTube links. I am
+not good at that.
+</p>
+
+<p>
+So with a bit of browsing, I discovered that there is a fancier way to
+define a playlist: an EXTM3U format (I guess EXT is for extended).
+This allows to provide the title and length of the song along to its
+file or link.
+</p>
+
+<p>
+Naturally... Emms doesn't support the extended format. At least a code
+comment tells that is not implemented yet. Well I need it, so I will
+implement it. (If an Emms developer reads this: please feel free to
+"get inspired" by my code ;)
+</p>
+
+<p>
+This also gives me a chance to show-off how nicely the Emms developers
+made it for contributors to add their own new playlist parser. The
+idea is that you need 3 things:
+</p>
+
+<ol class="org-ol">
+<li>a way to find out if the file you open is indeed a playlist,</li>
+<li>a way to extract the songs and make emms "tracks" out of them</li>
+<li>a way to convert emms tracks back into the playlist file format</li>
+</ol>
+
+<p>
+In the following I cover 1 and 2, and I ignore 3 (because I keep the
+playlist links as Org Roam notes, which is more powerful than a text
+file).
+</p>
+
+<p>
+How do we recognize an EXTM3U file? Simple! It has to start with a
+header: #EXTM3U.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun emms-source-playlist-extm3u-p ()
+    "Return non-nil if the current buffer contains an extm3u playlist."
+    (save-excursion
+      (goto-char (point-min))
+      (s-contains? "#EXTM3U" (buffer-string))))
+</pre>
+</div>
+
+<p>
+That was easy! Next, parse the playlist with names. Let's peek into
+how Emms parses m3u playlists first:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun emms-source-playlist-parse-m3u (playlist-file)
+  "Parse the m3u playlist in the current buffer.
+Files will be relative to the directory of PLAYLIST-FILE, unless
+they have absolute paths."
+  (let ((dir (file-name-directory playlist-file)))
+    (mapcar (lambda (file)
+              (if (string-match "\\`\\(http[s]?\\|mms\\)://" file)
+                  (emms-track 'url file)
+                (emms-track 'file (expand-file-name file dir))))
+            (emms-source-playlist-m3u-files))))
+</pre>
+</div>
+
+<p>
+This gathers links in the EXTM3U file with
+<code>emms-source-playlist-m3u-files</code> and then for each, if it is a link
+creates a URL <code>emms-track</code>, otherwise a filepath one.
+</p>
+
+<p>
+Cool, let's start from gathering urls and titles for our extm3u counterpart:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun emms-source-playlist-extm3u-files-names ()
+    "Extract a list of filenames from the given extm3u playlist.
+
+Empty lines and lines starting with '#' are ignored."
+    (--keep
+     (and (not (s-starts-with-p "#" it))
+          (--&gt; it
+               (s-split "\n" it t)
+               (list :name (nth 1 (s-split "," (nth 0 it) t)) :file (nth 1 it))))
+     (s-split "#EXTINF:" (buffer-string))))
+</pre>
+</div>
+
+<p>
+I am using <a href="https://github.com/magnars/dash.el">dash.el</a> here because I like that style of coding. In short
+it
+</p>
+
+<ol class="org-ol">
+<li><p>
+splits the file contents on "#EXTINF:"
+</p>
+
+<p>
+that header identifies the start of a song definition, so splitting
+will create N+1 entries each containing the song info
+</p>
+
+<p>
+We ignore the first that contains the main header of the file
+(i.e., <code>#EXTM3U</code>)
+</p></li>
+
+<li>ignores the entry's header and extract name and file from each entry
+I found before as a plist <code>(:name :file)</code></li>
+</ol>
+
+<p>
+Now we can feed that in our main parsing function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun emms-source-playlist-parse-extm3u (playlist-file)
+  "Parse the m3u playlist in the current buffer.
+Files will be relative to the directory of PLAYLIST-FILE, unless
+they have absolute paths."
+  (let ((dir (file-name-directory playlist-file)))
+    (mapcar (lambda (name-file)
+              (let* ((file (plist-get name-file :file))
+                     (track (if (string-match "\\`\\(http[s]?\\|mms\\)://" file)
+                                (emms-track 'url file)
+                              (emms-track 'file (expand-file-name file dir))))
+                     (_ (emms-track-set track 'info-title (plist-get name-file :name))))
+                track))
+            (emms-source-playlist-extm3u-files-names))))
+</pre>
+</div>
+
+<p>
+The only change here from the Emms' <code>m3u</code> function is that we set the
+title for the track with <code>(emms-track-set track 'info-title (plist-get
+name-file :name))</code>.
+</p>
+
+<p>
+Now if you load these functions and open an EXTM3U playlist, Emms will
+open it AND display the title as well. I typically store music notes
+in a format "AUTHOR -- TITLE", so I didn't bother to set the author
+information for the track (yet). Hopefully Emms provides a track
+property for that as well :)
+</p>
+
+<p>
+That's it! Now I can listen to music with Emms, know what I am playing
+AND finally be able to choose the song I like. All of this keeping my
+hard-drive empty.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org409b342" class="outline-2">
+<h2 id="org409b342">Conclusion</h2>
+<div class="outline-text-2" id="text-org409b342">
+<p>
+If you didn't think you could listen/manage music from YouTube within
+Emacs think again :D Also Emms developers are awesome!
+</p>
+
+<p>
+Happy listening!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-05-02</span>
+        <span title="last modification date" class="post-info">2022-05-02</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
