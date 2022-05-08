@@ -1,0 +1,131 @@
+#+TITLE:       How to rank your backlinks notes with Org Roam
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-05-08 Sun
+#+URI:         /blog/%y/%m/%d/how-to-rank-your-backlinks-notes-with-org-roam
+#+KEYWORDS:    org-roam, emacs
+#+TAGS:        org-roam, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: How to sort notes by their number of backlinks
+
+* Too long; didn't read
+
+Sort the backlinks of one of your note by their number of backlinks to
+find notes that are important to you.
+
+* The problem
+
+Every so often I get into the top N reading lists of other people and
+always find interesting tips. The other day, while sorting my notes, I
+thought: what is a reading list I would suggest?
+
+The immediate next question was: can I automate that?
+
+The good news is that I take notes for the books I read, so the
+question became simpler: how can I use my Org Roam notes to rank my
+readings?
+
+* It is a problem indeed
+
+But a more general question is: when is a note interesting? A note
+seems to be more interesting than another if other notes refer to it.
+Really I am taking inspiration from the [[https://en.wikipedia.org/wiki/PageRank][Page Rank]] algorithm here
+because it resulted quite successful.
+
+All of this started from creating a reading list, but what about
+sorting notes for one of my readings? I want to get a possible answer
+for: what is the single most important thing I learned from this book?
+
+And we can have similar questions for other notes, for example: what
+is the most important backlink to this note?
+
+All these questions sound similar to me. And I think we can answer
+them all with the same trick.
+
+* And there is a solution
+
+Let's say a note is important if it has many backlinks. The rationale
+is that if we add many backlinks to a note, we spent quite some time
+on that note. Since time is valuable, a note on which we spent a lot
+of time is very valuable. But wait! Let's go a step further: if we
+snowball the approach, we can find how many backlinks each backlink
+has. That way we find how much time we invested on the notes that link
+back to the notes that link back to the one we are interested.
+
+(I will stop there because I think I reached my mental capacity with that!)
+
+How does this look in Elisp?
+
+#+begin_src elisp
+(--> "book"
+     org-roam-node-from-title-or-alias
+     org-roam-backlinks-get
+     (-map (-compose 'org-roam-node-title 'org-roam-backlink-source-node) it)
+     (--map (list
+             :title it
+             :n-backlinks
+             (condition-case err
+                 (--> it
+                      org-roam-node-from-title-or-alias
+                      org-roam-backlinks-get
+                      (--map (org-roam-backlinks-get (org-roam-backlink-source-node it)) it)
+                      (-flatten-n 1 it)
+                      (or (ignore-errors (length it)) 0))
+               (error
+                -1))
+             )
+            it)
+     (--sort (> (plist-get it :n-backlinks)
+                (plist-get other :n-backlinks))
+             it)
+     )
+#+end_src
+
+Since I tag my readings with a backlink note titled "book", I start
+from that note title. Then I collect its backlinks, find the titles of
+the backlinks and then count the number of backlinks each of these
+have. Finally sort in descending order by number of backlinks.
+
+This simple approach produced both expected and surprising results:
+like a book about Scalability was as important to me as a book about
+real estate!
+
+When I substitute the title of one of the books notes (that is one of
+the backlink of "book") in the function, I find out which note(s) made
+that book so important to me.
+
+So, the above code snippet is more useful if wrapped in a function:
+
+#+begin_src elisp
+(defun ranked-backlinks (note-title)
+  (--> note-title
+       org-roam-node-from-title-or-alias
+       org-roam-backlinks-get
+       (-map (-compose 'org-roam-node-title 'org-roam-backlink-source-node) it)
+       (--map (list
+               :title it
+               :n-backlinks
+               (condition-case err
+                   (--> it
+                        org-roam-node-from-title-or-alias
+                        org-roam-backlinks-get
+                        (--map (org-roam-backlinks-get (org-roam-backlink-source-node it)) it)
+                        (-flatten-n 1 it)
+                        (or (ignore-errors (length it)) 0))
+                 (error
+                  -1))
+               )
+              it)
+       (--sort (> (plist-get it :n-backlinks)
+                  (plist-get other :n-backlinks))
+               it)
+       ))
+#+end_src
+
+* Conclusion
+
+Get some insights from your notes! And when you come up with the your
+most valuable notes, think about sharing them ;)
+
+Happy ranking!
