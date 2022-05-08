@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>How to rank your backlinks notes with Org Roam - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="How to sort notes by their number of backlinks" />
+    <meta name="keywords" content="org-roam, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>How to rank your backlinks notes with Org Roam</h1>
+
+<div id="outline-container-org612c37a" class="outline-2">
+<h2 id="org612c37a">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org612c37a">
+<p>
+Sort the backlinks of one of your note by their number of backlinks to
+find notes that are important to you.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf764209" class="outline-2">
+<h2 id="orgf764209">The problem</h2>
+<div class="outline-text-2" id="text-orgf764209">
+<p>
+Every so often I get into the top N reading lists of other people and
+always find interesting tips. The other day, while sorting my notes, I
+thought: what is a reading list I would suggest?
+</p>
+
+<p>
+The immediate next question was: can I automate that?
+</p>
+
+<p>
+The good news is that I take notes for the books I read, so the
+question became simpler: how can I use my Org Roam notes to rank my
+readings?
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf97ea40" class="outline-2">
+<h2 id="orgf97ea40">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-orgf97ea40">
+<p>
+But a more general question is: when is a note interesting? A note
+seems to be more interesting than another if other notes refer to it.
+Really I am taking inspiration from the <a href="https://en.wikipedia.org/wiki/PageRank">Page Rank</a> algorithm here
+because it resulted quite successful.
+</p>
+
+<p>
+All of this started from creating a reading list, but what about
+sorting notes for one of my readings? I want to get a possible answer
+for: what is the single most important thing I learned from this book?
+</p>
+
+<p>
+And we can have similar questions for other notes, for example: what
+is the most important backlink to this note?
+</p>
+
+<p>
+All these questions sound similar to me. And I think we can answer
+them all with the same trick.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org821af83" class="outline-2">
+<h2 id="org821af83">And there is a solution</h2>
+<div class="outline-text-2" id="text-org821af83">
+<p>
+Let's say a note is important if it has many backlinks. The rationale
+is that if we add many backlinks to a note, we spent quite some time
+on that note. Since time is valuable, a note on which we spent a lot
+of time is very valuable. But wait! Let's go a step further: if we
+snowball the approach, we can find how many backlinks each backlink
+has. That way we find how much time we invested on the notes that link
+back to the notes that link back to the one we are interested.
+</p>
+
+<p>
+(I will stop there because I think I reached my mental capacity with that!)
+</p>
+
+<p>
+How does this look in Elisp?
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt; "book"
+     org-roam-node-from-title-or-alias
+     org-roam-backlinks-get
+     (-map (-compose 'org-roam-node-title 'org-roam-backlink-source-node) it)
+     (--map (list
+             :title it
+             :n-backlinks
+             (condition-case err
+                 (--&gt; it
+                      org-roam-node-from-title-or-alias
+                      org-roam-backlinks-get
+                      (--map (org-roam-backlinks-get (org-roam-backlink-source-node it)) it)
+                      (-flatten-n 1 it)
+                      (or (ignore-errors (length it)) 0))
+               (error
+                -1))
+             )
+            it)
+     (--sort (&gt; (plist-get it :n-backlinks)
+                (plist-get other :n-backlinks))
+             it)
+     )
+</pre>
+</div>
+
+<p>
+Since I tag my readings with a backlink note titled "book", I start
+from that note title. Then I collect its backlinks, find the titles of
+the backlinks and then count the number of backlinks each of these
+have. Finally sort in descending order by number of backlinks.
+</p>
+
+<p>
+This simple approach produced both expected and surprising results:
+like a book about Scalability was as important to me as a book about
+real estate!
+</p>
+
+<p>
+When I substitute the title of one of the books notes (that is one of
+the backlink of "book") in the function, I find out which note(s) made
+that book so important to me.
+</p>
+
+<p>
+So, the above code snippet is more useful if wrapped in a function:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun ranked-backlinks (note-title)
+  (--&gt; note-title
+       org-roam-node-from-title-or-alias
+       org-roam-backlinks-get
+       (-map (-compose 'org-roam-node-title 'org-roam-backlink-source-node) it)
+       (--map (list
+               :title it
+               :n-backlinks
+               (condition-case err
+                   (--&gt; it
+                        org-roam-node-from-title-or-alias
+                        org-roam-backlinks-get
+                        (--map (org-roam-backlinks-get (org-roam-backlink-source-node it)) it)
+                        (-flatten-n 1 it)
+                        (or (ignore-errors (length it)) 0))
+                 (error
+                  -1))
+               )
+              it)
+       (--sort (&gt; (plist-get it :n-backlinks)
+                  (plist-get other :n-backlinks))
+               it)
+       ))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga2c8c70" class="outline-2">
+<h2 id="orga2c8c70">Conclusion</h2>
+<div class="outline-text-2" id="text-orga2c8c70">
+<p>
+Get some insights from your notes! And when you come up with the your
+most valuable notes, think about sharing them ;)
+</p>
+
+<p>
+Happy ranking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-05-08</span>
+        <span title="last modification date" class="post-info">2022-05-08</span>
+        <span title="tags" class="post-info"><a href="/tags/org-roam/">org-roam</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

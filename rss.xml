@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 02 May 2022 21:49:26 BST</pubDate>
-    <lastBuildDate>Mon, 02 May 2022 21:49:26 BST</lastBuildDate>
+    <pubDate>Sun, 08 May 2022 23:17:56 BST</pubDate>
+    <lastBuildDate>Sun, 08 May 2022 23:17:56 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>How to rank your backlinks notes with Org Roam</title>
+      <link>http://ag91.github.io/blog/2022/05/08/how-to-rank-your-backlinks-notes-with-org-roam</link>
+      <description><![CDATA[How to sort notes by their number of backlinks]]></description>
+      <pubDate>2022-05-08</pubDate>
+      <guid>http://ag91.github.io/blog/2022/05/08/how-to-rank-your-backlinks-notes-with-org-roam</guid>
+    </item>
+    <item>
       <title>Emms + Org Roam: YouTube playlists with titles!</title>
       <link>http://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles</link>
-      <description><![CDATA[Listen to your EXTM3U playlists and see the titles in Emms]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-05-02</pubDate>
       <guid>http://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-03-13</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/13/datomic-a-little-snippet-to-analyze-what-attributes-your-transactions-change-most-often</guid>
-    </item>
-    <item>
-      <title>Org Agenda: keep the buffer order untouched after saving all modified org buffers</title>
-      <link>http://ag91.github.io/blog/2022/03/12/org-agenda-keep-the-buffer-order-untouched-after-saving-all-modified-org-buffers</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-03-12</pubDate>
-      <guid>http://ag91.github.io/blog/2022/03/12/org-agenda-keep-the-buffer-order-untouched-after-saving-all-modified-org-buffers</guid>
     </item>
   </channel>
 </rss>
