@@ -1,0 +1,70 @@
+#+TITLE:       Make adding a Clojure require more interactive with Cider and Cljr
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-06-09 Thu
+#+URI:         /blog/%y/%m/%d/make-adding-a-clojure-require-more-interactive-with-cider-and-cljr
+#+KEYWORDS:    clojure, emacs
+#+TAGS:        clojure, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Use Cider to find the namespace to require
+
+This is mostly a thank you to the Cider, clj-refactor and YASnippet
+maintainers: it is amazing to develop Clojure in Emacs!
+
+With the occasion, let me share an improvement I just added to my
+configuration. I have the [[https://github.com/clojure-emacs/clj-refactor.el][clj-refactor]] package installed from a long
+time. I don't use it super-often, but when I do it saves me time. For
+example, I extract [[https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-extract-def][definitions]] and [[https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-extract-function][functions]]. One refactor I felt
+always uncomfortable with is [[https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-add-require-to-ns][adding a require]]. This expands a
+YASnippet asking you for the library you want to require. The problem
+though is that it doesn't help at all at finding it!
+
+I struggle at remembering Clojure namespaces (that usually look like
+=this.special.thing.you-cannot-remember=)! So I decided to fix that
+for myself.
+
+The amazing discovery is that clj-refactor developers made this
+refactor easy to extend. Again that uses a YASnippet defined as
+follows:
+
+#+begin_src elisp
+(defvar cljr--add-use-snippet "[$1 :refer ${2:[$3]}]"
+#+end_src
+
+When you call =cljr-add-require-to-ns= this snippet gets expanded. The
+bit that concerns me is =$1=, which asks for a namespace (I cannot
+remember).
+
+For editing Clojure I use [[https://github.com/clojure-emacs/cider][cider]] which has a function called
+=cider-find-ns=. This allows you to search a Clojure namespace instead
+of file names. And I know that [[https://pragmaticemacs.wordpress.com/2017/06/25/multiple-choices-in-yasnippets/][YasSnippet has a fantastic feature to
+provide multiple choices to complete a snippet]].
+
+These give us all the bits we need. The shortest snippet to get a list
+of all namespaces from Cider is =(cider-sync-request:ns-list)=. The
+YASnippet we want to use for choosing the namespace to insert then
+is: ="[${1:$$(yas-choose-value (ignore-errors
+(cider-sync-request:ns-list)))} :refer ${2:[$3]}]"=.
+
+Since cljr could work also without Cider, I decided to set the
+=cljr--add-use-snippet= variable only if Cider is active. I do this
+with hooks:
+
+#+begin_src elisp
+(defun my/make-cljr-add-use-snippet-interactive ()
+  (setq-local cljr--add-use-snippet "[${1:$$(yas-choose-value (ignore-errors (cider-sync-request:ns-list)))} :refer ${2:[$3]}]"))
+
+(add-hook 'cider-mode-hook 'my/make-cljr-add-use-snippet-interactive)
+#+end_src
+
+This sets the variable only for the current file, given
+=cider-mode-hook= was called (which happens only for buffer that have
+Cider active).
+
+And that's it! Please appreciate how programmable each of these Emacs
+libraries is: it made me so happy that I could inject this use case by
+making use of the extension points that others made available for me.
+Thank you very much kind Emacs users I never met!
+
+Happy Clojuring!
