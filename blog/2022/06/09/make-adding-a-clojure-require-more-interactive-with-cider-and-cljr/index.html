@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Make adding a Clojure require more interactive with Cider and Cljr - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Use Cider to find the namespace to require" />
+    <meta name="keywords" content="clojure, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Make adding a Clojure require more interactive with Cider and Cljr</h1>
+<p>
+This is mostly a thank you to the Cider, clj-refactor and YASnippet
+maintainers: it is amazing to develop Clojure in Emacs!
+</p>
+
+<p>
+With the occasion, let me share an improvement I just added to my
+configuration. I have the <a href="https://github.com/clojure-emacs/clj-refactor.el">clj-refactor</a> package installed from a long
+time. I don't use it super-often, but when I do it saves me time. For
+example, I extract <a href="https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-extract-def">definitions</a> and <a href="https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-extract-function">functions</a>. One refactor I felt
+always uncomfortable with is <a href="https://github.com/clojure-emacs/clj-refactor.el/wiki/cljr-add-require-to-ns">adding a require</a>. This expands a
+YASnippet asking you for the library you want to require. The problem
+though is that it doesn't help at all at finding it!
+</p>
+
+<p>
+I struggle at remembering Clojure namespaces (that usually look like
+<code>this.special.thing.you-cannot-remember</code>)! So I decided to fix that
+for myself.
+</p>
+
+<p>
+The amazing discovery is that clj-refactor developers made this
+refactor easy to extend. Again that uses a YASnippet defined as
+follows:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defvar cljr--add-use-snippet "[$1 :refer ${2:[$3]}]"
+</pre>
+</div>
+
+<p>
+When you call <code>cljr-add-require-to-ns</code> this snippet gets expanded. The
+bit that concerns me is <code>$1</code>, which asks for a namespace (I cannot
+remember).
+</p>
+
+<p>
+For editing Clojure I use <a href="https://github.com/clojure-emacs/cider">cider</a> which has a function called
+<code>cider-find-ns</code>. This allows you to search a Clojure namespace instead
+of file names. And I know that <a href="https://pragmaticemacs.wordpress.com/2017/06/25/multiple-choices-in-yasnippets/">YasSnippet has a fantastic feature to
+provide multiple choices to complete a snippet</a>.
+</p>
+
+<p>
+These give us all the bits we need. The shortest snippet to get a list
+of all namespaces from Cider is <code>(cider-sync-request:ns-list)</code>. The
+YASnippet we want to use for choosing the namespace to insert then
+is: <code>"[${1:$$(yas-choose-value (ignore-errors
+(cider-sync-request:ns-list)))} :refer ${2:[$3]}]"</code>.
+</p>
+
+<p>
+Since cljr could work also without Cider, I decided to set the
+<code>cljr--add-use-snippet</code> variable only if Cider is active. I do this
+with hooks:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/make-cljr-add-use-snippet-interactive ()
+  (setq-local cljr--add-use-snippet "[${1:$$(yas-choose-value (ignore-errors (cider-sync-request:ns-list)))} :refer ${2:[$3]}]"))
+
+(add-hook 'cider-mode-hook 'my/make-cljr-add-use-snippet-interactive)
+</pre>
+</div>
+
+<p>
+This sets the variable only for the current file, given
+<code>cider-mode-hook</code> was called (which happens only for buffer that have
+Cider active).
+</p>
+
+<p>
+And that's it! Please appreciate how programmable each of these Emacs
+libraries is: it made me so happy that I could inject this use case by
+making use of the extension points that others made available for me.
+Thank you very much kind Emacs users I never met!
+</p>
+
+<p>
+Happy Clojuring!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-06-09</span>
+        <span title="last modification date" class="post-info">2022-06-09</span>
+        <span title="tags" class="post-info"><a href="/tags/clojure/">clojure</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 27.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

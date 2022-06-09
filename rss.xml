@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 08 May 2022 23:17:56 BST</pubDate>
-    <lastBuildDate>Sun, 08 May 2022 23:17:56 BST</lastBuildDate>
+    <pubDate>Thu, 09 Jun 2022 23:58:43 BST</pubDate>
+    <lastBuildDate>Thu, 09 Jun 2022 23:58:43 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Make adding a Clojure require more interactive with Cider and Cljr</title>
+      <link>http://ag91.github.io/blog/2022/06/09/make-adding-a-clojure-require-more-interactive-with-cider-and-cljr</link>
+      <description><![CDATA[Use Cider to find the namespace to require]]></description>
+      <pubDate>2022-06-09</pubDate>
+      <guid>http://ag91.github.io/blog/2022/06/09/make-adding-a-clojure-require-more-interactive-with-cider-and-cljr</guid>
+    </item>
+    <item>
       <title>How to rank your backlinks notes with Org Roam</title>
       <link>http://ag91.github.io/blog/2022/05/08/how-to-rank-your-backlinks-notes-with-org-roam</link>
-      <description><![CDATA[How to sort notes by their number of backlinks]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-05-08</pubDate>
       <guid>http://ag91.github.io/blog/2022/05/08/how-to-rank-your-backlinks-notes-with-org-roam</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-03-19</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/18/how-to-organize-a-codenames-tournament-with-your-emacs-and-emacs-slack</guid>
-    </item>
-    <item>
-      <title>Datomic: a little snippet to analyze what attributes your transactions change most often</title>
-      <link>http://ag91.github.io/blog/2022/03/13/datomic-a-little-snippet-to-analyze-what-attributes-your-transactions-change-most-often</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-03-13</pubDate>
-      <guid>http://ag91.github.io/blog/2022/03/13/datomic-a-little-snippet-to-analyze-what-attributes-your-transactions-change-most-often</guid>
     </item>
   </channel>
 </rss>
