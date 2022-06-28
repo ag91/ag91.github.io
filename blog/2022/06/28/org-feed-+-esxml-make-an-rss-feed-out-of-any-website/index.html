@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Org Feed + esxml: make an RSS feed out of any website! - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Make any website RSS feedable!" />
+    <meta name="keywords" content="emacs,org-mode" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Org Feed + esxml: make an RSS feed out of any website!</h1>
+<div id="outline-container-org92b3180" class="outline-2">
+<h2 id="org92b3180">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org92b3180">
+<p>
+Scraping any HTML page with <a href="https://github.com/tali713/esxml">esxml</a> allows us to list entries as RSS feed in <a href="https://orgmode.org/worg/org-contrib/org-feed.html">org-feed</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge2779fe" class="outline-2">
+<h2 id="orge2779fe">The problem</h2>
+<div class="outline-text-2" id="text-orge2779fe">
+<p>
+Lately I have been checking where I spend most time to see if I can
+save some. I realized that something I do often is jumping to my
+browser to see if some content has been published. It has become a
+habit. I start the computer, open Emacs and jump to my browser. Then
+I scroll through the page. Nothing: the update is not there. Then I
+jump back to Emacs for what I planned to do in the first place.
+</p>
+
+<p>
+I saved myself hours by adopting RSS feeds in the past. From job
+hunting to new music ideas: I have an RSS feed for it.
+If I see that the feeds are bringing me nowhere I prune them.
+</p>
+
+<p>
+In the past I have been a user of <a href="https://github.com/skeeto/elfeed">elfeed</a> (great software)! But
+org-feed became <a href="https://ag91.github.io/blog/2017/01/29/how-to-fit-rss-feeds-into-an-org-file/">my main reader for its flexibility</a>. Imagine: I was
+translating Dutch events happening in my town using an org-feed feed
+parser!
+</p>
+
+<p>
+Now the websites I am wasting time upon don't publish an RSS feed. So
+I wondered: can I still use org-feed flexibility to create my own feed
+of these?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org733751a" class="outline-2">
+<h2 id="org733751a">And there is a solution</h2>
+<div class="outline-text-2" id="text-org733751a">
+<p>
+Yup! Let's review what is a feed entry for org-feed.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">'(:guid "super-unique-id" :title "some title" :item-fulltext "some text")
+</pre>
+</div>
+
+<p>
+This is what org-feed can extract automatically from an RSS (not <a href="">Atom</a>)
+XML feed. For an XML file using the RSS schema, org-feed creates these
+entries autonomously.
+</p>
+
+<p>
+Already for Atom feeds, you need to nudge org-feed with a special
+parser. For instance I have in my configuration.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">'("Glamorous blog"
+ "https://blog.feenk.com/atom.xml"
+ "~/Feeds.org" "Glamorous blog"
+ :parse-feed ag/org-feed-parse-atom-feed
+ :parse-entry ag/org-feed-parse-atom-entry
+ :new-handler ag/get-feed-content
+ )
+</pre>
+</div>
+
+<p>
+This is how you define a new feed you want to subscribe to. Here I
+redefined the parsers of org-feed to handle Atom schema. I also
+defined an handler that injects the full blog contents in the Org
+entry org-feed creates (I did that using <a href="https://github.com/alphapapa/org-web-tools">org-web-tools</a>).
+</p>
+
+<p>
+Now I knew how to do the above for a long time. But I never realized
+that this means I can transform any website in a feed!
+</p>
+
+<p>
+All we want is the transformation:
+</p>
+
+<p>
+<code>HTML -&gt; (list '(:guid "super-unique-id" :title "some title" :item-fulltext "some text"))</code>
+</p>
+
+<p>
+That is defined by <code>:parse-feed</code> above.
+</p>
+
+<p>
+So I could define a new feed like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">("SomeFeed"
+ "https://anywebsite.com"
+ "~/Feeds.org" "SomeFeed"
+ :parse-feed any-website-page-&gt;list-of-org-feed-entries
+ )
+</pre>
+</div>
+
+<p>
+The main challenge is to define the function
+<code>any-website-page-&gt;list-of-org-feed-entries</code>. But <a href="https://github.com/tali713/esxml">esxml</a> makes it easy!
+You can basically scrape an XML or HTML page easily by navigating HTML
+elements.
+</p>
+
+<p>
+Your <code>any-website-page-&gt;list-of-org-feed-entries</code> function will look like somewhat like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun any-website-page-&gt;list-of-org-feed-entries= (buffer)
+     "Parse BUFFER for RSS feed entries.
+        Returns a list of entries, with each entry a property list,
+        containing the properties `:guid' and `:item-full-text'."
+     (require 'esxml)
+     (with-current-buffer buffer
+       (--&gt; (libxml-parse-html-region (point-min) (point-max))
+            (esxml-query "div.tab-meta" it) ; looking for a div HTML element with class tab-meta
+            (list (nth 2 (esxml-query "span&gt;a" (nth 3 it))) (nth 2 (esxml-query "div&gt;span" (nth 5 it)))) ; I need two elements in there and of those the contents of the span and div they contain
+            ; Note: I needed to get a single item from the page, you may need to mapcar over the elements found with esxml
+            (list (list :title (concat "Latest: "(s-join ", " it))
+                        :guid (format "ideally-a-link" it)
+                        :item-full-text it))))
+</pre>
+</div>
+
+<p>
+<a href="https://github.com/tali713/esxml/blob/master/esxml-query.el#L40">The syntax is a bit foreign</a> but is easy to pick up.
+</p>
+
+<p>
+Once you define your function and add the feed to org-feed, you are
+done: you now have your own RSS feed for the website.
+</p>
+
+<p>
+In my case, any time I call <code>org-feed-update</code> a new entry will be
+added if it didn't match one that I already have.
+</p>
+
+<p>
+The difference with a typical RSS feed is that you are responsible
+that the page you choose as source doesn't skip old contents. In the
+example I have shown, I need a single feed: I just want to know the
+latest update that I didn't read yet. If I missed an update, I can
+check the history on the website itself. You may wish to do
+differently. Anyway the RSS power is in your hands!
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga2dbe5a" class="outline-2">
+<h2 id="orga2dbe5a">Conclusion</h2>
+<div class="outline-text-2" id="text-orga2dbe5a">
+<p>
+Create you own RSS feed from any website with a bit of scraping and
+org-feed.
+</p>
+
+<p>
+Happy RSSing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-06-28</span>
+        <span title="last modification date" class="post-info">2022-06-28</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a>, <a href="/tags/org-mode/">org-mode</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
