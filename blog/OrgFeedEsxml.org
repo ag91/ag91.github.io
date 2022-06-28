@@ -1,0 +1,135 @@
+#+TITLE:       Org Feed + esxml: make an RSS feed out of any website!
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-06-28 Tue
+#+URI:         /blog/%y/%m/%d/org-feed-+-esxml-make-an-rss-feed-out-of-any-website
+#+KEYWORDS:    emacs,org-mode
+#+TAGS:        emacs,org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Make any website RSS feedable!
+* Too long; didn't read
+:PROPERTIES:
+:ID:       15ac5a37-a626-4fb3-8492-9d1fec40b81f
+:END:
+
+Scraping any HTML page with [[https://github.com/tali713/esxml][esxml]] allows us to list entries as RSS feed in [[https://orgmode.org/worg/org-contrib/org-feed.html][org-feed]].
+
+* The problem
+
+Lately I have been checking where I spend most time to see if I can
+save some. I realized that something I do often is jumping to my
+browser to see if some content has been published. It has become a
+habit. I start the computer, open Emacs and jump to my browser. Then
+I scroll through the page. Nothing: the update is not there. Then I
+jump back to Emacs for what I planned to do in the first place.
+
+I saved myself hours by adopting RSS feeds in the past. From job
+hunting to new music ideas: I have an RSS feed for it.
+If I see that the feeds are bringing me nowhere I prune them.
+
+In the past I have been a user of [[https://github.com/skeeto/elfeed][elfeed]] (great software)! But
+org-feed became [[https://ag91.github.io/blog/2017/01/29/how-to-fit-rss-feeds-into-an-org-file/][my main reader for its flexibility]]. Imagine: I was
+translating Dutch events happening in my town using an org-feed feed
+parser!
+
+Now the websites I am wasting time upon don't publish an RSS feed. So
+I wondered: can I still use org-feed flexibility to create my own feed
+of these?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       0d685d6b-f59d-49f9-a0bd-695912d26e1d
+:END:
+
+Yup! Let's review what is a feed entry for org-feed.
+
+#+begin_src elisp :noeval
+'(:guid "super-unique-id" :title "some title" :item-fulltext "some text")
+#+end_src
+
+This is what org-feed can extract automatically from an RSS (not [[roam:][Atom]])
+XML feed. For an XML file using the RSS schema, org-feed creates these
+entries autonomously.
+
+Already for Atom feeds, you need to nudge org-feed with a special
+parser. For instance I have in my configuration.
+
+#+begin_src elisp :noeval
+'("Glamorous blog"
+ "https://blog.feenk.com/atom.xml"
+ "~/Feeds.org" "Glamorous blog"
+ :parse-feed ag/org-feed-parse-atom-feed
+ :parse-entry ag/org-feed-parse-atom-entry
+ :new-handler ag/get-feed-content
+ )
+#+end_src
+
+This is how you define a new feed you want to subscribe to. Here I
+redefined the parsers of org-feed to handle Atom schema. I also
+defined an handler that injects the full blog contents in the Org
+entry org-feed creates (I did that using [[https://github.com/alphapapa/org-web-tools][org-web-tools]]).
+
+Now I knew how to do the above for a long time. But I never realized
+that this means I can transform any website in a feed!
+
+All we want is the transformation:
+
+=HTML -> (list '(:guid "super-unique-id" :title "some title" :item-fulltext "some text"))=
+
+That is defined by =:parse-feed= above.
+
+So I could define a new feed like this:
+
+#+begin_src elisp
+("SomeFeed"
+ "https://anywebsite.com"
+ "~/Feeds.org" "SomeFeed"
+ :parse-feed any-website-page->list-of-org-feed-entries
+ )
+#+end_src
+
+The main challenge is to define the function
+=any-website-page->list-of-org-feed-entries=. But [[https://github.com/tali713/esxml][esxml]] makes it easy!
+You can basically scrape an XML or HTML page easily by navigating HTML
+elements.
+
+Your =any-website-page->list-of-org-feed-entries= function will look like somewhat like:
+
+#+begin_src elisp
+(defun any-website-page->list-of-org-feed-entries= (buffer)
+     "Parse BUFFER for RSS feed entries.
+        Returns a list of entries, with each entry a property list,
+        containing the properties `:guid' and `:item-full-text'."
+     (require 'esxml)
+     (with-current-buffer buffer
+       (--> (libxml-parse-html-region (point-min) (point-max))
+            (esxml-query "div.tab-meta" it) ; looking for a div HTML element with class tab-meta
+            (list (nth 2 (esxml-query "span>a" (nth 3 it))) (nth 2 (esxml-query "div>span" (nth 5 it)))) ; I need two elements in there and of those the contents of the span and div they contain
+            ; Note: I needed to get a single item from the page, you may need to mapcar over the elements found with esxml
+            (list (list :title (concat "Latest: "(s-join ", " it))
+                        :guid (format "ideally-a-link" it)
+                        :item-full-text it))))
+#+end_src
+
+[[https://github.com/tali713/esxml/blob/master/esxml-query.el#L40][The syntax is a bit foreign]] but is easy to pick up.
+
+Once you define your function and add the feed to org-feed, you are
+done: you now have your own RSS feed for the website.
+
+In my case, any time I call =org-feed-update= a new entry will be
+added if it didn't match one that I already have.
+
+The difference with a typical RSS feed is that you are responsible
+that the page you choose as source doesn't skip old contents. In the
+example I have shown, I need a single feed: I just want to know the
+latest update that I didn't read yet. If I missed an update, I can
+check the history on the website itself. You may wish to do
+differently. Anyway the RSS power is in your hands!
+
+* Conclusion
+
+Create you own RSS feed from any website with a bit of scraping and
+org-feed.
+
+Happy RSSing!
