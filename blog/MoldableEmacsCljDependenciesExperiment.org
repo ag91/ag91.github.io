@@ -1,0 +1,112 @@
+#+TITLE:       Moldable Emacs: showing Clojure dependencies for the files you just modified
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-07-03 Sun
+#+URI:         /blog/%y/%m/%d/moldable-emacs-showing-clojure-dependencies-for-the-files-you-just-modified
+#+KEYWORDS:    moldable-emacs, clojure
+#+TAGS:        moldable-emacs, clojure
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: An experiment with moldable-emacs to show the risk of changing a Clojure code base via dependency
+* Too long; didn't read
+
+I extract a [[https://graphviz.org/][Graphviz]] diagram for the namespaces that depend on Clojure
+files I just staged on Git. Also I obtain dependencies via the feature
+of [[https://github.com/ag91/moldable-emacs][moldable-emacs]] that depend on [[https://github.com/emacs-tree-sitter][emacs-tree-sitter]].
+
+* The problem
+
+There have been a few times at work where I committed something that
+broke the production environment. The code I work with does not have
+(yet!) the reliable safety net of numerous automated tests. Add to
+that my rather partial knowledge of how features depend on each other
+and you get a production issue!
+
+Being a startup, I do my best to spend time on developing new
+features. This also means I have little time to patch up the absence
+of tests on old features.
+
+So I thought: how could I (at least) recognize when my change has
+altered some risky file?
+
+I would love if my editor could hint that I better check things
+twice before opening my next PR.
+
+* And there is a solution
+
+Well this is mostly a work in progress. My idea is that given a set of
+files, I can see the degree of risk in changing them. An example of
+set of files is those that I stage with Git and I am ready to commit.
+Another example that is interesting is the change-set of a PR that I
+am up to review for some other colleague.
+
+The next problem was to define risk in a way I could capture with a
+program. After some thought I went for dependencies.
+
+If I change a file and nothing depends on it, that is the safest I can
+be because I am not affecting anything. If another file depends on it,
+the risk increases. If two depends on it, the risk is a bit more and
+so on...
+
+Say each file represents a business feature: then having 2 dependent
+files means I am affecting 2 features. That a file represents a
+feature is hardly true of course. But my intuition is that the number
+of dependencies somewhat reflects the probability of that being true.
+So if I have 10 dependent files on my change, there is a (higher)
+chance I have hit many features.
+
+So let me give an example of what I got to so far:
+
+[[file:showDepsClj.mp4]]
+
+This shows that I have changed the code of code-maat and with a bit of
+Elisp (that uses library code from moldable-emacs), I obtain a graph
+of the namespaces that depend on the files I have changed. Note that
+the =performance_test= file is ignored because my set of files is
+given by =magit-staged-files=: I left that file unstaged.
+
+Since this looked useful but a bit flat, I refined my idea a little bit. I
+perceive this flat because not all dependencies are equal: some files
+depending on my change may have more dependencies than others. That
+information could help me assess risk.
+
+So I created a complementary visualization (thanks to graph-cli) that
+shows the aggregate number of dependencies. Let me show you:
+
+[[file:showDepsCljBarChart.mp4]]
+
+The smaller bars in the chart (in blue) show the number of direct
+dependencies for the files we have changed. The other bars (in orange)
+give a sense of the cumulative dependencies (i.e., the sum of files
+that depend on the depending files).
+
+So with the two graphs together we know that changing the churn file
+in code-maat has some significant effect. In this example my
+modification consisted in adding a white space. The algorithm I am
+showing you is not smart enough to know what did you change. An
+improvement indeed would be to find what depends on the diff of the
+modified file. That is more complex though.
+
+Also my experiment only works for Clojure files (although it would be
+easy to adapt for other languages).
+
+It still an experiment because I think I could merge the two
+visualizations. Also, I want to make this easier to use while I am
+developing/reviewing PRs. I hope to do some progress and show an
+integrated workflow later.
+
+And, I am still brainstorming on how to mark certain namespaces as
+business critical. Imagine we could easily say "these files are
+business critical": now if those files appear as dependencies we could
+show it!
+
+So for now this is mostly a thought experiment which seems promising
+to me.
+
+* Conclusion
+
+I showed how I am trying to visualize the risk in changing software.
+For now is just patchy visualization really, but I plan to refine
+these ideas a bit more!
+
+Happy risking!
