@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 28 Jun 2022 18:59:42 BST</pubDate>
-    <lastBuildDate>Tue, 28 Jun 2022 18:59:42 BST</lastBuildDate>
+    <pubDate>Sun, 03 Jul 2022 22:18:48 BST</pubDate>
+    <lastBuildDate>Sun, 03 Jul 2022 22:18:48 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: showing Clojure dependencies for the files you just modified</title>
+      <link>http://ag91.github.io/blog/2022/07/03/moldable-emacs-showing-clojure-dependencies-for-the-files-you-just-modified</link>
+      <description><![CDATA[An experiment with moldable-emacs to show the risk of changing a Clojure code base via dependency]]></description>
+      <pubDate>2022-07-03</pubDate>
+      <guid>http://ag91.github.io/blog/2022/07/03/moldable-emacs-showing-clojure-dependencies-for-the-files-you-just-modified</guid>
+    </item>
+    <item>
       <title>Org Feed + esxml: make an RSS feed out of any website!</title>
       <link>http://ag91.github.io/blog/2022/06/28/org-feed-+-esxml-make-an-rss-feed-out-of-any-website</link>
-      <description><![CDATA[Make any website RSS feedable!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-06-28</pubDate>
       <guid>http://ag91.github.io/blog/2022/06/28/org-feed-+-esxml-make-an-rss-feed-out-of-any-website</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-03-27</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: how many namespaces are covered by my ClojureScript tests?</title>
-      <link>http://ag91.github.io/blog/2022/03/25/moldable-emacs-how-many-namespaces-are-covered-by-my-clojurescript-tests</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-03-26</pubDate>
-      <guid>http://ag91.github.io/blog/2022/03/25/moldable-emacs-how-many-namespaces-are-covered-by-my-clojurescript-tests</guid>
     </item>
   </channel>
 </rss>
