@@ -1,0 +1,155 @@
+#+TITLE:       Moldable Emacs: from a picture to a ClojureScript React-Native SVG
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-07-07 Thu
+#+URI:         /blog/%y/%m/%d/moldable-emacs-from-a-picture-to-a-clojurescript-react-native-svg
+#+KEYWORDS:    moldable-emacs, clojure, emacs
+#+TAGS:        moldable-emacs, clojure, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Convert an SVG into a ClojureScript React Native SVG in no time!
+
+* Too long; didn't read
+
+A little Elisp mold to transform an SVG image into ClojureScript code
+for the [[https://github.com/react-native-svg/react-native-svg][react-native-svg]] library.
+
+* The problem
+
+In my current gig I develop (among other things) a mobile app. The
+smart people at my company settled on transpiling ClojureScript to JS
+targeting React Native (which itself transpiles to iOS and Android
+code).
+
+This is powerful and adds a bit of complexity when coding because most
+code examples for React Native development are in TypeScript. So often
+you need to go TypeScript -> ClojureScript in your mind. With such a
+pipeline you get super-polyglot though: ClojureScript, TypeScript,
+JavaScript, Swift and Java&Gradle (+ Bash and Make to get this
+working, plus a bit of Ruby to deploy, etc...).
+
+One activity that makes me feed bored is adding new SVG images to the
+app. In web everything is nice and sweet: you get a file, put in the
+assets directory and load the image where you need it.
+
+React Native lacks a built-in renderer for SVG. This means you cannot
+just add images to the bundle and load them. Instead, you need to use
+an extension which can render SVG tags. The extension is
+[[https://github.com/react-native-svg/react-native-svg][react-native-svg]], which also offers a nice online converter
+https://react-svgr.com/playground/.
+
+That makes me jealous: I need to write that in ClojureScript!
+
+So the problem becomes: how do I translate this
+
+#+begin_src xml
+<svg version="1.1"
+     width="300" height="200"
+     xmlns="http://www.w3.org/2000/svg">
+
+  <rect width="100%" height="100%" fill="red" />
+
+  <circle cx="150" cy="100" r="80" fill="green" />
+
+  <text x="150" y="125" font-size="60" text-anchor="middle" fill="white">SVG</text>
+
+</svg>
+#+end_src
+
+into something like this?
+
+#+begin_src clojure
+(icon [:> svg/Rect {:width "100%" :height "100%" :fill "red"}]
+      [:> svg/Circle {:cx "150" :cy "100" :r "80" :fill "green"}]
+      [:> svg/Text {:x "150" :y "125" :font-size "60" :text-anchor "middle" :fill "white"}]
+      )
+#+end_src
+
+* And there is a solution
+
+If you squeeze your eyes (or add more than 2 images by hand), you will
+find that there is a pattern in the above:
+
+1. we skip the svg tag
+2. we change each child element adding an =svg/= prefix and capitalize the tag
+3. each attribute becomes a Clojure map with keys and values
+4. each child element gets wrapped in square brackets (with the =:>=
+   injecting the attributes in the react-native element)
+
+That is definitely boring to do by hand. And since there is a pattern,
+we can automate! And since this is just another view of an SVG image,
+this calls for a [[https://github.com/ag91/moldable-emacs][moldable-emacs]] mold!
+
+This is the mold code:
+
+#+begin_src elisp :noeval
+(me-register-mold
+ :key "ToFyCljIcon"
+ :given (:fn (and (me-require 'esxml) (me-require 'clojure-mode) (eq major-mode 'nxml-mode) (s-ends-with-p ".svg" (buffer-file-name))))
+ :then (:fn
+        (let* ((tree (libxml-parse-xml-region (point-min) (point-max))))
+          (with-current-buffer buffername
+            (clojure-mode)
+            (erase-buffer)
+            (let ((clj-string (--> tree
+                                   (esxml-node-children it)
+                                   (--map (concat "[:> svg/"
+                                                  (s-capitalize (symbol-name (car it)))
+                                                  " {"
+                                                  (s-join " " (--map (format ":%s \"%s\"" (symbol-name (car it)) (cdr it)) (esxml-node-attributes it)))
+                                                  "}"
+                                                  "]")
+                                          it)
+                                   (s-join "\n" it)
+                                   (concat "(icon " it "\n)"))))
+              (insert clj-string)
+              (kill-new clj-string)
+              (message "added to kill ring as well")
+              (setq-local self tree)))))
+ :docs "You can convert an SVG image to Clojure svg."
+ :examples nil)
+#+end_src
+
+As a reminder: a mold becomes available to you when its preconditions
+are met (=:given= clause above). In this case if the buffer is an SVG
+and you call moldable-emacs' =me-mold= only .
+
+The core of the mold implements the list of steps we defined above.
+
+The =(libxml-parse-xml-region (point-min) (point-max))= parses the XML
+into an Elisp tree. And we obtain the bits we need via [[roam:][esxml]], which is
+a lovely little library.
+
+If you don't want to use moldable-emacs and just add an Elisp snippet
+in your Emacs, this is the core of the above:
+
+#+begin_src elisp
+(--> (libxml-parse-xml-region (point-min) (point-max))
+     (esxml-node-children it)
+     (--map (concat "[:> svg/"
+                    (s-capitalize (symbol-name (car it)))
+                    " {"
+                    (s-join " " (--map (format ":%s \"%s\"" (symbol-name (car it)) (cdr it)) (esxml-node-attributes it)))
+                    "}"
+                    "]")
+            it)
+     (s-join "\n" it)
+     (concat "(icon " it "\n)"))
+#+end_src
+
+Ah you may want to substitute the =(icon= bit with something like an
+=Icon=. That code is what I need most often at work!
+
+Pretty cool, isn't it? This little snippet saves me a lot of boring
+work even if I have to add only 3 SVG icons to my ClojureScript
+codebase. Instead now I have just to view the SVG in a new way with
+moldable-emacs! It feels a quarter of a hour well spent in improving
+my tool of choice :)
+
+* Conclusion
+
+Free yourself from boring tasks! Sharpen (mold) your tools to make
+them ergonomic to your life. In this case is an SVG conversion, but
+each of us has different needs and no time to waste ;)
+
+Happy molding!
