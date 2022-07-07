@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: from a picture to a ClojureScript React-Native SVG - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Convert an SVG into a ClojureScript React Native SVG in no time!" />
+    <meta name="keywords" content="moldable-emacs, clojure, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: from a picture to a ClojureScript React-Native SVG</h1>
+
+<div id="outline-container-org0e5a39d" class="outline-2">
+<h2 id="org0e5a39d">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org0e5a39d">
+<p>
+A little Elisp mold to transform an SVG image into ClojureScript code
+for the <a href="https://github.com/react-native-svg/react-native-svg">react-native-svg</a> library.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd42c650" class="outline-2">
+<h2 id="orgd42c650">The problem</h2>
+<div class="outline-text-2" id="text-orgd42c650">
+<p>
+In my current gig I develop (among other things) a mobile app. The
+smart people at my company settled on transpiling ClojureScript to JS
+targeting React Native (which itself transpiles to iOS and Android
+code).
+</p>
+
+<p>
+This is powerful and adds a bit of complexity when coding because most
+code examples for React Native development are in TypeScript. So often
+you need to go TypeScript -&gt; ClojureScript in your mind. With such a
+pipeline you get super-polyglot though: ClojureScript, TypeScript,
+JavaScript, Swift and Java&amp;Gradle (+ Bash and Make to get this
+working, plus a bit of Ruby to deploy, etc...).
+</p>
+
+<p>
+One activity that makes me feed bored is adding new SVG images to the
+app. In web everything is nice and sweet: you get a file, put in the
+assets directory and load the image where you need it.
+</p>
+
+<p>
+React Native lacks a built-in renderer for SVG. This means you cannot
+just add images to the bundle and load them. Instead, you need to use
+an extension which can render SVG tags. The extension is
+<a href="https://github.com/react-native-svg/react-native-svg">react-native-svg</a>, which also offers a nice online converter
+<a href="https://react-svgr.com/playground/">https://react-svgr.com/playground/</a>.
+</p>
+
+<p>
+That makes me jealous: I need to write that in ClojureScript!
+</p>
+
+<p>
+So the problem becomes: how do I translate this
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml">&lt;svg version="1.1"
+     width="300" height="200"
+     xmlns="http://www.w3.org/2000/svg"&gt;
+
+  &lt;rect width="100%" height="100%" fill="red" /&gt;
+
+  &lt;circle cx="150" cy="100" r="80" fill="green" /&gt;
+
+  &lt;text x="150" y="125" font-size="60" text-anchor="middle" fill="white"&gt;SVG&lt;/text&gt;
+
+&lt;/svg&gt;
+</pre>
+</div>
+
+<p>
+into something like this?
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(icon [:&gt; svg/Rect {:width "100%" :height "100%" :fill "red"}]
+      [:&gt; svg/Circle {:cx "150" :cy "100" :r "80" :fill "green"}]
+      [:&gt; svg/Text {:x "150" :y "125" :font-size "60" :text-anchor "middle" :fill "white"}]
+      )
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd07ecb2" class="outline-2">
+<h2 id="orgd07ecb2">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgd07ecb2">
+<p>
+If you squeeze your eyes (or add more than 2 images by hand), you will
+find that there is a pattern in the above:
+</p>
+
+<ol class="org-ol">
+<li>we skip the svg tag</li>
+<li>we change each child element adding an <code>svg/</code> prefix and capitalize the tag</li>
+<li>each attribute becomes a Clojure map with keys and values</li>
+<li>each child element gets wrapped in square brackets (with the <code>:&gt;</code>
+injecting the attributes in the react-native element)</li>
+</ol>
+
+<p>
+That is definitely boring to do by hand. And since there is a pattern,
+we can automate! And since this is just another view of an SVG image,
+this calls for a <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> mold!
+</p>
+
+<p>
+This is the mold code:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(me-register-mold
+ :key "ToFyCljIcon"
+ :given (:fn (and (me-require 'esxml) (me-require 'clojure-mode) (eq major-mode 'nxml-mode) (s-ends-with-p ".svg" (buffer-file-name))))
+ :then (:fn
+        (let* ((tree (libxml-parse-xml-region (point-min) (point-max))))
+          (with-current-buffer buffername
+            (clojure-mode)
+            (erase-buffer)
+            (let ((clj-string (--&gt; tree
+                                   (esxml-node-children it)
+                                   (--map (concat "[:&gt; svg/"
+                                                  (s-capitalize (symbol-name (car it)))
+                                                  " {"
+                                                  (s-join " " (--map (format ":%s \"%s\"" (symbol-name (car it)) (cdr it)) (esxml-node-attributes it)))
+                                                  "}"
+                                                  "]")
+                                          it)
+                                   (s-join "\n" it)
+                                   (concat "(icon " it "\n)"))))
+              (insert clj-string)
+              (kill-new clj-string)
+              (message "added to kill ring as well")
+              (setq-local self tree)))))
+ :docs "You can convert an SVG image to Clojure svg."
+ :examples nil)
+</pre>
+</div>
+
+<p>
+As a reminder: a mold becomes available to you when its preconditions
+are met (<code>:given</code> clause above). In this case if the buffer is an SVG
+and you call moldable-emacs' <code>me-mold</code> only .
+</p>
+
+<p>
+The core of the mold implements the list of steps we defined above.
+</p>
+
+<p>
+The <code>(libxml-parse-xml-region (point-min) (point-max))</code> parses the XML
+into an Elisp tree. And we obtain the bits we need via <a href="">esxml</a>, which is
+a lovely little library.
+</p>
+
+<p>
+If you don't want to use moldable-emacs and just add an Elisp snippet
+in your Emacs, this is the core of the above:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt; (libxml-parse-xml-region (point-min) (point-max))
+     (esxml-node-children it)
+     (--map (concat "[:&gt; svg/"
+                    (s-capitalize (symbol-name (car it)))
+                    " {"
+                    (s-join " " (--map (format ":%s \"%s\"" (symbol-name (car it)) (cdr it)) (esxml-node-attributes it)))
+                    "}"
+                    "]")
+            it)
+     (s-join "\n" it)
+     (concat "(icon " it "\n)"))
+</pre>
+</div>
+
+<p>
+Ah you may want to substitute the <code>(icon</code> bit with something like an
+<code>Icon</code>. That code is what I need most often at work!
+</p>
+
+<p>
+Pretty cool, isn't it? This little snippet saves me a lot of boring
+work even if I have to add only 3 SVG icons to my ClojureScript
+codebase. Instead now I have just to view the SVG in a new way with
+moldable-emacs! It feels a quarter of a hour well spent in improving
+my tool of choice :)
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgdc6a216" class="outline-2">
+<h2 id="orgdc6a216">Conclusion</h2>
+<div class="outline-text-2" id="text-orgdc6a216">
+<p>
+Free yourself from boring tasks! Sharpen (mold) your tools to make
+them ergonomic to your life. In this case is an SVG conversion, but
+each of us has different needs and no time to waste ;)
+</p>
+
+<p>
+Happy molding!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-07-07</span>
+        <span title="last modification date" class="post-info">2022-07-07</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/clojure/">clojure</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

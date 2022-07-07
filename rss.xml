@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 03 Jul 2022 22:18:48 BST</pubDate>
-    <lastBuildDate>Sun, 03 Jul 2022 22:18:48 BST</lastBuildDate>
+    <pubDate>Thu, 07 Jul 2022 22:53:17 BST</pubDate>
+    <lastBuildDate>Thu, 07 Jul 2022 22:53:17 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Moldable Emacs: from a picture to a ClojureScript React-Native SVG</title>
+      <link>http://ag91.github.io/blog/2022/07/07/moldable-emacs-from-a-picture-to-a-clojurescript-react-native-svg</link>
+      <description><![CDATA[Convert an SVG into a ClojureScript React Native SVG in no time!]]></description>
+      <pubDate>2022-07-07</pubDate>
+      <guid>http://ag91.github.io/blog/2022/07/07/moldable-emacs-from-a-picture-to-a-clojurescript-react-native-svg</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: showing Clojure dependencies for the files you just modified</title>
       <link>http://ag91.github.io/blog/2022/07/03/moldable-emacs-showing-clojure-dependencies-for-the-files-you-just-modified</link>
-      <description><![CDATA[An experiment with moldable-emacs to show the risk of changing a Clojure code base via dependency]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-07-03</pubDate>
       <guid>http://ag91.github.io/blog/2022/07/03/moldable-emacs-showing-clojure-dependencies-for-the-files-you-just-modified</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-03-28</pubDate>
       <guid>http://ag91.github.io/blog/2022/03/28/something-i-missed-point-free-composition-in-elisp</guid>
-    </item>
-    <item>
-      <title>An Elisp snippet to dowload YouTube videos transcripts</title>
-      <link>http://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-03-27</pubDate>
-      <guid>http://ag91.github.io/blog/2022/03/27/an-elisp-snippet-to-dowload-youtube-videos-transcripts</guid>
     </item>
   </channel>
 </rss>
