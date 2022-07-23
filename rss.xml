@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 07 Jul 2022 22:53:17 BST</pubDate>
-    <lastBuildDate>Thu, 07 Jul 2022 22:53:17 BST</lastBuildDate>
+    <pubDate>Sat, 23 Jul 2022 20:27:43 BST</pubDate>
+    <lastBuildDate>Sat, 23 Jul 2022 20:27:43 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Delete filename or list of filenames in region with one Emacs command</title>
+      <link>http://ag91.github.io/blog/2022/07/23/delete-filename-or-list-of-filenames-in-region-with-one-emacs-command</link>
+      <description><![CDATA[A little snippet to delete a list of files quickly.]]></description>
+      <pubDate>2022-07-23</pubDate>
+      <guid>http://ag91.github.io/blog/2022/07/23/delete-filename-or-list-of-filenames-in-region-with-one-emacs-command</guid>
+    </item>
+    <item>
       <title>Moldable Emacs: from a picture to a ClojureScript React-Native SVG</title>
       <link>http://ag91.github.io/blog/2022/07/07/moldable-emacs-from-a-picture-to-a-clojurescript-react-native-svg</link>
-      <description><![CDATA[Convert an SVG into a ClojureScript React Native SVG in no time!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-07-07</pubDate>
       <guid>http://ag91.github.io/blog/2022/07/07/moldable-emacs-from-a-picture-to-a-clojurescript-react-native-svg</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-04-01</pubDate>
       <guid>http://ag91.github.io/blog/2022/04/01/ol-emacs-slack-added-support-for-thread-links</guid>
-    </item>
-    <item>
-      <title>Something I missed: point free composition in Elisp!</title>
-      <link>http://ag91.github.io/blog/2022/03/28/something-i-missed-point-free-composition-in-elisp</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-03-28</pubDate>
-      <guid>http://ag91.github.io/blog/2022/03/28/something-i-missed-point-free-composition-in-elisp</guid>
     </item>
   </channel>
 </rss>
