@@ -1,0 +1,46 @@
+#+TITLE:       Delete filename or list of filenames in region with one Emacs command
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-07-23 Sat
+#+URI:         /blog/%y/%m/%d/delete-filename-or-list-of-filenames-in-region-with-one-emacs-command
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A little snippet to delete a list of files quickly.
+
+I have a piece of software at work that spits out a list of files that
+we may wish to delete. Often I do want to, but I postpone for a reason
+or another: so the list keeps growing!
+
+I got to the point that was worth to write an Elisp function for it.
+
+So say you have a list of files:
+
+#+begin_src text 
+/tmp/fileA.txt
+/tmp/fileB.txt
+/tmp/fileC.txt
+#+end_src
+
+And you have the following code loaded (requires dash.el):
+
+#+begin_src elisp
+(defun delete-files-for-filepaths-in-region ()
+  (interactive)
+  (let ((to-delete-string (or (when (region-active-p)
+                                (buffer-substring-no-properties
+                                 (caar (region-bounds))
+                                 (cdar (region-bounds))))
+                              (thing-at-point 'filename t))))
+    (--> to-delete-string
+         (s-split "\n" it t)
+         (-each it
+           'delete-file))
+    (message "Files deleted!")))
+#+end_src
+
+you will just need to mark the region around the list of files to remove them all.
+Didn't need error handling in my case, but that saved me some time. Hopefully it helps you too.
+
+Happy deleting!
