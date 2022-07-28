@@ -1,0 +1,79 @@
+#+TITLE:       A YASnippet to make it easy debugging clojure code with atoms
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-07-28 Thu
+#+URI:         /blog/%y/%m/%d/a-yasnippet-to-make-it-easy-debugging-clojure-code-with-atoms
+#+KEYWORDS:    clojure, emacs
+#+TAGS:        clojure, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Speed up your Clojure debuging with a YASnippet
+
+I use debugger software rarely. My preferred debugging tool is
+printing strings. Wrapping your code in tags that show values of
+variables pulled me out of troubles approximately always.
+
+Since I have been developing Clojure(Script) in Emacs with Cider
+though, the interactivity of the REPL (by evaluating forms in buffer)
+made my day.
+
+So I found myself using atoms instead of prints. The reason is that
+nested Clojure maps may be a pain to read in a log. I'd rather query
+them with Clojure code to find out what I need to fix in them.
+
+In order to do that, say that I  have the following code.
+
+#+begin_src clojure
+(defun fn1 []
+  nil)
+
+(defun some-broken-fn []
+  (cool-complex-code)
+  (calculate-result))
+
+(defun fn2 []
+  nil)
+#+end_src
+
+And say I have to debug =some-broken-fn=. This is what I would do:
+
+#+begin_src clojure
+(defun fn1 []
+  nil)
+
+(def x (atom nil))
+
+(defun some-broken-fn []
+  (cool-complex-code)
+  (reset! x (calculate-result))
+  (calculate-result))
+
+(defun fn2 []
+  nil)
+#+end_src
+
+On running the code, =x= would store the value I need to inspect
+(e.g., the return of =some-broken-fn=). With [[https://github.com/clojure-emacs/cider][Cider]] active I can just
+evaluate or inspect =x= and query its contents.
+
+Since I do this often enough, I realized the only thing I really want
+to write is what to +print+ store in the atom (and maybe the variable name).
+
+So I made a [[https://github.com/joaotavora/yasnippet][YASnippet]] just for that (actually a [[https://github.com/Kungsgeten/yankpad][yankpad]] snippet):
+
+#+begin_src org
+,** ra: debug
+(reset! `(let ((var (read-string "var name" "x"))) (search-backward "\n\n(") (insert (concat  "\n(def " var " (atom nil))")) var)` $2)
+#+end_src
+
+This snippet takes a variable name, inserts the definition of the atom
+above the function you are debugging, and nudges you to set what to
+inspect.
+
+YASnippet doesn't like snippets that change the buffer with the Elisp
+the snippet evaluates. Since this time I did it on purpose (to insert
+the =def=), I dropped YASnippet warning with =(add-to-list 'warning-suppress-types '(yasnippet backquote-change))=.
+
+That saves me some back and forward while debugging! Little savings become big wins over time :)
+
+Happy debugging!
