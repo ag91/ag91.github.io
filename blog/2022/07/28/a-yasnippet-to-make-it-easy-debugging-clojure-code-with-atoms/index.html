@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>A YASnippet to make it easy debugging clojure code with atoms - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Speed up your Clojure debuging with a YASnippet" />
+    <meta name="keywords" content="clojure, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>A YASnippet to make it easy debugging clojure code with atoms</h1>
+<p>
+I use debugger software rarely. My preferred debugging tool is
+printing strings. Wrapping your code in tags that show values of
+variables pulled me out of troubles approximately always.
+</p>
+
+<p>
+Since I have been developing Clojure(Script) in Emacs with Cider
+though, the interactivity of the REPL (by evaluating forms in buffer)
+made my day.
+</p>
+
+<p>
+So I found myself using atoms instead of prints. The reason is that
+nested Clojure maps may be a pain to read in a log. I'd rather query
+them with Clojure code to find out what I need to fix in them.
+</p>
+
+<p>
+In order to do that, say that I  have the following code.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defun fn1 []
+  nil)
+
+(defun some-broken-fn []
+  (cool-complex-code)
+  (calculate-result))
+
+(defun fn2 []
+  nil)
+</pre>
+</div>
+
+<p>
+And say I have to debug <code>some-broken-fn</code>. This is what I would do:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defun fn1 []
+  nil)
+
+(def x (atom nil))
+
+(defun some-broken-fn []
+  (cool-complex-code)
+  (reset! x (calculate-result))
+  (calculate-result))
+
+(defun fn2 []
+  nil)
+</pre>
+</div>
+
+<p>
+On running the code, <code>x</code> would store the value I need to inspect
+(e.g., the return of <code>some-broken-fn</code>). With <a href="https://github.com/clojure-emacs/cider">Cider</a> active I can just
+evaluate or inspect <code>x</code> and query its contents.
+</p>
+
+<p>
+Since I do this often enough, I realized the only thing I really want
+to write is what to <del>print</del> store in the atom (and maybe the variable name).
+</p>
+
+<p>
+So I made a <a href="https://github.com/joaotavora/yasnippet">YASnippet</a> just for that (actually a <a href="https://github.com/Kungsgeten/yankpad">yankpad</a> snippet):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">** ra: debug
+(reset! `(let ((var (read-string "var name" "x"))) (search-backward "\n\n(") (insert (concat  "\n(def " var " (atom nil))")) var)` $2)
+</pre>
+</div>
+
+<p>
+This snippet takes a variable name, inserts the definition of the atom
+above the function you are debugging, and nudges you to set what to
+inspect.
+</p>
+
+<p>
+YASnippet doesn't like snippets that change the buffer with the Elisp
+the snippet evaluates. Since this time I did it on purpose (to insert
+the <code>def</code>), I dropped YASnippet warning with <code>(add-to-list 'warning-suppress-types '(yasnippet backquote-change))</code>.
+</p>
+
+<p>
+That saves me some back and forward while debugging! Little savings become big wins over time :)
+</p>
+
+<p>
+Happy debugging!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-07-28</span>
+        <span title="last modification date" class="post-info">2022-07-29</span>
+        <span title="tags" class="post-info"><a href="/tags/clojure/">clojure</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
