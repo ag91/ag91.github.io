@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Caching Yankpad snippets for a quicker note capturing - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Speed up Yankpad on inserting your snippets!" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Caching Yankpad snippets for a quicker note capturing</h1>
+
+<div id="outline-container-orgd1615c8" class="outline-2">
+<h2 id="orgd1615c8">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-orgd1615c8">
+<p>
+Yankpad's <code>yankpad--snippets</code> may have to read your snippets file
+multiple times to insert your snippet: here I "memoize" that function.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge65a9ae" class="outline-2">
+<h2 id="orge65a9ae">The problem</h2>
+<div class="outline-text-2" id="text-orge65a9ae">
+<p>
+I am preparing myself to a big lifestyle change which hopefully will
+wonderfully fill all my free time: so I want to make more of that!
+</p>
+
+<p>
+One thing that I do pretty often is capturing tasks in Org Mode. That
+way I don't have to overload my mind remembering things I wish to do
+later. Recently I found myself waiting on my computer to capture a
+task. Very annoying. I dismissed the thing and moved on. But it kept
+happening: ouch!
+</p>
+
+<p>
+My setup for capturing is a bit complex because I use snippets to
+setup my notes. Using snippets allows me to add metadata to my tasks
+that I can then analyze later to learn where I spend time most.
+</p>
+
+<p>
+This means that the slowness can come from any of Yankpad, YASnippet
+or my own package <a href="https://github.com/ag91/ya-org-capture">ya-org-capture</a>, which enables the snippet engine to
+work with Org Capture.
+</p>
+
+<p>
+Only a good inspector can help with an opaque system. So I started the
+profiler: <code>profiler-start</code>, <code>profiler-stop</code> and <code>profiler-report</code> are
+your friends here.
+</p>
+
+<p>
+After a bit of navigating in the profiler's report, I found that the
+function consuming most of the memory was <code>yankpad--snippets</code>.
+</p>
+
+<p>
+If you don't use it, <a href="https://github.com/Kungsgeten/yankpad">Yankpad</a> allows you to store snippets in the
+YASnippet format within an Org Mode file. I find more enjoyable to
+maintain my snippets that way.
+</p>
+
+<p>
+I discovered that any time that function gets called it opens your Org
+Mode file and reads its contents to find the snippets that apply in
+your context. For example, if you are editing a Clojure file, it will
+look for Clojure snippets only.
+</p>
+
+<p>
+Long story short: the more snippets you have the longer this function
+takes. And I have just enough to cause a significant delay.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgeaefbb8" class="outline-2">
+<h2 id="orgeaefbb8">And there is a solution</h2>
+<div class="outline-text-2" id="text-orgeaefbb8">
+<p>
+Time to change that function then! Caching is king here. In functional
+programming functions without side effects (said "pure") are
+equivalent to a dictionary input-&gt;output. When you have an expensive
+(in terms of time) function, you can just produce a dictionary of it.
+The next time you call that function it becomes super fast because the
+result is saved somewhere in memory. Functional languages usually come
+with a function called "memoize" which transforms any pure function
+into a dictionary.
+</p>
+
+<p>
+Anyway we don't have that in Elisp, so given the current body of
+<code>yankpad--snippets</code>, we will make our handmade caching.
+</p>
+
+<p>
+Currently the body looks like this.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun yankpad--snippets (category-name)
+       "Get an alist of the snippets in CATEGORY-NAME.
+     Each snippet is a list (NAME TAGS SRC-BLOCKS TEXT)."
+       (let* ((propertystring (yankpad--category-include-property category-name))
+              (include (when propertystring
+                         (split-string propertystring "|")))
+              (snippets
+               (append
+                (when (eq yankpad-descriptive-list-treatment 'snippet)
+                  (mapcar (lambda (d)
+                            (list (concat (car d) yankpad-expand-separator) nil nil (cdr d)))
+                          (yankpad-category-descriptions category-name)))
+                (org-with-point-at (yankpad-category-marker category-name)
+                  (cl-reduce #'append
+                             (org-map-entries #'yankpad-snippets-at-point
+                                              (format "+LEVEL=%s" (1+ yankpad-category-heading-level))
+                                              'tree))))))
+         (append snippets (cl-reduce #'append (mapcar #'yankpad--snippets include)))))
+</pre>
+</div>
+
+<p>
+The troublemaker above is <code>org-with-point-at</code>. That is basically
+reading the file, which is expensive. A little extra bit of knowledge
+to deepen the problem: a category in the Yankpad file may include
+other categories (which is a pretty cool feature). That also means
+that this function may run multiple times for each category (if it
+includes others). That means reading the same file multiple times:
+super slow = not cool!
+</p>
+
+<p>
+Let's memoize/cache things then.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defvar yankpad-snippets-cache nil "A dictionary category-name . snippets.")
+
+(defun yankpad--snippets (category-name)
+  "Get an alist of the snippets in CATEGORY-NAME.
+          Each snippet is a list (NAME TAGS SRC-BLOCKS TEXT)."
+  (if-let ((snippets (alist-get category-name yankpad-snippets-cache)))
+      snippets
+    (let* ((propertystring (yankpad--category-include-property category-name))
+           (include (when propertystring
+                      (split-string propertystring "|")))
+           (snippets
+            (append
+             (when (eq yankpad-descriptive-list-treatment 'snippet)
+               (mapcar (lambda (d)
+                         (list (concat (car d) yankpad-expand-separator) nil nil (cdr d)))
+                       (yankpad-category-descriptions category-name)))
+             (org-with-point-at (yankpad-category-marker category-name)
+               (cl-reduce #'append
+                          (org-map-entries #'yankpad-snippets-at-point
+                                           (format "+LEVEL=%s" (1+ yankpad-category-heading-level))
+                                           'tree)))))
+           (all-snippets (append snippets (cl-reduce #'append (mapcar #'yankpad--snippets include)))))
+      (add-to-list 'yankpad-snippets-cache (cons category-name all-snippets))
+      all-snippets)))
+</pre>
+</div>
+
+<p>
+The cache/dictionary is <code>yankpad-snippets-cache</code>. The <code>if-let</code> checks
+if the cache contains the Yankpad category already, and returns that
+on a hit. On a miss we gather the snippets as before, add these
+snippets to the cache and finally return what we found.
+</p>
+
+<p>
+The problem with caching is that now we have to maintain the cache.
+When we save a new snippet via Yankpad, the cached function above will
+not look at the file anymore but just at the <code>yankpad-snippets-cache</code>
+dictionary we made. We could handle this with something fancy like
+checking the file modification timestamp, but since I am probably the
+only person facing this issue, I just made my own function to reload
+snippets (and invalidate the cache):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun yankpad-my-reload ()
+  (interactive)
+  (yankpad-set-active-snippets)
+  (setq yankpad-snippets-cache nil))
+</pre>
+</div>
+
+<p>
+Anyway having a super quick capturing again is amazing! It was only a caching away.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1601805" class="outline-2">
+<h2 id="org1601805">Conclusion</h2>
+<div class="outline-text-2" id="text-org1601805">
+<p>
+Don't wait on your computer: always make it better. I shall check if
+the author of Yankpad finds this interesting, but if not and you have
+the same problem just steal the code above.
+</p>
+
+<p>
+Happy capturing!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-08-21</span>
+        <span title="last modification date" class="post-info">2022-08-21</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
