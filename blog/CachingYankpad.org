@@ -1,0 +1,157 @@
+#+TITLE:       Caching Yankpad snippets for a quicker note capturing
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-08-21 Sun
+#+URI:         /blog/%y/%m/%d/caching-yankpad-snippets-for-a-quicker-note-capturing
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Speed up Yankpad on inserting your snippets!
+
+* Too long; didn't read
+
+Yankpad's =yankpad--snippets= may have to read your snippets file
+multiple times to insert your snippet: here I "memoize" that function.
+
+* The problem
+
+I am preparing myself to a big lifestyle change which hopefully will
+wonderfully fill all my free time: so I want to make more of that!
+
+One thing that I do pretty often is capturing tasks in Org Mode. That
+way I don't have to overload my mind remembering things I wish to do
+later. Recently I found myself waiting on my computer to capture a
+task. Very annoying. I dismissed the thing and moved on. But it kept
+happening: ouch!
+
+My setup for capturing is a bit complex because I use snippets to
+setup my notes. Using snippets allows me to add metadata to my tasks
+that I can then analyze later to learn where I spend time most.
+
+This means that the slowness can come from any of Yankpad, YASnippet
+or my own package [[https://github.com/ag91/ya-org-capture][ya-org-capture]], which enables the snippet engine to
+work with Org Capture.
+
+Only a good inspector can help with an opaque system. So I started the
+profiler: =profiler-start=, =profiler-stop= and =profiler-report= are
+your friends here.
+
+After a bit of navigating in the profiler's report, I found that the
+function consuming most of the memory was =yankpad--snippets=.
+
+If you don't use it, [[https://github.com/Kungsgeten/yankpad][Yankpad]] allows you to store snippets in the
+YASnippet format within an Org Mode file. I find more enjoyable to
+maintain my snippets that way.
+
+I discovered that any time that function gets called it opens your Org
+Mode file and reads its contents to find the snippets that apply in
+your context. For example, if you are editing a Clojure file, it will
+look for Clojure snippets only.
+
+Long story short: the more snippets you have the longer this function
+takes. And I have just enough to cause a significant delay.
+
+* And there is a solution
+
+Time to change that function then! Caching is king here. In functional
+programming functions without side effects (said "pure") are
+equivalent to a dictionary input->output. When you have an expensive
+(in terms of time) function, you can just produce a dictionary of it.
+The next time you call that function it becomes super fast because the
+result is saved somewhere in memory. Functional languages usually come
+with a function called "memoize" which transforms any pure function
+into a dictionary.
+
+Anyway we don't have that in Elisp, so given the current body of
+=yankpad--snippets=, we will make our handmade caching.
+
+Currently the body looks like this.
+
+#+begin_src elisp
+(defun yankpad--snippets (category-name)
+       "Get an alist of the snippets in CATEGORY-NAME.
+     Each snippet is a list (NAME TAGS SRC-BLOCKS TEXT)."
+       (let* ((propertystring (yankpad--category-include-property category-name))
+              (include (when propertystring
+                         (split-string propertystring "|")))
+              (snippets
+               (append
+                (when (eq yankpad-descriptive-list-treatment 'snippet)
+                  (mapcar (lambda (d)
+                            (list (concat (car d) yankpad-expand-separator) nil nil (cdr d)))
+                          (yankpad-category-descriptions category-name)))
+                (org-with-point-at (yankpad-category-marker category-name)
+                  (cl-reduce #'append
+                             (org-map-entries #'yankpad-snippets-at-point
+                                              (format "+LEVEL=%s" (1+ yankpad-category-heading-level))
+                                              'tree))))))
+         (append snippets (cl-reduce #'append (mapcar #'yankpad--snippets include)))))
+#+end_src
+
+The troublemaker above is =org-with-point-at=. That is basically
+reading the file, which is expensive. A little extra bit of knowledge
+to deepen the problem: a category in the Yankpad file may include
+other categories (which is a pretty cool feature). That also means
+that this function may run multiple times for each category (if it
+includes others). That means reading the same file multiple times:
+super slow = not cool!
+
+Let's memoize/cache things then.
+
+#+begin_src elisp
+(defvar yankpad-snippets-cache nil "A dictionary category-name . snippets.")
+
+(defun yankpad--snippets (category-name)
+  "Get an alist of the snippets in CATEGORY-NAME.
+          Each snippet is a list (NAME TAGS SRC-BLOCKS TEXT)."
+  (if-let ((snippets (alist-get category-name yankpad-snippets-cache)))
+      snippets
+    (let* ((propertystring (yankpad--category-include-property category-name))
+           (include (when propertystring
+                      (split-string propertystring "|")))
+           (snippets
+            (append
+             (when (eq yankpad-descriptive-list-treatment 'snippet)
+               (mapcar (lambda (d)
+                         (list (concat (car d) yankpad-expand-separator) nil nil (cdr d)))
+                       (yankpad-category-descriptions category-name)))
+             (org-with-point-at (yankpad-category-marker category-name)
+               (cl-reduce #'append
+                          (org-map-entries #'yankpad-snippets-at-point
+                                           (format "+LEVEL=%s" (1+ yankpad-category-heading-level))
+                                           'tree)))))
+           (all-snippets (append snippets (cl-reduce #'append (mapcar #'yankpad--snippets include)))))
+      (add-to-list 'yankpad-snippets-cache (cons category-name all-snippets))
+      all-snippets)))
+#+end_src
+
+The cache/dictionary is =yankpad-snippets-cache=. The =if-let= checks
+if the cache contains the Yankpad category already, and returns that
+on a hit. On a miss we gather the snippets as before, add these
+snippets to the cache and finally return what we found.
+
+The problem with caching is that now we have to maintain the cache.
+When we save a new snippet via Yankpad, the cached function above will
+not look at the file anymore but just at the =yankpad-snippets-cache=
+dictionary we made. We could handle this with something fancy like
+checking the file modification timestamp, but since I am probably the
+only person facing this issue, I just made my own function to reload
+snippets (and invalidate the cache):
+
+#+begin_src elisp
+(defun yankpad-my-reload ()
+  (interactive)
+  (yankpad-set-active-snippets)
+  (setq yankpad-snippets-cache nil))
+#+end_src
+
+Anyway having a super quick capturing again is amazing! It was only a caching away.
+
+* Conclusion
+
+Don't wait on your computer: always make it better. I shall check if
+the author of Yankpad finds this interesting, but if not and you have
+the same problem just steal the code above.
+
+Happy capturing!
