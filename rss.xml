@@ -4,14 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 21 Aug 2022 17:50:38 BST</pubDate>
-    <lastBuildDate>Sun, 21 Aug 2022 17:50:38 BST</lastBuildDate>
+    <pubDate>Tue, 06 Sep 2022 22:05:03 BST</pubDate>
+    <lastBuildDate>Tue, 06 Sep 2022 22:05:03 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Too many org ids! How to tell no to Org mode for certain files</title>
+      <link>http://ag91.github.io/blog/2022/09/06/too-many-org-ids-how-to-tell-no-to-org-mode-for-certain-files</link>
+      <description><![CDATA[Let's advice org-id-get-create to skip certain files]]></description>
+      <pubDate>2022-09-06</pubDate>
+      <guid>http://ag91.github.io/blog/2022/09/06/too-many-org-ids-how-to-tell-no-to-org-mode-for-certain-files</guid>
+    </item>
+    <item>
       <title>Caching Yankpad snippets for a quicker note capturing</title>
       <link>http://ag91.github.io/blog/2022/08/21/caching-yankpad-snippets-for-a-quicker-note-capturing</link>
-      <description><![CDATA[Speed up Yankpad on inserting your snippets!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-08-21</pubDate>
       <guid>http://ag91.github.io/blog/2022/08/21/caching-yankpad-snippets-for-a-quicker-note-capturing</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-05-02</pubDate>
       <guid>http://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles</guid>
-    </item>
-    <item>
-      <title>Repeat with me: Avy actions are awesome!</title>
-      <link>http://ag91.github.io/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-04-20</pubDate>
-      <guid>http://ag91.github.io/blog/2022/04/20/repeat-with-me-avy-actions-are-awesome</guid>
     </item>
   </channel>
 </rss>
