@@ -1,0 +1,51 @@
+#+TITLE:       Too many org ids! How to tell no to Org mode for certain files
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-09-06 Tue
+#+URI:         /blog/%y/%m/%d/too-many-org-ids-how-to-tell-no-to-org-mode-for-certain-files
+#+KEYWORDS:    emacs, org-mode
+#+TAGS:        emacs, org-mode
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Let's advice org-id-get-create to skip certain files
+
+This is a quick one. I use the amazing [[https://github.com/Kungsgeten/yankpad][Yankpad]] to capture code
+snippets. In the past I setup Org Mode to create an unique identifier
+for each new heading that I create. That let's me navigate to headings
+without ambiguity.
+
+Now that I started using Yankpad capturing capabilities more seriously
+though, identifiers get added also in snippets. That is not good because
+when then I insert the snippet, I get also a
+
+#+begin_src text 
+:PROPERTIES:
+:ID:       931edc1b-2820-43d1-aa89-289d84a6eb30
+:END:
+<my-snippet-here>        
+#+end_src
+
+in the middle of my code!
+
+So I decided to fix that with an [[https://www.emacswiki.org/emacs/Advice][Emacs advice]]. The idea is to redefine
+the function =org-id-get-create=. Before adding an id, it should check
+if I want ids in that file. Checkout the code!
+
+#+begin_src elisp
+(defcustom my/no-org-id-in-these-please
+  '("~/yankpad.org")
+  "Don't create org-id in these files")
+
+(defun my/org-id-get-create-unless-it-shouldnt (orig &rest args)
+  (when (not (-contains-p (-map 'expand-file-name my/no-org-id-in-these-please) (buffer-file-name)))
+    (apply orig args)))
+
+(advice-add 'org-id-get-create :around #'my/org-id-get-create-unless-it-shouldnt)
+#+end_src
+
+With this code loaded in your Emacs, all you have to do to avoid the situation is to add
+the file you don't want ids in to =my/no-org-id-in-these-please=.
+
+Hope that saves you some troubles!
+
+Happy snippetting!
