@@ -1,0 +1,92 @@
+#+TITLE:       Hacking Projectile to search in all my projects
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-09-13 Tue
+#+URI:         /blog/%y/%m/%d/hacking-projectile-to-search-in-all-my-projects
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A simple trick to make Projectile even more useful!
+
+At work we develop micro-services. The nicest thing is that they
+really do one thing well. The boring thing is that there are hundreds
+of them!
+
+This means I have got a big fat directory full of Git projects. I use
+[[https://github.com/bbatsov/helm-projectile][helm-projectile]] to search in the code of a micro-service.
+
+Sometimes though I need to do the reverse: I am reading something in
+the project and I want to see if and how that something exists in the
+other micro-services. For instance, I am looking at a database
+username and I want to see how the pattern changes between
+micro-services.
+
+So I wondered if projectile supported that use case, and after a quick
+search I decided it was quicker to solve the problem myself.
+
+- What can we do with projectile: search in a Git project for a string
+- What I want to do: search in all projects for a string
+
+- Solution: make the directory containing the micro-services a Git repository!
+
+Indeed, Projectile had the problem already solved for me. I was a =git
+init= away from being able to search things.
+
+The only thing you may miss then is a way to search the whole projects
+when you are in a project. In that case, Projectile defaults on
+searching only the files in the micro-service.
+
+For that I needed to write a little bit of code. I use ag, the silver
+searcher for quick grepping, so that is what I show here.
+
+The core of the hack is looking for the parent of the current project,
+that in our case would be the directory that contains our
+micro-services (that we made a repository with =git init=).
+
+Using Projectile we can do this:
+
+#+begin_src elisp :noeval
+(projectile-root-bottom-up
+ (file-name-directory
+  (directory-file-name
+   (projectile-project-root))))
+#+end_src
+
+And now copy pasting =helm-ag=:
+
+#+begin_src elisp :noeval
+(defun helm-projectile-ag-parent (&optional options)
+  "Helm version of `projectile-ag'."
+  (interactive (if current-prefix-arg (list (helm-read-string "option: " "" 'helm-ag--extra-options-history))))
+  (let ((default-directory (projectile-root-bottom-up ; NOTE: this `let' is the only change!
+                            (file-name-directory
+                             (directory-file-name
+                              (projectile-project-root))))))
+    (if (require 'helm-ag nil t)
+        (if (projectile-project-p)
+            (let* ((grep-find-ignored-files (cl-union (projectile-ignored-files-rel) grep-find-ignored-files))
+                   (grep-find-ignored-directories (cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))
+                   (ignored (mapconcat (lambda (i)
+                                         (concat "--ignore " i))
+                                       (append grep-find-ignored-files grep-find-ignored-directories (cadr (projectile-parse-dirconfig-file)))
+                                       " "))
+                   (helm-ag-base-command (concat helm-ag-base-command " " ignored " " options))
+                   (current-prefix-arg nil))
+              (helm-do-ag (projectile-project-root) (car (projectile-parse-dirconfig-file))))
+          (error "You're not in a project"))
+      (when (yes-or-no-p "`helm-ag' is not installed. Install? ")
+        (condition-case nil
+            (progn
+              (package-install 'helm-ag)
+              (helm-projectile-ag options))
+          (error (error "`helm-ag' is not available.  Is MELPA in your `package-archives'?")))))))
+#+end_src
+
+Wrapping the old function in a =let= setting the =default-directory=
+and pointing that to the parent project does the trick.
+
+With this you can search all the files in your parent repository
+without having to switch projects or move to another directory.
+
+Happy searching!

@@ -1,0 +1,121 @@
+#+TITLE:       A way to fix Helm handling of symlink (/tmp dir) in Mac OS
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-09-13 Tue
+#+URI:         /blog/%y/%m/%d/a-way-to-fix-helm-handling-of-symlink-tmp-dir-in-mac-os
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A simple hack to avoid refreshing the cache every time
+
+I found myself upset about using [[https://github.com/emacs-helm/helm][Helm]] on Mac OS for a while because it
+wouldn't show me the contents of my =/tmp= directory. The issue would
+always become apparent in the most disappointing times. For example,
+the Emacs mail client =mu4e= requires a file to exist in order to set
+it as an attachment. Bet where is the file I want to attach? Right, in
+the =/tmp= directory that for some reason my Helm sees (mostly) empty.
+That makes adding an attachment to a mail more painful than needed.
+
+This is how today I studied the issue and fixed it once and for all
+for myself.
+
+The thing is that Helm creates a cache of directories contents to be
+super quick. Any time you create a file in a directory that Helm is
+keeping a cache for, Helm receives a notification and the cache is
+updated. Somehow that doesn't work well for symlinks on Mac OS (/tmp/
+is a symlink in Mac OS). So the cache doesn't get updated and I don't
+see my files!
+
+There is a relating issue on the Helm repo is
+https://github.com/emacs-helm/helm/issues/2542 and the immediate
+solution would be to do =C-c C-u= to force the refresh of the cache.
+
+For a microsecond I really thought I would remember =C-c C-u= every
+time I searched in =/tmp=. The ashamed of myself, I fixed it once and
+for all. Inelegantly, but still a hack worth sharing.
+
+In my Emacs configuration dedicated to Mac OS I added the following:
+
+#+begin_src elisp :noeval
+(defcustom my/extra-checks-for-helm-dirs-cache (lambda () (or (s-starts-with-p "/tmp" default-directory))) "")
+
+(when (eq 'darwin system-type)
+  (with-eval-after-load 'helm-files
+    (defun helm-ff-directory-files (directory &optional force-update)
+      "List contents of DIRECTORY.
+Argument FULL mean absolute path.
+It is same as `directory-files' but always returns the dotted
+filename \\='.' and \\='..' even on root directories in Windows
+systems.
+When FORCE-UPDATE is non nil recompute candidates even if DIRECTORY is
+in cache."
+      (let ((method (file-remote-p directory 'method)))
+        (setq directory (file-name-as-directory
+                         (expand-file-name directory)))
+        (or (and (funcall my/extra-checks-for-helm-dirs-cache) (not force-update)
+                 (gethash directory helm-ff--list-directory-cache))
+            (let* (file-error
+                   (ls   (condition-case err
+                             (helm-list-directory directory)
+                           ;; Handle file-error from here for Windows
+                           ;; because predicates like `file-readable-p' and friends
+                           ;; seem broken on emacs for Windows systems (always returns t).
+                           ;; This should never be called on GNU/Linux/Unix
+                           ;; as the error is properly intercepted in
+                           ;; `helm-find-files-get-candidates' by `file-readable-p'.
+                           (file-error
+                            (prog1
+                                ;; Prefix error message with @@@@ for safety
+                                ;; (some files may match file-error See bug#2400) 
+                                (list (format "@@@@%s:%s"
+                                              (car err)
+                                              (mapconcat 'identity (cdr err) " ")))
+                              (setq file-error t)))))
+                   (dot  (concat directory "."))
+                   (dot2 (concat directory ".."))
+                   (candidates (append (and (not file-error) (list dot dot2)) ls)))
+              (puthash directory (+ (length ls) 2) helm-ff--directory-files-length)
+              (prog1
+                  (puthash directory
+                           (cl-loop for f in candidates
+                                    when (helm-ff-filter-candidate-one-by-one f)
+                                    collect it)
+                           helm-ff--list-directory-cache)
+                ;; Put an inotify watcher to check directory modifications.
+                (unless (or (null helm-ff-use-notify)
+                            (member method helm-ff-inotify-unsupported-methods)
+                            (gethash directory helm-ff--file-notify-watchers))
+                  (condition-case-unless-debug err
+                      (puthash directory
+                               (file-notify-add-watch
+                                directory
+                                '(change attribute-change)
+                                (helm-ff--inotify-make-callback directory))
+                               helm-ff--file-notify-watchers)
+                    (file-notify-error (user-error "Error: %S %S" (car err) (cdr err))))))))))))
+
+#+end_src
+
+This redefines =helm-ff-directory-files= to have an alternative way to
+force the full refresh of the cache.
+
+You can see I define a predicate I want to run:
+
+#+begin_src elisp :noeval
+(defcustom my/extra-checks-for-helm-dirs-cache (lambda () (or (s-starts-with-p "/tmp" default-directory))) "")
+#+end_src
+
+This checks if we are in =/tmp/=. Then I inject that predicate next to the =force-update= bit:
+
+#+begin_src elisp :noeval
+...
+(and (funcall my/extra-checks-for-helm-dirs-cache) (not force-update)
+                 (gethash directory helm-ff--list-directory-cache))
+...
+#+end_src
+
+With that I can extend the predicate and automatically refresh the
+cache without me remembering extra keybindings.
+
+Happy tmp/ing!
