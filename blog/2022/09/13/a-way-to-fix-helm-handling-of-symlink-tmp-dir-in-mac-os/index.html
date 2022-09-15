@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>A way to fix Helm handling of symlink (/tmp dir) in Mac OS - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="A simple hack to avoid refreshing the cache every time" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>A way to fix Helm handling of symlink (/tmp dir) in Mac OS</h1>
+<p>
+I found myself upset about using <a href="https://github.com/emacs-helm/helm">Helm</a> on Mac OS for a while because it
+wouldn't show me the contents of my <code>/tmp</code> directory. The issue would
+always become apparent in the most disappointing times. For example,
+the Emacs mail client <code>mu4e</code> requires a file to exist in order to set
+it as an attachment. Bet where is the file I want to attach? Right, in
+the <code>/tmp</code> directory that for some reason my Helm sees (mostly) empty.
+That makes adding an attachment to a mail more painful than needed.
+</p>
+
+<p>
+This is how today I studied the issue and fixed it once and for all
+for myself.
+</p>
+
+<p>
+The thing is that Helm creates a cache of directories contents to be
+super quick. Any time you create a file in a directory that Helm is
+keeping a cache for, Helm receives a notification and the cache is
+updated. Somehow that doesn't work well for symlinks on Mac OS (<i>tmp</i>
+is a symlink in Mac OS). So the cache doesn't get updated and I don't
+see my files!
+</p>
+
+<p>
+There is a relating issue on the Helm repo is
+<a href="https://github.com/emacs-helm/helm/issues/2542">https://github.com/emacs-helm/helm/issues/2542</a> and the immediate
+solution would be to do <code>C-c C-u</code> to force the refresh of the cache.
+</p>
+
+<p>
+For a microsecond I really thought I would remember <code>C-c C-u</code> every
+time I searched in <code>/tmp</code>. The ashamed of myself, I fixed it once and
+for all. Inelegantly, but still a hack worth sharing.
+</p>
+
+<p>
+In my Emacs configuration dedicated to Mac OS I added the following:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defcustom my/extra-checks-for-helm-dirs-cache (lambda () (or (s-starts-with-p "/tmp" default-directory))) "")
+
+(when (eq 'darwin system-type)
+  (with-eval-after-load 'helm-files
+    (defun helm-ff-directory-files (directory &amp;optional force-update)
+      "List contents of DIRECTORY.
+Argument FULL mean absolute path.
+It is same as `directory-files' but always returns the dotted
+filename \\='.' and \\='..' even on root directories in Windows
+systems.
+When FORCE-UPDATE is non nil recompute candidates even if DIRECTORY is
+in cache."
+      (let ((method (file-remote-p directory 'method)))
+        (setq directory (file-name-as-directory
+                         (expand-file-name directory)))
+        (or (and (funcall my/extra-checks-for-helm-dirs-cache) (not force-update)
+                 (gethash directory helm-ff--list-directory-cache))
+            (let* (file-error
+                   (ls   (condition-case err
+                             (helm-list-directory directory)
+                           ;; Handle file-error from here for Windows
+                           ;; because predicates like `file-readable-p' and friends
+                           ;; seem broken on emacs for Windows systems (always returns t).
+                           ;; This should never be called on GNU/Linux/Unix
+                           ;; as the error is properly intercepted in
+                           ;; `helm-find-files-get-candidates' by `file-readable-p'.
+                           (file-error
+                            (prog1
+                                ;; Prefix error message with @@@@ for safety
+                                ;; (some files may match file-error See bug#2400) 
+                                (list (format "@@@@%s:%s"
+                                              (car err)
+                                              (mapconcat 'identity (cdr err) " ")))
+                              (setq file-error t)))))
+                   (dot  (concat directory "."))
+                   (dot2 (concat directory ".."))
+                   (candidates (append (and (not file-error) (list dot dot2)) ls)))
+              (puthash directory (+ (length ls) 2) helm-ff--directory-files-length)
+              (prog1
+                  (puthash directory
+                           (cl-loop for f in candidates
+                                    when (helm-ff-filter-candidate-one-by-one f)
+                                    collect it)
+                           helm-ff--list-directory-cache)
+                ;; Put an inotify watcher to check directory modifications.
+                (unless (or (null helm-ff-use-notify)
+                            (member method helm-ff-inotify-unsupported-methods)
+                            (gethash directory helm-ff--file-notify-watchers))
+                  (condition-case-unless-debug err
+                      (puthash directory
+                               (file-notify-add-watch
+                                directory
+                                '(change attribute-change)
+                                (helm-ff--inotify-make-callback directory))
+                               helm-ff--file-notify-watchers)
+                    (file-notify-error (user-error "Error: %S %S" (car err) (cdr err))))))))))))
+
+</pre>
+</div>
+
+<p>
+This redefines <code>helm-ff-directory-files</code> to have an alternative way to
+force the full refresh of the cache.
+</p>
+
+<p>
+You can see I define a predicate I want to run:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defcustom my/extra-checks-for-helm-dirs-cache (lambda () (or (s-starts-with-p "/tmp" default-directory))) "")
+</pre>
+</div>
+
+<p>
+This checks if we are in <code>/tmp/</code>. Then I inject that predicate next to the <code>force-update</code> bit:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">...
+(and (funcall my/extra-checks-for-helm-dirs-cache) (not force-update)
+                 (gethash directory helm-ff--list-directory-cache))
+...
+</pre>
+</div>
+
+<p>
+With that I can extend the predicate and automatically refresh the
+cache without me remembering extra keybindings.
+</p>
+
+<p>
+Happy tmp/ing!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-09-13</span>
+        <span title="last modification date" class="post-info">2022-09-15</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
