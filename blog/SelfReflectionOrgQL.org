@@ -1,0 +1,157 @@
+#+TITLE:       Self reflection: a favour I own myself (with a bit of org-ql to make it easier!)
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-10-09 Sun
+#+URI:         /blog/%y/%m/%d/self-reflection-a-favour-i-own-myself-with-a-bit-of-org-ql-to-make-it-easier
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: Self reflection tips to become a better person
+
+* Too long; didn't read
+
+Periodic self reflection is a way to become a better person. I use
+org-ql to help me pick what activity I can self reflect upon.
+
+* The problem
+
+Sometimes ago I read [[https://www.goodreads.com/book/show/43324966-no-more-feedback?from_search=true&from_srp=true&qid=6u39Ftmr6b&rank=1]["No More Feedback" by Carol Sanford]]. The author's
+point about self reflection has inspired me since: rather than tell
+others what they are doing wrong or they could better, facilitate
+their self-reflection.
+
+Self reflecting is thinking about a past action/behavior and see how
+to make it better. This is better because the person reflecting can
+come up with their own best solution (which definitely isn't yours:
+innovation!).
+
+Well, before applying this on others I wanted to start facilitating
+self-reflection for myself.
+
+I tend to do a lot of things and that busyness rarely let me self
+reflect.
+
+* It is a problem indeed
+:PROPERTIES:
+:ID:       f18ee7c3-8bd9-4678-b7b3-1c69cb47a7af
+:END:
+
+Well I guess the issue is everywhere really: from school's exams to
+work performance reviews, you can always find somebody telling how you
+can be better. As Carol points out in her book, this form of input
+constrains you in the expectations of others which most of the time is
+not good for you on the long term. For instance, say I have a family
+member that leaves in a city without hospital: I could tell them they
+would be better off by moving to one that has it because I needed an
+hospital in the past. That may make sense for *my* situation, while
+they could never want/need to use a hospital in their life for
+whatever reason. If they were to follow my suggestion without
+understanding/sharing my context, they would move without
+understanding why and possibly become less happy in the process. That
+usually creates even bigger issues.
+
+And a lot of time following orders without understanding the deepest
+reasons (and so outsourcing responsibilities) cause major disasters
+for the many.
+
+Maybe self reflecting on what we did (and plan to do) can also give us
+more control of our lives. And if others copy us, well everybody will
+be better off (and they will be far more interesting people to share
+our time with).
+
+* And there is a solution
+:PROPERTIES:
+:ID:       0dee8850-173c-4dde-ada9-71f04d1194c8
+:END:
+
+I spend a lot of time working in Emacs, so I thought my favourite
+editor could nudge me to self reflect.
+
+My first iteration has been to add a habit to my agenda that reminds
+me to reflect every 3 days.
+
+I install org-habit like this:
+
+#+begin_src elisp
+(use-package org-habit
+  :ensure nil
+  :defer 9
+  :config
+  ;; enable org-habit tracking
+  (add-to-list 'org-modules 'org-habit))
+#+end_src
+
+and my habit for self reflection looks like this:
+
+#+begin_src org
+,* TODO self reflect]: pick a task/decision/action of this week and note down an improvement
+SCHEDULED: <2022-10-02 Sun .+1d/3d>
+:PROPERTIES:
+:STYLE: habit
+:REPEAT_TO_STATE: TODO
+:END:
+#+end_src
+
+After a few reflections, I thought one thing that I could possibly
+tackle is tasks that I postpone all the times. So I came up with an
+[[https://github.com/alphapapa/org-ql][org-ql]] query that orders my completed tasks for last week by the time
+they waited for my action:
+
+#+begin_src elisp
+(defun my/org-delta-scheduled-created (headline)
+  (or (ignore-errors (--> headline
+                          (nth 1 it)
+                          (ts-diff
+                           (ts-parse (--> (plist-get it :closed)
+                                          (nth 1 it)
+                                          (plist-get it :raw-value)
+                                          (s-split "\\[" it)
+                                          (nth 1 it)
+                                          (s-split " " it)
+                                          car))
+                           (ts-parse (--> (plist-get it :CREATED)
+                                          (s-split "\\[" it)
+                                          (nth 1 it)
+                                          (s-split " " it)
+                                          car)))))
+      0))
+
+(--> (org-ql-query
+       :from (org-agenda-files)
+       :where
+       `(and (done)
+             (not (habit))
+             (scheduled :from ,(format-time-string "%Y-%m-%d" (org-read-date nil t "-1w")))))
+     (--sort
+      (> (my/org-delta-scheduled-created it) (my/org-delta-scheduled-created other))
+      it)
+     (--map
+      `(,(--> it
+              (nth 1 it)
+              (plist-get it :raw-value))
+        ,(/ (my/org-delta-scheduled-created it) 60 60 24))
+      it)
+     (cons '(done-task days-needed) (cons 'hline it))
+     )
+#+end_src
+
+This relies on me adding a :CREATED property every time I capture a
+task and a :CLOSED property when I complete it. The code above
+calculates the difference between these times in days and sorts the
+entries.
+
+So if I have no idea what to self reflect on, I can run this code
+block and see some tasks that I have delayed for many days and think
+what went wrong there. Of course, there may be something more
+important to reflect upon, but this is just to help myself.
+
+* Conclusion
+
+This is what I am trying lately to improve myself! A bit of self
+reflecting on my busy life by adding an habit in my agenda and sorting
+the last week tasks by latency.
+
+Hope you will have time to try (more) self reflection too.
+
+Happy self-reflecting!
