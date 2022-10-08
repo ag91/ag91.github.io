@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Self reflection: a favour I own myself (with a bit of org-ql to make it easier!) - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="description" content="Self reflection tips to become a better person" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Self reflection: a favour I own myself (with a bit of org-ql to make it easier!)</h1>
+
+<div id="outline-container-org9f93a9b" class="outline-2">
+<h2 id="org9f93a9b">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org9f93a9b">
+<p>
+Periodic self reflection is a way to become a better person. I use
+org-ql to help me pick what activity I can self reflect upon.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf3da45c" class="outline-2">
+<h2 id="orgf3da45c">The problem</h2>
+<div class="outline-text-2" id="text-orgf3da45c">
+<p>
+Sometimes ago I read <a href="https://www.goodreads.com/book/show/43324966-no-more-feedback?from_search=true&amp;from_srp=true&amp;qid=6u39Ftmr6b&amp;rank=1">"No More Feedback" by Carol Sanford</a>. The author's
+point about self reflection has inspired me since: rather than tell
+others what they are doing wrong or they could better, facilitate
+their self-reflection.
+</p>
+
+<p>
+Self reflecting is thinking about a past action/behavior and see how
+to make it better. This is better because the person reflecting can
+come up with their own best solution (which definitely isn't yours:
+innovation!).
+</p>
+
+<p>
+Well, before applying this on others I wanted to start facilitating
+self-reflection for myself.
+</p>
+
+<p>
+I tend to do a lot of things and that busyness rarely let me self
+reflect.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org550757b" class="outline-2">
+<h2 id="org550757b">It is a problem indeed</h2>
+<div class="outline-text-2" id="text-org550757b">
+<p>
+Well I guess the issue is everywhere really: from school's exams to
+work performance reviews, you can always find somebody telling how you
+can be better. As Carol points out in her book, this form of input
+constrains you in the expectations of others which most of the time is
+not good for you on the long term. For instance, say I have a family
+member that leaves in a city without hospital: I could tell them they
+would be better off by moving to one that has it because I needed an
+hospital in the past. That may make sense for <b>my</b> situation, while
+they could never want/need to use a hospital in their life for
+whatever reason. If they were to follow my suggestion without
+understanding/sharing my context, they would move without
+understanding why and possibly become less happy in the process. That
+usually creates even bigger issues.
+</p>
+
+<p>
+And a lot of time following orders without understanding the deepest
+reasons (and so outsourcing responsibilities) cause major disasters
+for the many.
+</p>
+
+<p>
+Maybe self reflecting on what we did (and plan to do) can also give us
+more control of our lives. And if others copy us, well everybody will
+be better off (and they will be far more interesting people to share
+our time with).
+</p>
+</div>
+</div>
+
+<div id="outline-container-org79e4685" class="outline-2">
+<h2 id="org79e4685">And there is a solution</h2>
+<div class="outline-text-2" id="text-org79e4685">
+<p>
+I spend a lot of time working in Emacs, so I thought my favourite
+editor could nudge me to self reflect.
+</p>
+
+<p>
+My first iteration has been to add a habit to my agenda that reminds
+me to reflect every 3 days.
+</p>
+
+<p>
+I install org-habit like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(use-package org-habit
+  :ensure nil
+  :defer 9
+  :config
+  ;; enable org-habit tracking
+  (add-to-list 'org-modules 'org-habit))
+</pre>
+</div>
+
+<p>
+and my habit for self reflection looks like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">* TODO self reflect]: pick a task/decision/action of this week and note down an improvement
+SCHEDULED: &lt;2022-10-02 Sun .+1d/3d&gt;
+:PROPERTIES:
+:STYLE: habit
+:REPEAT_TO_STATE: TODO
+:END:
+</pre>
+</div>
+
+<p>
+After a few reflections, I thought one thing that I could possibly
+tackle is tasks that I postpone all the times. So I came up with an
+<a href="https://github.com/alphapapa/org-ql">org-ql</a> query that orders my completed tasks for last week by the time
+they waited for my action:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/org-delta-scheduled-created (headline)
+  (or (ignore-errors (--&gt; headline
+                          (nth 1 it)
+                          (ts-diff
+                           (ts-parse (--&gt; (plist-get it :closed)
+                                          (nth 1 it)
+                                          (plist-get it :raw-value)
+                                          (s-split "\\[" it)
+                                          (nth 1 it)
+                                          (s-split " " it)
+                                          car))
+                           (ts-parse (--&gt; (plist-get it :CREATED)
+                                          (s-split "\\[" it)
+                                          (nth 1 it)
+                                          (s-split " " it)
+                                          car)))))
+      0))
+
+(--&gt; (org-ql-query
+       :from (org-agenda-files)
+       :where
+       `(and (done)
+             (not (habit))
+             (scheduled :from ,(format-time-string "%Y-%m-%d" (org-read-date nil t "-1w")))))
+     (--sort
+      (&gt; (my/org-delta-scheduled-created it) (my/org-delta-scheduled-created other))
+      it)
+     (--map
+      `(,(--&gt; it
+              (nth 1 it)
+              (plist-get it :raw-value))
+        ,(/ (my/org-delta-scheduled-created it) 60 60 24))
+      it)
+     (cons '(done-task days-needed) (cons 'hline it))
+     )
+</pre>
+</div>
+
+<p>
+This relies on me adding a :CREATED property every time I capture a
+task and a :CLOSED property when I complete it. The code above
+calculates the difference between these times in days and sorts the
+entries.
+</p>
+
+<p>
+So if I have no idea what to self reflect on, I can run this code
+block and see some tasks that I have delayed for many days and think
+what went wrong there. Of course, there may be something more
+important to reflect upon, but this is just to help myself.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2296e5b" class="outline-2">
+<h2 id="org2296e5b">Conclusion</h2>
+<div class="outline-text-2" id="text-org2296e5b">
+<p>
+This is what I am trying lately to improve myself! A bit of self
+reflecting on my busy life by adding an habit in my agenda and sorting
+the last week tasks by latency.
+</p>
+
+<p>
+Hope you will have time to try (more) self reflection too.
+</p>
+
+<p>
+Happy self-reflecting!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2022-10-09</span>
+        <span title="last modification date" class="post-info">2022-10-09</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <section>
+        <h1>Comments</h1>
+      </section>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

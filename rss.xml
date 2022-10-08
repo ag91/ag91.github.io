@@ -4,21 +4,28 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 15 Sep 2022 23:43:29 BST</pubDate>
-    <lastBuildDate>Thu, 15 Sep 2022 23:43:29 BST</lastBuildDate>
+    <pubDate>Sun, 09 Oct 2022 00:27:08 BST</pubDate>
+    <lastBuildDate>Sun, 09 Oct 2022 00:27:08 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>Self reflection: a favour I own myself (with a bit of org-ql to make it easier!)</title>
+      <link>http://ag91.github.io/blog/2022/10/09/self-reflection-a-favour-i-own-myself-with-a-bit-of-org-ql-to-make-it-easier</link>
+      <description><![CDATA[Self reflection tips to become a better person]]></description>
+      <pubDate>2022-10-09</pubDate>
+      <guid>http://ag91.github.io/blog/2022/10/09/self-reflection-a-favour-i-own-myself-with-a-bit-of-org-ql-to-make-it-easier</guid>
+    </item>
+    <item>
       <title>A way to fix Helm handling of symlink (/tmp dir) in Mac OS</title>
       <link>http://ag91.github.io/blog/2022/09/13/a-way-to-fix-helm-handling-of-symlink-tmp-dir-in-mac-os</link>
-      <description><![CDATA[A simple hack to avoid refreshing the cache every time]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-09-15</pubDate>
       <guid>http://ag91.github.io/blog/2022/09/13/a-way-to-fix-helm-handling-of-symlink-tmp-dir-in-mac-os</guid>
     </item>
     <item>
       <title>Hacking Projectile to search in all my projects</title>
       <link>http://ag91.github.io/blog/2022/09/13/hacking-projectile-to-search-in-all-my-projects</link>
-      <description><![CDATA[A simple trick to make Projectile even more useful!]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2022-09-15</pubDate>
       <guid>http://ag91.github.io/blog/2022/09/13/hacking-projectile-to-search-in-all-my-projects</guid>
     </item>
@@ -70,13 +77,6 @@
       <description><![CDATA[]]></description>
       <pubDate>2022-06-28</pubDate>
       <guid>http://ag91.github.io/blog/2022/06/28/org-feed-+-esxml-make-an-rss-feed-out-of-any-website</guid>
-    </item>
-    <item>
-      <title>Make adding a Clojure require more interactive with Cider and Cljr</title>
-      <link>http://ag91.github.io/blog/2022/06/09/make-adding-a-clojure-require-more-interactive-with-cider-and-cljr</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-06-09</pubDate>
-      <guid>http://ag91.github.io/blog/2022/06/09/make-adding-a-clojure-require-more-interactive-with-cider-and-cljr</guid>
     </item>
   </channel>
 </rss>
