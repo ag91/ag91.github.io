@@ -1,0 +1,54 @@
+#+TITLE:       Merge plists in Elisp
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-10-30 Sun
+#+URI:         /blog/%y/%m/%d/merge-plists-in-elisp
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: A little function to merge values of a plist
+
+Say that you have two property lists in Elisp =(list :a 1 :b 3)= and
+=(list :a 2)=: you may need to merge them to obtain =(list :a 2 :b
+3)=. This operator [[https://clojuredocs.org/clojure.core/merge][exists in Clojure]], but I didn't seem to find it nor
+in seq.el, nor dash.el nor in other Emacs' built-in libraries.
+
+I also needed the operation to do a "deeper" merge:
+
+#+begin_src elisp
+(me-merge (list :andrea-favourites (list "food")) (list :andrea-favourites (list "books")))
+; => (:andrea-favourites ("food" "books"))
+#+end_src
+
+And this is what I got to:
+
+#+begin_src elisp
+(defun me-keys (plist)
+  "Return keys of PLIST."
+  (--filter (and (symbolp it) (s-starts-with-p ":" (symbol-name it))) plist))
+; (me-keys '(:a 1 :b 2))
+; => (:a :b)
+
+(defun me-merge (join-when-you-can? &rest plists)
+  "Merge keys of PLISTS when possible.
+If JOIN-WHEN-YOU-CAN? is true, if keys contain lists,
+ we append their results instead of replacing."
+  (--reduce
+   (-reduce-from
+    (lambda (acc1 key)
+      (let ((a (plist-get acc key))
+            (b (plist-get it key)))
+        (if (and join-when-you-can? (listp a) (listp b))
+            (append acc1 (list key (-union a b)))
+          (append acc1 (list key b)))))
+    nil
+    (-union (me-keys it) (me-keys acc)))
+   plists))
+;(me-merge t '(:a ("1") :b "2") '(:a ("3") :b "3"))
+; => (:a ("1" "3") :b "3")
+;(me-merge nil '(:a "1" :b "2") '(:a "3" :b "3"))
+; => (:a "3" :b "3")
+#+end_src
+
+Happy merging!

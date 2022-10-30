@@ -96,6 +96,29 @@ The code for the function is below.
       (my/navigate-note nil next-note (org-roam-db--links-with-max-distance next-note 1)))))
 #+end_src
 
+ *Updated version for latest Org Roam v2.2.1*:
+
+#+begin_src elisp
+(defun my/navigate-note (arg &optional note choices)
+  (interactive "P")
+  (let* ((completions (org-roam-node-read--completions))
+         (next-note (if (and (null note) (org-roam-node-at-point))
+                        (org-roam-node-title (org-roam-node-at-point))
+                      (completing-read "File: " (or choices completions))))
+         (candidates
+          (--> next-note
+               (assoc it completions)
+               cdr
+               org-roam-backlinks-get
+               (--map
+                (org-roam-node-title
+                 (org-roam-backlink-source-node it))
+                it))))
+    (if (string= note next-note)
+        (org-roam-node-open (org-roam-node-from-title-or-alias note))
+      (my/navigate-note nil next-note (or candidates (list next-note))))))
+#+end_src
+
 A recursive function! The design is: gather all the notes you have,
 let the user pick one, gather the notes linked to that, let the user
 pick one, ..., if the user picks the same note twice, it means the
