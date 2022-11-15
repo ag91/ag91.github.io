@@ -1,0 +1,47 @@
+#+TITLE:       Catch you JS console.log you forgot to remove with Emacs and Magit
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-11-15 Tue
+#+URI:         /blog/%y/%m/%d/catch-you-js-consolelog-you-forgot-to-remove-with-emacs-and-magit
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+This is to share a little hack I developed for myself. There have been
+a few review comments about JS files trying to reach the main/master
+branch with console.log in them. Although linter tools like Eslint can
+catch this things, I thought I would make sure I get an extra warning
+if I were to stage a change with it.
+
+So I came up with this little function:
+
+#+begin_src elisp
+(defun my/find-console-log-in-js-staged-files ()
+  "Warn if there are console.log in staged files."
+  (when (s-contains-p "\.js" (s-join " " (magit-staged-files))) ; only if there is a staged JS
+    (--> (shell-command-to-string "git diff --cached") ; TODO this could cause false positives because it takes all the staged files, even non JS
+         s-lines
+         (--keep (when (and (s-starts-with-p "+" it) (s-contains-p "console\." it))
+                   (substring it 1 (length it)))
+                 it)
+         (--each it
+           (warn (button-buttonize (format "You have a console.* in commit: %s" it) `(lambda (x)
+                                                                                       (let ((default-directory ,default-directory))
+                                                                                         (magit-diff-staged))
+                                                                                       (goto-char (point-min))
+                                                                                       (search-forward ,it nil t))))))))
+
+(add-hook 'magit-post-stage-hook 'my/find-console-log-in-js-staged-files)
+#+end_src
+
+It basically checks for console.* ONLY in the hunks I have added in my staged changes.
+
+The thing I enjoy is that it warns me AND creates Emacs buttons in
+the warning message allowing me to jump to the Magit diff buffer (and
+so making it easy solving the issue).
+
+The next step would be to automatically remove them, but hey: it was
+fun to learn about =button-buttonize= to make clickable text :)
+
+Happy linting!
