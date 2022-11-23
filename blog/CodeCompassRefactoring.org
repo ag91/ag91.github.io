@@ -1,0 +1,45 @@
+#+TITLE:       Emacs as your code-compass: who is the person who refactored most in this project?
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-11-23 Wed
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project
+#+KEYWORDS:    code-compass, emacs
+#+TAGS:        code-compass, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+It is a while I don't post about [[https://github.com/ag91/code-compass][code-compass]]. I recently jumped back
+in the consulting world and it is a hectic life! In a couple of months
+I moved from a project to another. Furthermore, I cannot say I got
+somebody introducing me to the software architecture of these projects
+(or even their status).
+
+Lucky me these years (from Ph.D. to industry times) have given me some
+experience, so my boat is well equipped for this wavy sea. Also I am
+well prepared: in both projects I had just had to rely on my Emacs for
+a reliable code-compass.
+
+So armed of [[org-ql-search:][hotspots]], [[org-ql-search:][knowledge]] and [[org-ql-search:][communication]] graphs with a bit of
+[[org-ql-search:][churn]], [[org-ql-search:][fragmentation]] and [[https://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/][complexity]] on the side, I could get up and
+running faster than ever! Yay!!
+
+One thing I have been missing is to explore graphically who dedicated
+themselves to the lovely art of refactoring with passion. Indeed, the
+project on which I rely, the fantastic [[org-ql-search:][code-maat]], offers a refactoring
+analysis. This finds who has _deleted_ most lines in a file using Git
+commits information.
+
+Naturally deletions are an approximation for refactoring, but good
+enough as less code is always an improvement (at least for our eyes).
+
+Well there I go: I added it just now. It was pretty easy because is
+super-similar to the knowledge graph implementation. So a tweak here
+and there and it is now available.
+
+Below a video that gives you a sense of what it is about.
+
+[[file:refactoringCodeCompass.mp4]]
+
+If you want to try that yourself it is easy: just try out [[https://github.com/ag91/code-compass][code-compass]] ;)
+
+Happy refactoring!
