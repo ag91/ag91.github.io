@@ -4,69 +4,81 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 15 Nov 2022 17:22:26 GMT</pubDate>
-    <lastBuildDate>Tue, 15 Nov 2022 17:22:26 GMT</lastBuildDate>
+    <pubDate>Wed, 23 Nov 2022 23:31:40 GMT</pubDate>
+    <lastBuildDate>Wed, 23 Nov 2022 23:31:40 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Catch you JS console.log you forgot to remove with Emacs and Magit</title>
-      <link>http://ag91.github.io/blog/2022/11/15/catch-you-js-consolelog-you-forgot-to-remove-with-emacs-and-magit</link>
+      <title>Emacs as your code-compass: who is the person who refactored most in this project?</title>
+      <link>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>Catch you JS console.log you forgot to remove with Emacs and Magit</h1>
+<h1>Emacs as your code-compass: who is the person who refactored most in this project?</h1>
 <p>
-This is to share a little hack I developed for myself. There have been
-a few review comments about JS files trying to reach the main/master
-branch with console.log in them. Although linter tools like Eslint can
-catch this things, I thought I would make sure I get an extra warning
-if I were to stage a change with it.
+It is a while I don't post about <a href="https://github.com/ag91/code-compass">code-compass</a>. I recently jumped back
+in the consulting world and it is a hectic life! In a couple of months
+I moved from a project to another. Furthermore, I cannot say I got
+somebody introducing me to the software architecture of these projects
+(or even their status).
 </p>
 
 <p>
-So I came up with this little function:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-elisp">(defun my/find-console-log-in-js-staged-files ()
-  "Warn if there are console.log in staged files."
-  (when (s-contains-p "\.js" (s-join " " (magit-staged-files))) ; only if there is a staged JS
-    (--&gt; (shell-command-to-string "git diff --cached") ; TODO this could cause false positives because it takes all the staged files, even non JS
-         s-lines
-         (--keep (when (and (s-starts-with-p "+" it) (s-contains-p "console\." it))
-                   (substring it 1 (length it)))
-                 it)
-         (--each it
-           (warn (button-buttonize (format "You have a console.* in commit: %s" it) `(lambda (x)
-                                                                                       (let ((default-directory ,default-directory))
-                                                                                         (magit-diff-staged))
-                                                                                       (goto-char (point-min))
-                                                                                       (search-forward ,it nil t))))))))
-
-(add-hook 'magit-post-stage-hook 'my/find-console-log-in-js-staged-files)
-</pre>
-</div>
-
-<p>
-It basically checks for console.* ONLY in the hunks I have added in my staged changes.
+Lucky me these years (from Ph.D. to industry times) have given me some
+experience, so my boat is well equipped for this wavy sea. Also I am
+well prepared: in both projects I had just had to rely on my Emacs for
+a reliable code-compass.
 </p>
 
 <p>
-The thing I enjoy is that it warns me AND creates Emacs buttons in
-the warning message allowing me to jump to the Magit diff buffer (and
-so making it easy solving the issue).
+So armed of <a href="">hotspots</a>, <a href="">knowledge</a> and <a href="">communication</a> graphs with a bit of
+<a href="">churn</a>, <a href="">fragmentation</a> and <a href="https://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/">complexity</a> on the side, I could get up and
+running faster than ever! Yay!!
 </p>
 
 <p>
-The next step would be to automatically remove them, but hey: it was
-fun to learn about <code>button-buttonize</code> to make clickable text :)
+One thing I have been missing is to explore graphically who dedicated
+themselves to the lovely art of refactoring with passion. Indeed, the
+project on which I rely, the fantastic <a href="">code-maat</a>, offers a refactoring
+analysis. This finds who has <span class="underline">deleted</span> most lines in a file using Git
+commits information.
 </p>
 
 <p>
-Happy linting!
+Naturally deletions are an approximation for refactoring, but good
+enough as less code is always an improvement (at least for our eyes).
+</p>
+
+<p>
+Well there I go: I added it just now. It was pretty easy because is
+super-similar to the knowledge graph implementation. So a tweak here
+and there and it is now available.
+</p>
+
+<p>
+Below a video that gives you a sense of what it is about.
+</p>
+
+<p>
+<a href="/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4">/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4</a>
+</p>
+
+<p>
+If you want to try that yourself it is easy: just try out <a href="https://github.com/ag91/code-compass">code-compass</a> ;)
+</p>
+
+<p>
+Happy refactoring!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2022-11-23</pubDate>
+      <guid>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</guid>
+    </item>
+    <item>
+      <title>Catch you JS console.log you forgot to remove with Emacs and Magit</title>
+      <link>http://ag91.github.io/blog/2022/11/15/catch-you-js-consolelog-you-forgot-to-remove-with-emacs-and-magit</link>
+      <description><![CDATA[]]></description>
       <pubDate>2022-11-15</pubDate>
       <guid>http://ag91.github.io/blog/2022/11/15/catch-you-js-consolelog-you-forgot-to-remove-with-emacs-and-magit</guid>
     </item>
@@ -125,13 +137,6 @@ Happy linting!
       <description><![CDATA[]]></description>
       <pubDate>2022-07-29</pubDate>
       <guid>http://ag91.github.io/blog/2022/07/28/a-yasnippet-to-make-it-easy-debugging-clojure-code-with-atoms</guid>
-    </item>
-    <item>
-      <title>Delete filename or list of filenames in region with one Emacs command</title>
-      <link>http://ag91.github.io/blog/2022/07/23/delete-filename-or-list-of-filenames-in-region-with-one-emacs-command</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-07-23</pubDate>
-      <guid>http://ag91.github.io/blog/2022/07/23/delete-filename-or-list-of-filenames-in-region-with-one-emacs-command</guid>
     </item>
   </channel>
 </rss>
