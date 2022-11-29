@@ -1,0 +1,36 @@
+#+TITLE:       A tiny Elisp library to gather synonyms with Wordnet (and how to use it so Emacs can help searching my notes)
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-11-29 Tue
+#+URI:         /blog/%y/%m/%d/a-tiny-elisp-library-to-gather-synonyms-with-wordnet
+#+KEYWORDS:    emacs, wordnet
+#+TAGS:        emacs, wordnet
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+Say you are searching your (Org Roam) notes for "house", because you
+are sure you had a good note in there. BUT, you used "home" in your
+note! You will not find your note. That has bitten me a few time, that
+I decided to higher up my chances to find something I need.
+
+This is just an announcement that I have published [[https://github.com/ag91/wordnet-utils][a little library]]
+for gathering synonyms of a word. This is just a little wrapper around
+the executable of [[https://wordnet.princeton.edu/][Wordnet]] really. The only value it adds is to focus
+on producing the synonyms of a word (or all the synonyms in a
+sentence).
+
+I don't use it all the time, but it turns out useful sometimes. Let me
+show how I use this:
+
+[[file:wordnetSynonyms.mp4]]
+
+Just install the wordnet executable with something like:
+
+#+begin_src sh :noeval
+sudo apt install wordnet
+#+end_src
+
+and then just load the .el file in your Emacs (you need [[https://github.com/magnars/dash.el][dash.el]] and
+[[https://github.com/magnars/s.el][s.el]] as well).
+
+Happy searching!
