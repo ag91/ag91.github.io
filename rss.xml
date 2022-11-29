@@ -4,77 +4,67 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Wed, 23 Nov 2022 23:34:55 GMT</pubDate>
-    <lastBuildDate>Wed, 23 Nov 2022 23:34:55 GMT</lastBuildDate>
+    <pubDate>Tue, 29 Nov 2022 17:28:42 GMT</pubDate>
+    <lastBuildDate>Tue, 29 Nov 2022 17:28:42 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Emacs as your code-compass: who is the person who refactored most in this project?</title>
-      <link>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</link>
+      <title>A tiny Elisp library to gather synonyms with Wordnet (and how to use it so Emacs can help searching my notes)</title>
+      <link>http://ag91.github.io/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>Emacs as your code-compass: who is the person who refactored most in this project?</h1>
+<h1>A tiny Elisp library to gather synonyms with Wordnet (and how to use it so Emacs can help searching my notes)</h1>
 <p>
-It is a while I don't post about <a href="https://github.com/ag91/code-compass">code-compass</a>. I recently jumped back
-in the consulting world and it is a hectic life! In a couple of months
-I moved from a project to another. Furthermore, I cannot say I got
-somebody introducing me to the software architecture of these projects
-(or even their status).
+Say you are searching your (Org Roam) notes for "house", because you
+are sure you had a good note in there. BUT, you used "home" in your
+note! You will not find your note. That has bitten me a few time, that
+I decided to higher up my chances to find something I need.
 </p>
 
 <p>
-Lucky me these years (from Ph.D. to industry times) have given me some
-experience, so my boat is well equipped for this wavy sea. Also I have
-a great tool: in both projects I just had to rely on my Emacs for a
-reliable code-compass.
+This is just an announcement that I have published <a href="https://github.com/ag91/wordnet-utils">a little library</a>
+for gathering synonyms of a word. This is just a little wrapper around
+the executable of <a href="https://wordnet.princeton.edu/">Wordnet</a> really. The only value it adds is to focus
+on producing the synonyms of a word (or all the synonyms in a
+sentence).
 </p>
 
 <p>
-So armed of <a href="">hotspots</a>, <a href="">knowledge</a> and <a href="">communication</a> graphs with a bit of
-<a href="">churn</a>, <a href="">fragmentation</a> and <a href="https://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/">complexity</a> on the side, I could get up and
-running faster than ever! Yay!!
+I don't use it all the time, but it turns out useful sometimes. Let me
+show how I use this:
 </p>
 
 <p>
-One thing I have been missing is to explore graphically who dedicated
-themselves to the lovely art of refactoring. Indeed, the project on
-which I rely, the fantastic <a href="">code-maat</a>, offers a refactoring analysis.
-This finds who has <span class="underline">deleted</span> most lines in a file using Git commits
-information.
+<a href="/assets/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet/wordnetSynonyms.mp4">/assets/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet/wordnetSynonyms.mp4</a>
 </p>
 
 <p>
-Naturally deletions are an approximation for refactoring, but good
-enough as less code is always an improvement (at least for our eyes).
+Just install the wordnet executable with something like:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-sh">sudo apt install wordnet
+</pre>
+</div>
+
+<p>
+and then just load the .el file in your Emacs (you need <a href="https://github.com/magnars/dash.el">dash.el</a> and
+<a href="https://github.com/magnars/s.el">s.el</a> as well).
 </p>
 
 <p>
-Well there I go: I added it just now. It was pretty easy because is
-super-similar to the knowledge graph implementation. So a tweak here
-and there and it is now available.
-</p>
-
-<p>
-Below a video that gives you a sense of what it is about.
-</p>
-
-<p>
-  <video width="420" height="240" controls>
-    <source src="/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4" type="video/mp4">
-    <a href="/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4">/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4</a>
-  </video>
-</p>
-
-<p>
-If you want to try that yourself it is easy: just try out <a href="https://github.com/ag91/code-compass">code-compass</a> ;)
-</p>
-
-<p>
-Happy refactoring!
+Happy searching!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2022-11-29</pubDate>
+      <guid>http://ag91.github.io/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet</guid>
+    </item>
+    <item>
+      <title>Emacs as your code-compass: who is the person who refactored most in this project?</title>
+      <link>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</link>
+      <description><![CDATA[]]></description>
       <pubDate>2022-11-23</pubDate>
       <guid>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</guid>
     </item>
@@ -133,13 +123,6 @@ Happy refactoring!
       <description><![CDATA[]]></description>
       <pubDate>2022-08-21</pubDate>
       <guid>http://ag91.github.io/blog/2022/08/21/caching-yankpad-snippets-for-a-quicker-note-capturing</guid>
-    </item>
-    <item>
-      <title>A YASnippet to make it easy debugging clojure code with atoms</title>
-      <link>http://ag91.github.io/blog/2022/07/28/a-yasnippet-to-make-it-easy-debugging-clojure-code-with-atoms</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-07-29</pubDate>
-      <guid>http://ag91.github.io/blog/2022/07/28/a-yasnippet-to-make-it-easy-debugging-clojure-code-with-atoms</guid>
     </item>
   </channel>
 </rss>
