@@ -4,60 +4,127 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 29 Nov 2022 17:28:42 GMT</pubDate>
-    <lastBuildDate>Tue, 29 Nov 2022 17:28:42 GMT</lastBuildDate>
+    <pubDate>Tue, 13 Dec 2022 22:12:28 GMT</pubDate>
+    <lastBuildDate>Tue, 13 Dec 2022 22:12:28 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>A tiny Elisp library to gather synonyms with Wordnet (and how to use it so Emacs can help searching my notes)</title>
-      <link>http://ag91.github.io/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet</link>
+      <title>Moldable Emacs: remove unused React Native styles for a component with tree-sitter</title>
+      <link>http://ag91.github.io/blog/2022/12/13/moldable-emacs-remove-unused-react-native-styles-for-a-component-with-tree-sitter</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>A tiny Elisp library to gather synonyms with Wordnet (and how to use it so Emacs can help searching my notes)</h1>
+<h1>Moldable Emacs: remove unused React Native styles for a component with tree-sitter</h1>
 <p>
-Say you are searching your (Org Roam) notes for "house", because you
-are sure you had a good note in there. BUT, you used "home" in your
-note! You will not find your note. That has bitten me a few time, that
-I decided to higher up my chances to find something I need.
+These days I am working on mobile development with React Native. So I
+was cleaning up my change for opening a Pull Request and I had to
+refactor a style.js file for a component. This file contains all the
+style rules for the look and feel of the related React component.
 </p>
 
 <p>
-This is just an announcement that I have published <a href="https://github.com/ag91/wordnet-utils">a little library</a>
-for gathering synonyms of a word. This is just a little wrapper around
-the executable of <a href="https://wordnet.princeton.edu/">Wordnet</a> really. The only value it adds is to focus
-on producing the synonyms of a word (or all the synonyms in a
-sentence).
-</p>
-
-<p>
-I don't use it all the time, but it turns out useful sometimes. Let me
-show how I use this:
-</p>
-
-<p>
-<a href="/assets/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet/wordnetSynonyms.mp4">/assets/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet/wordnetSynonyms.mp4</a>
-</p>
-
-<p>
-Just install the wordnet executable with something like:
+I noticed that some of the style rules where not used in the related
+component. The situation looked somewhat like this:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-sh">sudo apt install wordnet
+<pre class="src src-js">import {StyleSheet} from 'react-native';
+
+const style = StyleSheet.create({
+  used: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notUsed1: {
+    flex: 1,
+    backgroundColor: colors.grayExtraLight,
+  },
+  notUsed2: {
+    alignItems: 'center',
+    position: 'absolute',
+  },
+}
 </pre>
 </div>
 
 <p>
-and then just load the .el file in your Emacs (you need <a href="https://github.com/magnars/dash.el">dash.el</a> and
-<a href="https://github.com/magnars/s.el">s.el</a> as well).
+The issue was that there were a lot of rules in there and it would
+have been extremely boring to check one at the time. So I thought:
+this sounds the right job for my <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>!
 </p>
 
 <p>
-Happy searching!
+The idea was basically to go through the style rules and remove the
+ones I could not find in the file importing them.
+</p>
+
+<p>
+The playground is pretty simple:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(--&gt; (me-by-type 'pair self)
+     (--filter (s-contains-p "{\n" (plist-get it :text)) it)
+     (let ((file-using-styles (with-current-buffer "TheComponentUsingTheStyle.js"
+                                (buffer-substring-no-properties (point-min) (point-max)))))
+       (--remove (s-contains-p (concat "." (car (s-split ":" (plist-get it :text)))) file-using-styles) it))
+     (me-transit-node-texts it (lambda (text) ""))
+     me-change-nodes)
+</pre>
+</div>
+
+<p>
+I run this from the Playground mold that I open while looking at the
+style.js file. You can see how it works in this video:
+</p>
+
+<p>
+<a href="/assets/blog/2022/12/13/moldable-emacs-remove-unused-react-native-styles-for-a-component-with-tree-sitter/transitStyleReact.mp4">/assets/blog/2022/12/13/moldable-emacs-remove-unused-react-native-styles-for-a-component-with-tree-sitter/transitStyleReact.mp4</a>
+</p>
+
+<p>
+As a reminder, opening the Playground mold sets the <code>self</code> local
+variable to a list of plist representing the tree-sitter parse tree.
+So with <code>me-by-type</code> I am selecting all the tree-sitter elements that
+have type <code>pair</code>. And picking the ones that look like a style rule (in
+my case a squiggly bracket with a newline did the trick).
+</p>
+
+<p>
+Now, assuming I had open the component file in a buffer, I just
+<code>--remove</code> the style rules that are used (again for simplicity I
+checked for ".&lt;styleRuleName&gt;"). That leaves me with the tree-sitter
+elements that represent unused style rules.
+</p>
+
+<p>
+Finally using <code>me-transit-node-texts</code> I remove the definitions of
+all those elements.
+</p>
+
+<p>
+The last thing I have to do is to also remove commas left in the style
+file and I am done. I didn't automate that bit because I used this
+only a couple of times and I could do that on the fly.
+</p>
+
+<p>
+As you can see, tree-sitter is not just for code navigation/highlighting ;)
+</p>
+
+<p>
+Happy editing!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2022-12-13</pubDate>
+      <guid>http://ag91.github.io/blog/2022/12/13/moldable-emacs-remove-unused-react-native-styles-for-a-component-with-tree-sitter</guid>
+    </item>
+    <item>
+      <title>A tiny Elisp library to gather synonyms with Wordnet (and how to use it so Emacs can help searching my notes)</title>
+      <link>http://ag91.github.io/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet</link>
+      <description><![CDATA[]]></description>
       <pubDate>2022-11-29</pubDate>
       <guid>http://ag91.github.io/blog/2022/11/29/a-tiny-elisp-library-to-gather-synonyms-with-wordnet</guid>
     </item>
@@ -116,13 +183,6 @@ Happy searching!
       <description><![CDATA[]]></description>
       <pubDate>2022-09-06</pubDate>
       <guid>http://ag91.github.io/blog/2022/09/06/too-many-org-ids-how-to-tell-no-to-org-mode-for-certain-files</guid>
-    </item>
-    <item>
-      <title>Caching Yankpad snippets for a quicker note capturing</title>
-      <link>http://ag91.github.io/blog/2022/08/21/caching-yankpad-snippets-for-a-quicker-note-capturing</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-08-21</pubDate>
-      <guid>http://ag91.github.io/blog/2022/08/21/caching-yankpad-snippets-for-a-quicker-note-capturing</guid>
     </item>
   </channel>
 </rss>
