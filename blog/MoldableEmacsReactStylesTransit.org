@@ -1,0 +1,83 @@
+#+TITLE:       Moldable Emacs: remove unused React Native styles for a component with tree-sitter
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2022-12-13 Tue
+#+URI:         /blog/%y/%m/%d/moldable-emacs-remove-unused-react-native-styles-for-a-component-with-tree-sitter
+#+KEYWORDS:    emacs,javascript
+#+TAGS:        emacs,javascript
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+These days I am working on mobile development with React Native. So I
+was cleaning up my change for opening a Pull Request and I had to
+refactor a style.js file for a component. This file contains all the
+style rules for the look and feel of the related React component.
+
+I noticed that some of the style rules where not used in the related
+component. The situation looked somewhat like this:
+
+#+begin_src js
+import {StyleSheet} from 'react-native';
+
+const style = StyleSheet.create({
+  used: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notUsed1: {
+    flex: 1,
+    backgroundColor: colors.grayExtraLight,
+  },
+  notUsed2: {
+    alignItems: 'center',
+    position: 'absolute',
+  },
+}
+#+end_src
+
+The issue was that there were a lot of rules in there and it would
+have been extremely boring to check one at the time. So I thought:
+this sounds the right job for my [[https://github.com/ag91/moldable-emacs][moldable-emacs]]!
+
+The idea was basically to go through the style rules and remove the
+ones I could not find in the file importing them.
+
+The playground is pretty simple:
+
+#+begin_src elisp
+(--> (me-by-type 'pair self)
+     (--filter (s-contains-p "{\n" (plist-get it :text)) it)
+     (let ((file-using-styles (with-current-buffer "TheComponentUsingTheStyle.js"
+                                (buffer-substring-no-properties (point-min) (point-max)))))
+       (--remove (s-contains-p (concat "." (car (s-split ":" (plist-get it :text)))) file-using-styles) it))
+     (me-transit-node-texts it (lambda (text) ""))
+     me-change-nodes)
+#+end_src
+
+I run this from the Playground mold that I open while looking at the
+style.js file. You can see how it works in this video:
+
+[[file:transitStyleReact.mp4]]
+
+As a reminder, opening the Playground mold sets the =self= local
+variable to a list of plist representing the tree-sitter parse tree.
+So with =me-by-type= I am selecting all the tree-sitter elements that
+have type =pair=. And picking the ones that look like a style rule (in
+my case a squiggly bracket with a newline did the trick).
+
+Now, assuming I had open the component file in a buffer, I just
+=--remove= the style rules that are used (again for simplicity I
+checked for ".<styleRuleName>"). That leaves me with the tree-sitter
+elements that represent unused style rules.
+
+Finally using =me-transit-node-texts= I remove the definitions of
+all those elements.
+
+The last thing I have to do is to also remove commas left in the style
+file and I am done. I didn't automate that bit because I used this
+only a couple of times and I could do that on the fly.
+
+As you can see, tree-sitter is not just for code navigation/highlighting ;)
+
+Happy editing!
