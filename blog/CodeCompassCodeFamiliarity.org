@@ -1,0 +1,23 @@
+#+TITLE:       Emacs as your code-compass: what code is this contributor familiar with?
+#+AUTHOR:      andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2023-02-06 Mon
+#+URI:         /blog/%y/%m/%d/emacs-as-your-code-compass-what-code-is-this-contributor-familiar-with
+#+KEYWORDS:    code-compass
+#+TAGS:        code-compass
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+What part of the codebase are you (or some of your coworker)
+unfamiliar with? Can Emacs tell you?
+
+With [[https://github.com/ag91/code-compass][code-compass]] this is super easy. I have just modified slightly
+[[https://ag91.github.io/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/][the knowledge analysis]] to support this use case. Now it also asks you
+about a set of contributors to filter the analysis upon.
+
+Here how it looks:
+
+[[file:codeCompassFamiliarity.mp4]]
+
+
+Happy familiarizing!
