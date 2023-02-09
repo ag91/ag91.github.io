@@ -1,0 +1,85 @@
+#+TITLE:       A little read-string utility using an Org Mode buffer
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2023-02-09 Thu
+#+URI:         /blog/%y/%m/%d/a-little-read-string-utility-using-an-org-mode-buffer
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+While extending Emacs, I wished to have a super cool note capturing
+buffer like Org Capture.
+
+What I wished for was a utility function that would set up a buffer
+where to write my text (so to have a little space instead of the
+super-small minibuffer), and return the text once done.
+
+So far I always defaulted to the trustworthy =read-string=, ignoring my cravings.
+Today I decided to bake my own.
+
+I admit to have only looked into the Org Mode code to see if I could
+reuse their implementation. I couldn't because they define a function
+to overwrite the ctrl-c-ctrl-c keybinding to do their tricks and I
+don't want to use that mechanism for this little utility.
+
+If you know a built-in that does this already, I would be happy to
+discover that I wasted my time :)
+
+If not, here you can find what I achieved:
+
+#+begin_src elisp
+(defun my/override-keybiding-in-buffer (key command)
+  "Override KEY with COMMAND in buffer."
+  (interactive "KSet key buffer-locally: \nCSet key %s buffer-locally to command: ")
+  (let ((oldmap (current-local-map))
+        (newmap (make-sparse-keymap)))
+    (when oldmap
+      (set-keymap-parent newmap oldmap))
+    (define-key newmap key command)
+    (use-local-map newmap)))
+
+(defun my/read-string-from-buffer (prompt callback)
+  "Make on `org-mode' buffer with PROMPT and run CALLBACK on C-c C-c."
+  (let ((current-buffer (current-buffer)))
+    (switch-to-buffer (get-buffer-create "*read-string-from-buffer*"))
+    (erase-buffer)
+    (org-mode)
+    (insert (concat "# Press C-c C-c to continue, C-c C-k to cancel\n# " prompt "\n\n"))
+    (goto-char (point-max))
+    (my/override-keybiding-in-buffer
+     (kbd "C-c C-c")
+     `(lambda ()
+        (interactive)
+        (let ((contents (string-trim
+                         (buffer-substring
+                          (save-excursion (goto-char (point-min)) (forward-line 2) (point))
+                          (point-max)))))
+          (switch-to-buffer ,current-buffer)
+          (funcall ',callback contents))))
+    (my/override-keybiding-in-buffer
+     (kbd "C-c C-k")
+     (lambda ()
+       (interactive)
+       (kill-buffer)))))
+#+end_src
+
+Note that =my/override-keybiding-in-buffer= is something I extracted
+from my [[https://github.com/ag91/moldable-emacs][moldable-emacs]] package and that sets a local key binding in the
+current buffer.
+
+The signature of =my/read-string-from-buffer= is simple: a prompt
+argument for a string with your instructions for the user and a
+callback function to use the text the user has inserted.
+
+You can try this out like this:
+
+#+begin_src elisp
+(my/read-string-from-buffer "write something here" (lambda (text) (message "this is what you inserted:\n%s" text )))
+#+end_src
+
+Having this will make a few use cases more enjoyable for me and I
+really hope something like this is (or will land) in Emacs core
+already. Hope you find it useful too!
+
+Happy texting!
