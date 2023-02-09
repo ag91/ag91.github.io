@@ -4,42 +4,125 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 06 Feb 2023 01:10:01 GMT</pubDate>
-    <lastBuildDate>Mon, 06 Feb 2023 01:10:01 GMT</lastBuildDate>
+    <pubDate>Thu, 09 Feb 2023 01:44:33 GMT</pubDate>
+    <lastBuildDate>Thu, 09 Feb 2023 01:44:33 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Emacs as your code-compass: what code is this contributor familiar with?</title>
-      <link>http://ag91.github.io/blog/2023/02/06/emacs-as-your-code-compass-what-code-is-this-contributor-familiar-with</link>
+      <title>A little read-string utility using an Org Mode buffer</title>
+      <link>http://ag91.github.io/blog/2023/02/09/a-little-read-string-utility-using-an-org-mode-buffer</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>Emacs as your code-compass: what code is this contributor familiar with?</h1>
+<h1>A little read-string utility using an Org Mode buffer</h1>
 <p>
-What part of the codebase are you (or some of your coworker)
-unfamiliar with? Can Emacs tell you?
+While extending Emacs, I wished to have a super cool note capturing
+buffer like Org Capture.
 </p>
 
 <p>
-With <a href="https://github.com/ag91/code-compass">code-compass</a> this is super easy. I have just modified slightly
-<a href="https://ag91.github.io/blog/2021/01/28/emacs-as-your-code-compass-who-can-i-ask-for-help/">the knowledge analysis</a> to support this use case. Now it also asks you
-about a set of contributors to filter the analysis upon.
+What I wished for was a utility function that would set up a buffer
+where to write my text (so to have a little space instead of the
+super-small minibuffer), and return the text once done.
 </p>
 
 <p>
-Here how it looks:
+So far I always defaulted to the trustworthy <code>read-string</code>, ignoring my cravings.
+Today I decided to bake my own.
 </p>
 
 <p>
-<a href="/assets/blog/2023/02/06/emacs-as-your-code-compass-what-code-is-this-contributor-familiar-with/codeCompassFamiliarity.mp4">/assets/blog/2023/02/06/emacs-as-your-code-compass-what-code-is-this-contributor-familiar-with/codeCompassFamiliarity.mp4</a>
+I admit to have only looked into the Org Mode code to see if I could
+reuse their implementation. I couldn't because they define a function
+to overwrite the ctrl-c-ctrl-c keybinding to do their tricks and I
+don't want to use that mechanism for this little utility.
 </p>
 
+<p>
+If you know a built-in that does this already, I would be happy to
+discover that I wasted my time :)
+</p>
 
 <p>
-Happy familiarizing!
+If not, here you can find what I achieved:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my/override-keybiding-in-buffer (key command)
+  "Override KEY with COMMAND in buffer."
+  (interactive "KSet key buffer-locally: \nCSet key %s buffer-locally to command: ")
+  (let ((oldmap (current-local-map))
+        (newmap (make-sparse-keymap)))
+    (when oldmap
+      (set-keymap-parent newmap oldmap))
+    (define-key newmap key command)
+    (use-local-map newmap)))
+
+(defun my/read-string-from-buffer (prompt callback)
+  "Make on `org-mode' buffer with PROMPT and run CALLBACK on C-c C-c."
+  (let ((current-buffer (current-buffer)))
+    (switch-to-buffer (get-buffer-create "*read-string-from-buffer*"))
+    (erase-buffer)
+    (org-mode)
+    (insert (concat "# Press C-c C-c to continue, C-c C-k to cancel\n# " prompt "\n\n"))
+    (goto-char (point-max))
+    (my/override-keybiding-in-buffer
+     (kbd "C-c C-c")
+     `(lambda ()
+        (interactive)
+        (let ((contents (string-trim
+                         (buffer-substring
+                          (save-excursion (goto-char (point-min)) (forward-line 2) (point))
+                          (point-max)))))
+          (switch-to-buffer ,current-buffer)
+          (funcall ',callback contents))))
+    (my/override-keybiding-in-buffer
+     (kbd "C-c C-k")
+     (lambda ()
+       (interactive)
+       (kill-buffer)))))
+</pre>
+</div>
+
+<p>
+Note that <code>my/override-keybiding-in-buffer</code> is something I extracted
+from my <a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a> package and that sets a local key binding in the
+current buffer.
+</p>
+
+<p>
+The signature of <code>my/read-string-from-buffer</code> is simple: a prompt
+argument for a string with your instructions for the user and a
+callback function to use the text the user has inserted.
+</p>
+
+<p>
+You can try this out like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(my/read-string-from-buffer "write something here" (lambda (text) (message "this is what you inserted:\n%s" text )))
+</pre>
+</div>
+
+<p>
+Having this will make a few use cases more enjoyable for me and I
+really hope something like this is (or will land) in Emacs core
+already. Hope you find it useful too!
+</p>
+
+<p>
+Happy texting!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2023-02-09</pubDate>
+      <guid>http://ag91.github.io/blog/2023/02/09/a-little-read-string-utility-using-an-org-mode-buffer</guid>
+    </item>
+    <item>
+      <title>Emacs as your code-compass: what code is this contributor familiar with?</title>
+      <link>http://ag91.github.io/blog/2023/02/06/emacs-as-your-code-compass-what-code-is-this-contributor-familiar-with</link>
+      <description><![CDATA[]]></description>
       <pubDate>2023-02-06</pubDate>
       <guid>http://ag91.github.io/blog/2023/02/06/emacs-as-your-code-compass-what-code-is-this-contributor-familiar-with</guid>
     </item>
@@ -98,13 +181,6 @@ Happy familiarizing!
       <description><![CDATA[]]></description>
       <pubDate>2022-09-15</pubDate>
       <guid>http://ag91.github.io/blog/2022/09/13/a-way-to-fix-helm-handling-of-symlink-tmp-dir-in-mac-os</guid>
-    </item>
-    <item>
-      <title>Hacking Projectile to search in all my projects</title>
-      <link>http://ag91.github.io/blog/2022/09/13/hacking-projectile-to-search-in-all-my-projects</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-09-15</pubDate>
-      <guid>http://ag91.github.io/blog/2022/09/13/hacking-projectile-to-search-in-all-my-projects</guid>
     </item>
   </channel>
 </rss>
