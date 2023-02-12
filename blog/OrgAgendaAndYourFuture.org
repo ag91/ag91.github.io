@@ -38,6 +38,9 @@ missed a way to transform Org from a simple todo list manager in a
 long-term goals manager.
 
 * And there is a solution
+:PROPERTIES:
+:ID:       c949818b-c0dd-4325-aac8-4268fc843fda
+:END:
 
 So I created my own approach! In a talk by John Wiegley I saw how he
 alters his agenda according to where he is: for example, if he cannot
@@ -158,7 +161,7 @@ source blocks that look like this:
     (format "Tasks marked DONE last month (today is: %s): %s\n" (current-time-string) it)
     (format "    Tasks done last month (%s) with category\n\n" (current-time-string))
     (format "    Vision1  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Category1"))
-    (format "    Vision2  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Category2"))))
+    (format "    Vision2  %s\n" (my/get-stats-tasks "DONE" -31 nil nil files "Category2")))))
 #+end_src
 
 Note: I am also using my [[https://orgmode.org/manual/Archiving.html][archive]] for retrieving done tasks! Archiving
