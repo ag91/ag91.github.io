@@ -1,0 +1,39 @@
+#+TITLE:       Doctest.el or testing your pure Elisp functions in your docstring
+#+AUTHOR:      Andrea
+#+EMAIL:       agiugliano@live.it
+#+DATE:        2023-03-20 Mon
+#+URI:         /blog/%y/%m/%d/doctestel-or-testing-your-pure-elisp-functions-in-your-docstring
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+A little time ago I have submitted [[https://github.com/ag91/code-compass][code-compass]] to [[https://github.com/melpa/melpa/pull/8417][melpa]] (hopefully it
+gets approved soon). That gave me the opportunity to discover my
+reviewer repositories and I found a super cool little Emacs package:
+[[https://github.com/riscy/doctest][doctest.el]].
+
+This lets you write (and run) a test in your symbols documentation
+strings.
+
+For instance, you can define a function like this:
+
+#+begin_src elisp
+(defun my-add (a b)
+  "
+>> (my-add 1 1)
+=> 2"
+  (+ a b))
+#+end_src
+
+and when you use =doctest-here= on the =>>= (or just =doctest-defun=),
+you would have your assertion evaluated.
+
+I liked it so much that I roughly patched a few shortcomings:
+
+- make it work for symbols defined in buffers that are not saved to a file
+- support multiple lines for input and output in assertion
+
+You can find my [[https://github.com/ag91/doctest][fork here]], if you like it and look for those improvements.
+
+Happy testing!
