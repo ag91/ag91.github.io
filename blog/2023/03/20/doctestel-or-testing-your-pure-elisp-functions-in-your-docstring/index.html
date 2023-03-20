@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
-    <title>Tag: monitoring - Where parallels cross</title>
+    <title>Doctest.el or testing your pure Elisp functions in your docstring - Where parallels cross</title>
     <meta charset="utf-8" />
     <meta name="author" content="Andrea" />
+    <meta name="keywords" content="emacs" />
     <link rel="stylesheet" href="/media/css/main.css" type="text/css">
     <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
   </head>
@@ -26,15 +27,66 @@
         </form>
       </header>
     </div>
+
+<div>
+<div class="post">
+<h1>Doctest.el or testing your pure Elisp functions in your docstring</h1>
+<p>
+A little time ago I have submitted <a href="https://github.com/ag91/code-compass">code-compass</a> to <a href="https://github.com/melpa/melpa/pull/8417">melpa</a> (hopefully it
+gets approved soon). That gave me the opportunity to discover my
+reviewer repositories and I found a super cool little Emacs package:
+<a href="https://github.com/riscy/doctest">doctest.el</a>.
+</p>
+
+<p>
+This lets you write (and run) a test in your symbols documentation
+strings.
+</p>
+
+<p>
+For instance, you can define a function like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun my-add (a b)
+  "
+&gt;&gt; (my-add 1 1)
+=&gt; 2"
+  (+ a b))
+</pre>
+</div>
+
+<p>
+and when you use <code>doctest-here</code> on the <code>&gt;&gt;</code> (or just <code>doctest-defun</code>),
+you would have your assertion evaluated.
+</p>
+
+<p>
+I liked it so much that I roughly patched a few shortcomings:
+</p>
+
+<ul class="org-ul">
+<li>make it work for symbols defined in buffers that are not saved to a file</li>
+<li>support multiple lines for input and output in assertion</li>
+</ul>
+
+<p>
+You can find my <a href="https://github.com/ag91/doctest">fork here</a>, if you like it and look for those improvements.
+</p>
+
+<p>
+Happy testing!
+</p>
+
+</div>
+</div>
     <div>
-      <div class="post">
-        <h1>Tag: monitoring</h1>
-        <ul class="org-ul">
-          <li><a href="/blog/2020/11/27/how-fast-are-your-queries-make-postgresql-work-transparently-with-pg_stat_statements">How fast are your queries? Make PostgreSQL work transparently with pg_stat_statements</a></li>
-        </ul>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2023-03-20</span>
+        <span title="last modification date" class="post-info">2023-03-20</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
       </div>
-    </div>
-    <div>
       <script src="//code.jquery.com/jquery-latest.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
       <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
@@ -59,5 +111,6 @@
         </p>
       </div>
     </div>
+
   </body>
 </html>
