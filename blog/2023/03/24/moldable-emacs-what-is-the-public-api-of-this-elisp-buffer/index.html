@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Moldable Emacs: what is the public API of this Elisp buffer? - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="keywords" content="moldable-emacs, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Moldable Emacs: what is the public API of this Elisp buffer?</h1>
+<p>
+Lately I have been reading the Elisp source code that ships with
+Emacs 29. The addition (and the general excitement) of <a href="https://github.com/emacs-mirror/emacs/blob/master/lisp/treesit.el">treesit.el</a>
+made me willing to come up with a plan to support that in my
+<a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>.
+</p>
+
+<p>
+I like that Emacs contributors keep a stoic discipline in distinguish
+public and private functions in a library. The convention is that
+<code>my-function</code> belongs to the public API while <code>my--function</code> is not.
+</p>
+
+<p>
+As a user often I care only about the public interface. So I thought:
+wouldn't be nice to have a view/mold that shows me only what I need?
+</p>
+
+<p>
+You can see in the below video how the <a href="https://github.com/ag91/moldable-emacs/blob/2268cbe/molds/core.el#L1092">resulting mold</a> helped me
+exploring <code>cl-lib</code>.
+</p>
+
+<p>
+<a href="/assets/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer/showApiMold.mp4">/assets/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer/showApiMold.mp4</a>
+</p>
+
+<p>
+The code was just some filtering of the tree-sitter concrete tree
+really.
+</p>
+
+<p>
+For instance, this is how I filer defcustoms:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defun me-elisp-defcustoms (tree)
+  "Extract defcustoms from TREE.
+
+&gt;&gt; (me-elisp-defcustoms
+  '((:type something-else)
+    (:type list
+     :text \"(defcustom test 1 \\\"HI\\\")\"
+     :begin 321 :end 354
+     :buffer \"test.el\"
+     :buffer-file \"/tmp/test.el\"
+     :mode emacs-lisp-mode
+     :level 0)))
+=&gt; ((:type list
+     :text \"(defcustom test 1 \\\"HI\\\")\"
+     :begin 321 :end 354
+     :buffer \"test.el\"
+     :buffer-file \"/tmp/test.el\"
+     :mode emacs-lisp-mode
+     :level 0))"
+  (--filter
+   (and (equal 'list (plist-get it :type))
+        (s-starts-with-p "(defcustom " (plist-get it :text)))
+   tree))
+</pre>
+</div>
+
+<p>
+It feels a hack but it is working fine :) Note the <a href="https://ag91.github.io/blog/2023/03/20/doctestel-or-testing-your-pure-elisp-functions-in-your-docstring/">doctest in the
+documentation</a>!
+</p>
+
+<p>
+This filters out some of the complexity of Elisp libraries I don't
+know.
+</p>
+
+<p>
+I hope to generalize this little by little for other languages so I
+can get the essence of the files I need to read.
+</p>
+
+<p>
+And I wonder if this could help me evaluate the quality of an API as
+well. It may be of help if Emacs warns me while I write my library and
+tells me that the API is getting bloated, no?
+</p>
+
+<p>
+Anyway, this has been good for my Elisp exploration.
+</p>
+
+<p>
+Happy exploring!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2023-03-24</span>
+        <span title="last modification date" class="post-info">2023-03-24</span>
+        <span title="tags" class="post-info"><a href="/tags/moldable-emacs/">moldable-emacs</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-173546938-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+      </script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
