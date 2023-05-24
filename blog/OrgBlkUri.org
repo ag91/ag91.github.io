@@ -1,6 +1,6 @@
 #+TITLE:       org-blk-uri a little module to insert a file or url as an Org Mode src block
 #+AUTHOR:      Andrea
-#+EMAIL:       agiugliano91@gmail.com
+#+EMAIL:       andrea-dev@hotmail.com
 #+DATE:        2023-05-25
 #+URI:         /blog/%y/%m/%d/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block
 #+KEYWORDS:    emacs
