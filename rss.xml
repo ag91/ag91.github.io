@@ -4,110 +4,56 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Fri, 24 Mar 2023 00:43:01 GMT</pubDate>
-    <lastBuildDate>Fri, 24 Mar 2023 00:43:01 GMT</lastBuildDate>
+    <pubDate>Thu, 25 May 2023 00:27:39 BST</pubDate>
+    <lastBuildDate>Thu, 25 May 2023 00:27:39 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Moldable Emacs: what is the public API of this Elisp buffer?</title>
-      <link>http://ag91.github.io/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer</link>
+      <title>org-blk-uri a little module to insert a file or url as an Org Mode src block</title>
+      <link>http://ag91.github.io/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>Moldable Emacs: what is the public API of this Elisp buffer?</h1>
+<h1>org-blk-uri a little module to insert a file or url as an Org Mode src block</h1>
 <p>
-Lately I have been reading the Elisp source code that ships with
-Emacs 29. The addition (and the general excitement) of <a href="https://github.com/emacs-mirror/emacs/blob/master/lisp/treesit.el">treesit.el</a>
-made me willing to come up with a plan to support that in my
-<a href="https://github.com/ag91/moldable-emacs">moldable-emacs</a>.
+The other day I had an enjoyable <a href="https://github.com/ag91/emacs-buddy">EmacsBuddy</a> videocall and, on the
+topic of "how do you use Org Mode", I showed without thinking how I
+capture file and web contents in my Org Mode files.
 </p>
 
 <p>
-I like that Emacs contributors keep a stoic discipline in distinguish
-public and private functions in a library. The convention is that
-<code>my-function</code> belongs to the public API while <code>my--function</code> is not.
+I usually use this to capture web pages that may be taken down (for
+example, job ads).
 </p>
 
 <p>
-As a user often I care only about the public interface. So I thought:
-wouldn't be nice to have a view/mold that shows me only what I need?
+I then discovered that this feature could be of use also to others! So
+this afternoon I managed to release <a href="https://github.com/ag91/org-blk-uri">org-blk-uri</a>, a tiny library on top
+of <a href="https://github.com/alphapapa/org-web-tools">org-web-tools</a>.
 </p>
 
 <p>
-You can see in the below video how the <a href="https://github.com/ag91/moldable-emacs/blob/2268cbe/molds/core.el#L1092">resulting mold</a> helped me
-exploring <code>cl-lib</code>.
+This is a GIF of what it does:
 </p>
 
-<p>
-<a href="/assets/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer/showApiMold.mp4">/assets/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer/showApiMold.mp4</a>
+
+<div id="org846e746" class="figure">
+<p><img src="/assets/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block/org-blk-uri.gif" alt="/assets/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block/org-blk-uri.gif" />
 </p>
-
-<p>
-The code was just some filtering of the tree-sitter concrete tree
-really.
-</p>
-
-<p>
-For instance, this is how I filer defcustoms:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-elisp">(defun me-elisp-defcustoms (tree)
-  "Extract defcustoms from TREE.
-
-&gt;&gt; (me-elisp-defcustoms
-  '((:type something-else)
-    (:type list
-     :text \"(defcustom test 1 \\\"HI\\\")\"
-     :begin 321 :end 354
-     :buffer \"test.el\"
-     :buffer-file \"/tmp/test.el\"
-     :mode emacs-lisp-mode
-     :level 0)))
-=&gt; ((:type list
-     :text \"(defcustom test 1 \\\"HI\\\")\"
-     :begin 321 :end 354
-     :buffer \"test.el\"
-     :buffer-file \"/tmp/test.el\"
-     :mode emacs-lisp-mode
-     :level 0))"
-  (--filter
-   (and (equal 'list (plist-get it :type))
-        (s-starts-with-p "(defcustom " (plist-get it :text)))
-   tree))
-</pre>
 </div>
 
 <p>
-It feels a hack but it is working fine :) Note the <a href="https://ag91.github.io/blog/2023/03/20/doctestel-or-testing-your-pure-elisp-functions-in-your-docstring/">doctest in the
-documentation</a>!
-</p>
-
-<p>
-This filters out some of the complexity of Elisp libraries I don't
-know.
-</p>
-
-<p>
-I hope to generalize this little by little for other languages so I
-can get the essence of the files I need to read.
-</p>
-
-<p>
-And I wonder if this could help me evaluate the quality of an API as
-well. It may be of help if Emacs warns me while I write my library and
-tells me that the API is getting bloated, no?
-</p>
-
-<p>
-Anyway, this has been good for my Elisp exploration.
-</p>
-
-<p>
-Happy exploring!
+Hope that may help you too!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2023-05-25</pubDate>
+      <guid>http://ag91.github.io/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block</guid>
+    </item>
+    <item>
+      <title>Moldable Emacs: what is the public API of this Elisp buffer?</title>
+      <link>http://ag91.github.io/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer</link>
+      <description><![CDATA[]]></description>
       <pubDate>2023-03-24</pubDate>
       <guid>http://ag91.github.io/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer</guid>
     </item>
@@ -166,13 +112,6 @@ Happy exploring!
       <description><![CDATA[]]></description>
       <pubDate>2022-11-15</pubDate>
       <guid>http://ag91.github.io/blog/2022/11/15/catch-you-js-consolelog-you-forgot-to-remove-with-emacs-and-magit</guid>
-    </item>
-    <item>
-      <title>Merge plists in Elisp</title>
-      <link>http://ag91.github.io/blog/2022/10/30/merge-plists-in-elisp</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-10-30</pubDate>
-      <guid>http://ag91.github.io/blog/2022/10/30/merge-plists-in-elisp</guid>
     </item>
   </channel>
 </rss>
