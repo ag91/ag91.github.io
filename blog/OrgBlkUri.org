@@ -1,0 +1,26 @@
+#+TITLE:       org-blk-uri a little module to insert a file or url as an Org Mode src block
+#+AUTHOR:      Andrea
+#+EMAIL:       agiugliano91@gmail.com
+#+DATE:        2023-05-25
+#+URI:         /blog/%y/%m/%d/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+The other day I had an enjoyable [[https://github.com/ag91/emacs-buddy][EmacsBuddy]] videocall and, on the
+topic of "how do you use Org Mode", I showed without thinking how I
+capture file and web contents in my Org Mode files.
+
+I usually use this to capture web pages that may be taken down (for
+example, job ads).
+
+I then discovered that this feature could be of use also to others! So
+this afternoon I managed to release [[https://github.com/ag91/org-blk-uri][org-blk-uri]], a tiny library on top
+of [[https://github.com/alphapapa/org-web-tools][org-web-tools]].
+
+This is a GIF of what it does:
+
+[[file:org-blk-uri.gif]]
+
+Hope that may help you too!
