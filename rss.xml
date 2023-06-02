@@ -4,49 +4,21 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 25 May 2023 00:27:39 BST</pubDate>
-    <lastBuildDate>Thu, 25 May 2023 00:27:39 BST</lastBuildDate>
+    <pubDate>Sat, 03 Jun 2023 00:00:54 BST</pubDate>
+    <lastBuildDate>Sat, 03 Jun 2023 00:00:54 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
+      <title>FS2 vs ZIO streams with Ammonite: a syntax comparison</title>
+      <link>http://ag91.github.io/blog/2023/06/02/fs2-vs-zio-streams-with-ammonite-a-syntax-comparison</link>
+      <description><![CDATA[<TODO: insert your description here>]]></description>
+      <pubDate>2023-06-03</pubDate>
+      <guid>http://ag91.github.io/blog/2023/06/02/fs2-vs-zio-streams-with-ammonite-a-syntax-comparison</guid>
+    </item>
+    <item>
       <title>org-blk-uri a little module to insert a file or url as an Org Mode src block</title>
       <link>http://ag91.github.io/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block</link>
-      <description><![CDATA[<div>
-<div class="post">
-<h1>org-blk-uri a little module to insert a file or url as an Org Mode src block</h1>
-<p>
-The other day I had an enjoyable <a href="https://github.com/ag91/emacs-buddy">EmacsBuddy</a> videocall and, on the
-topic of "how do you use Org Mode", I showed without thinking how I
-capture file and web contents in my Org Mode files.
-</p>
-
-<p>
-I usually use this to capture web pages that may be taken down (for
-example, job ads).
-</p>
-
-<p>
-I then discovered that this feature could be of use also to others! So
-this afternoon I managed to release <a href="https://github.com/ag91/org-blk-uri">org-blk-uri</a>, a tiny library on top
-of <a href="https://github.com/alphapapa/org-web-tools">org-web-tools</a>.
-</p>
-
-<p>
-This is a GIF of what it does:
-</p>
-
-
-<div id="org846e746" class="figure">
-<p><img src="/assets/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block/org-blk-uri.gif" alt="/assets/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block/org-blk-uri.gif" />
-</p>
-</div>
-
-<p>
-Hope that may help you too!
-</p>
-
-</div>
-</div>]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2023-05-25</pubDate>
       <guid>http://ag91.github.io/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block</guid>
     </item>
@@ -105,13 +77,6 @@ Hope that may help you too!
       <description><![CDATA[]]></description>
       <pubDate>2022-11-23</pubDate>
       <guid>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</guid>
-    </item>
-    <item>
-      <title>Catch you JS console.log you forgot to remove with Emacs and Magit</title>
-      <link>http://ag91.github.io/blog/2022/11/15/catch-you-js-consolelog-you-forgot-to-remove-with-emacs-and-magit</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-11-15</pubDate>
-      <guid>http://ag91.github.io/blog/2022/11/15/catch-you-js-consolelog-you-forgot-to-remove-with-emacs-and-magit</guid>
     </item>
   </channel>
 </rss>
