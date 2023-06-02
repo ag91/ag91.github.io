@@ -1,0 +1,131 @@
+#+TITLE:       FS2 vs ZIO streams with Ammonite: a syntax comparison
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2023-06-02 Fri
+#+URI:         /blog/%y/%m/%d/fs2-vs-zio-streams-with-ammonite-a-syntax-comparison
+#+KEYWORDS:    scala
+#+TAGS:        scala
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+#+DESCRIPTION: <TODO: insert your description here>
+
+In this post I give a micro comparison of the syntax for Streams in
+Scala for two notable libraries [[https://github.com/zio/zio][ZIO]] and [[https://github.com/typelevel/fs2][FS2]].
+
+These libraries make large use of functional programming concepts and
+of the Scala's type system.
+
+What we are trying to achieve in the following example is:
+1. make an infinite stream of numbers
+2. add a unit to each of the numbers
+3. make each number a string
+4. take the first 10 numbers
+
+The core feature of the Stream data structure is the lazy
+transformation of data: this means that adding a unit to an infinite
+list of numbers will not take forever.
+
+(Note: I am using the [[https://github.com/com-lihaoyi/Ammonite][Ammonite REPL]] for the examples, you will see the
+weird initial =ivy= import statement, which is pulling the dependency and
+making our life easier)
+
+So, let's compare! FS2 first:
+
+#+begin_src amm :exports both
+import $ivy.`co.fs2::fs2-core:3.7.0`
+import fs2.{Pipe, Pure, Stream}
+
+val sourceStream: Stream[Pure, Int] = Stream(1,2,3).repeat // an infinite list of int
+val pipe: Pipe[Pure, Int, Int] = _.map(_ + 1) // sum
+val pipe2: Pipe[Pure, Int, String] = _.map(_.toString) // toString
+val sinkStream: Pipe[Pure, String, String] = _.take(10) // take 10
+val compositeStream = sourceStream.through(pipe).through(pipe2).through(sinkStream)
+
+compositeStream.compile.toList
+#+end_src
+
+#+RESULTS:
+#+begin_example
+import $ivy.$                       
+
+import fs2.{Pipe, Pure, Stream}
+
+
+sourceStream: Stream[Pure, Int] = Stream(..)
+pipe: Pipe[Pure, Int, Int] = ammonite.$sess.cmd11$$$Lambda$2296/0x0000000840a77840@1e748256
+pipe2: Pipe[Pure, Int, String] = ammonite.$sess.cmd11$$$Lambda$2297/0x0000000840a78840@6b211df3
+sinkStream: Pipe[Pure, String, String] = ammonite.$sess.cmd11$$$Lambda$2298/0x0000000840a79040@4e1af109
+compositeStream: Stream[[x]Pure[x], String] = Stream(..)
+res11_7: cats.package.Id[List[String]] = List("2", "3", "4", "2", "3", "4", "2", "3", "4", "2")
+#+end_example
+
+This looks pretty elegant! FS2 emphasizes Pipes (transformations) over
+Sources and Sinks, so we miss the [[https://doc.akka.io/docs/akka/current/stream/operators/Sink/seq.html][Akka]]'s way of doing things (another
+library for Streams that relies on the [[https://en.wikipedia.org/wiki/Actor_model][Actor model]]).
+
+And now ZIO:
+
+#+begin_src amm :exports both
+import $ivy.`dev.zio::zio:2.0.14`
+import $ivy.`dev.zio::zio-streams:2.0.14`
+import zio.Schedule
+import zio.stream.{ZStream, ZSink, ZPipeline}
+
+val sourceStream: ZStream[Any, Nothing, Int] = ZStream(1,2,3).repeat(Schedule.forever) // a list of int
+val pipe: ZPipeline[Any, Nothing, Int, Int] = ZPipeline.map[Int, Int](_ + 1) // sum
+val pipe2: ZPipeline[Any, Nothing, Int, String] = ZPipeline.map[Int, String](_.toString) // toString
+val sinkStream: ZSink[Any,Nothing,String,String,zio.Chunk[String]] = ZSink.take[String](10) // take 10
+val compositeStream = sourceStream.via(pipe).via(pipe2).run(sinkStream)
+
+compositeStream // TODO this is not working because of ammonite's https://github.com/zio/zio/issues/4806
+#+end_src
+
+#+RESULTS:
+#+begin_example
+import $ivy.$                    
+
+import $ivy.$                            
+
+import zio.Schedule
+
+import zio.stream.{ZStream, ZSink, ZPipeline}
+
+
+sourceStream: ZStream[Any, Nothing, Int] = zio.stream.ZStream@494e9f73
+pipe: ZPipeline[Any, Nothing, Int, Int] = zio.stream.ZPipeline@16d229bf
+pipe2: ZPipeline[Any, Nothing, Int, String] = zio.stream.ZPipeline@6aa4b9ae
+sinkStream: ZSink[Any, Nothing, String, String, Chunk[String]] = zio.stream.ZSink@e4a5b751
+compositeStream: ZIO[Any, Nothing, Chunk[String]] = OnSuccess(
+  "ammonite.$sess.cmd9.compositeStream(cmd9.sc:10)",
+  OnSuccess(
+    "ammonite.$sess.cmd9.compositeStream(cmd9.sc:10)",
+    Sync("ammonite.$sess.cmd9.compositeStream(cmd9.sc:10)", zio.Scope$ReleaseMap$$$Lambda$1732/0x000000084091e840@5c448433),
+    zio.ZIO$$Lambda$1734/0x000000084091d040@5d33742
+  ),
+  zio.ZIO$ScopedPartiallyApplied$$$Lambda$1735/0x000000084091c840@4087fff9
+)
+res9_9: ZIO[Any, Nothing, Chunk[String]] = OnSuccess(
+  "ammonite.$sess.cmd9.compositeStream(cmd9.sc:10)",
+  OnSuccess(
+    "ammonite.$sess.cmd9.compositeStream(cmd9.sc:10)",
+    Sync("ammonite.$sess.cmd9.compositeStream(cmd9.sc:10)", zio.Scope$ReleaseMap$$$Lambda$1732/0x000000084091e840@5c448433),
+    zio.ZIO$$Lambda$1734/0x000000084091d040@5d33742
+  ),
+  zio.ZIO$ScopedPartiallyApplied$$$Lambda$1735/0x000000084091c840@4087fff9
+)
+#+end_example
+
+As you can see, ZIO looks a little more verbose. And it has =ZSink=!
+By the way, you may notice that the verbosity comes also from the
+extra type: =[Any, Nothing, Int, String]= has four types instead of
+three like in FS2. The first type in both ZIO and FS2 is the wrapping
+environment (typically a IO monad kind of type, which represents the
+messiness of the real world), the last two are input and output types
+of the Stream. In ZIO the second type makes explicit the (expected)
+error that the Stream can produce. That is why in our example is
+=Nothing=: our Stream is basically a list of numbers that does not
+interact with the real world at all. You can imagine an expected error
+to be a network error, if we were streaming a movie.
+
+Anyway that is as far as I go with my little exploration. (It was
+enjoyable to try within Emacs with [[https://github.com/zwild/ob-ammonite][ob-ammonite]]).
