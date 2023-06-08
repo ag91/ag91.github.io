@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>A little exploration of Go from a Clojure perspective - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="keywords" content="golang" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>A little exploration of Go from a Clojure perspective</h1>
+<p>
+I have been looking into Go recently and I decided to find out how to
+do things that I usually do in Clojure. These are (a cleaned up
+version of) my notes.
+</p>
+
+<p>
+First let's start from iterations. Clojure (as any good Lisp language)
+focuses on sequences. So changing a sequence into a new one is key (and super easy):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(map inc [1 2 3])
+</pre>
+</div>
+
+<p>
+(2 3 4)
+</p>
+
+<p>
+While Clojure focuses on immutability to keep things simple, Go focuses on performance.
+The easiest way to achieve the same is with a <code>for</code> loop:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-gore">list := []int{1,2,3}
+for i, value := range list {
+        list[i] = value + 1
+}
+list
+</pre>
+</div>
+
+<pre class="example" id="orgee331e6">
+[]int{
+  1,
+  2,
+  3,
+
+..... 
+ []int{
+  2,
+  3,
+  4,
+</pre>
+
+<p>
+Next Clojure focuses on data transformation and the most used data
+structure is the map. So let's iterate over a map's values:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(into {} (for [[k v] {:a 1 :b 2}] [k (inc v)])) 
+; (update-vals {:a 1 :b 2} inc) ; clojure 1.11
+</pre>
+</div>
+
+<p>
+{:a 2, :b 3}
+</p>
+
+<p>
+In the above we use a Clojure <code>for</code> loop to create a new vector of
+key-value pairs, where they value in the pair was increased by one.
+</p>
+
+<p>
+Go also comes with a map data structure which is super easy to write.
+Again the <code>for</code> loop will let us modify things:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-gore">theMap := map[string]int{"a": 1, "b": 2}
+for key, value := range theMap {
+        theMap[key] = value + 1
+}
+theMap
+</pre>
+</div>
+
+<pre class="example">
+map[string]int{
+  "a": 1,
+  "b": 2,
+
+..... 
+ map[string]int{
+  "a": 2,
+  "b": 3,
+</pre>
+
+
+
+<p>
+And to complete our little exploration, I would say polymorphism is a
+must. In Clojure we can make interfaces via protocols:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-clojure">(defprotocol StringMyself
+  (who-am-i [x]))
+
+(deftype Duck []
+  StringMyself
+  (who-am-i [x] "I am a duck!"))
+
+(deftype Octopus []
+  StringMyself
+  (who-am-i [x] "I am an octopus!"))
+
+(who-am-i (Octopus.))
+</pre>
+</div>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="org-left">StringMyself</td>
+</tr>
+
+<tr>
+<td class="org-left">user.Duck</td>
+</tr>
+
+<tr>
+<td class="org-left">user.Octopus</td>
+</tr>
+
+<tr>
+<td class="org-left">"I am an octopus!"</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+In Go is beautifully simple as well:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-gore">type StringMyself interface {
+        WhoAmI() string
+}
+
+type Duck struct {}
+func (d Duck) WhoAmI () string {
+        return "I am a duck!"
+}
+type Octopus struct {}
+func (d Octopus) WhoAmI () string {
+        return "I am an octopus!"
+}
+
+var o StringMyself = Octopus{}
+o.WhoAmI()
+</pre>
+</div>
+
+<pre class="example">
+..... 
+  main.Octopus{
+ \"I am an octopus!\""
+</pre>
+
+
+<p>
+Not bad as a first go at go. And it seems to be pretty succinct!
+</p>
+
+<p>
+Happy Going!
+</p>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2023-06-08</span>
+        <span title="last modification date" class="post-info">2023-06-08</span>
+        <span title="tags" class="post-info"><a href="/tags/golang/">golang</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>
