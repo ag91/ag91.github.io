@@ -1,0 +1,138 @@
+#+TITLE:       A little exploration of Go from a Clojure perspective
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2023-06-08
+#+URI:         /blog/%y/%m/%d/a-little-exploration-of-go-from-a-clojure-perspective
+#+KEYWORDS:    golang
+#+TAGS:        golang
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+I have been looking into Go recently and I decided to find out how to
+do things that I usually do in Clojure. These are (a cleaned up
+version of) my notes.
+
+First let's start from iterations. Clojure (as any good Lisp language)
+focuses on sequences. So changing a sequence into a new one is key (and super easy):
+
+#+begin_src clojure :exports both :results raw
+(map inc [1 2 3])
+#+end_src
+
+#+RESULTS:
+(2 3 4)
+
+While Clojure focuses on immutability to keep things simple, Go focuses on performance.
+The easiest way to achieve the same is with a =for= loop:
+
+#+begin_src gore :exports both
+list := []int{1,2,3}
+for i, value := range list {
+        list[i] = value + 1
+}
+list
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[]int{
+  1,
+  2,
+  3,
+
+..... 
+ []int{
+  2,
+  3,
+  4,
+#+end_example
+
+Next Clojure focuses on data transformation and the most used data
+structure is the map. So let's iterate over a map's values:
+
+#+begin_src clojure :exports both :results raw
+(into {} (for [[k v] {:a 1 :b 2}] [k (inc v)])) 
+; (update-vals {:a 1 :b 2} inc) ; clojure 1.11
+#+end_src
+
+#+RESULTS:
+{:a 2, :b 3}
+
+In the above we use a Clojure =for= loop to create a new vector of
+key-value pairs, where they value in the pair was increased by one.
+
+Go also comes with a map data structure which is super easy to write.
+Again the =for= loop will let us modify things:
+
+#+begin_src gore :exports both
+theMap := map[string]int{"a": 1, "b": 2}
+for key, value := range theMap {
+        theMap[key] = value + 1
+}
+theMap
+#+end_src
+
+#+RESULTS:
+: map[string]int{
+:   "a": 1,
+:   "b": 2,
+: 
+: ..... 
+:  map[string]int{
+:   "a": 2,
+:   "b": 3,
+
+
+And to complete our little exploration, I would say polymorphism is a
+must. In Clojure we can make interfaces via protocols:
+
+#+begin_src clojure :exports both
+(defprotocol StringMyself
+  (who-am-i [x]))
+
+(deftype Duck []
+  StringMyself
+  (who-am-i [x] "I am a duck!"))
+
+(deftype Octopus []
+  StringMyself
+  (who-am-i [x] "I am an octopus!"))
+
+(who-am-i (Octopus.))
+#+end_src
+
+#+RESULTS:
+| StringMyself       |
+| user.Duck          |
+| user.Octopus       |
+| "I am an octopus!" |
+
+In Go is beautifully simple as well:
+
+#+begin_src gore :exports both
+type StringMyself interface {
+        WhoAmI() string
+}
+
+type Duck struct {}
+func (d Duck) WhoAmI () string {
+        return "I am a duck!"
+}
+type Octopus struct {}
+func (d Octopus) WhoAmI () string {
+        return "I am an octopus!"
+}
+
+var o StringMyself = Octopus{}
+o.WhoAmI()
+#+end_src
+
+#+RESULTS:
+: ..... 
+:   main.Octopus{
+:  \"I am an octopus!\""
+
+Not bad as a first go at go. And it seems to be pretty succinct!
+
+Happy Going!
+
