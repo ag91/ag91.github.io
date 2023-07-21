@@ -1,0 +1,82 @@
+#+TITLE:       scala-cli-repl: a Scala REPL based on scala-cli
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2023-07-22
+#+URI:         /blog/%y/%m/%d/scala-cli-repl-a-scala-repl-based-on-scala-cli
+#+KEYWORDS:    scala, emacs
+#+TAGS:        scala, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+* Too long; didn't read
+:PROPERTIES:
+:ID:       c0162099-7773-4fdd-8eab-4485e2504f62
+:END:
+
+I published [[https://github.com/ag91/scala-cli-repl][scala-cli-repl]] a mode to interact with [[https://github.com/VirtusLab/scala-cli][scala-cli]], [[https://github.com/scala/improvement-proposals/pull/46][the
+future scala command]] from within Emacs. It comes with an org-babel
+extension that makes it easy to try libraries and scala versions in
+Org Mode src blocks. And it also supports lsp-org goodies!
+
+* The problem
+
+I have been reading books about Scala libraries lately and it was fun
+to see how the transition to Scala 3 is in progress. Since code
+examples use both Scala 2 and 3, I have struggled testing things out
+in an easy way. I was following along with [[https://ammonite.io/][Ammonite]], which allowed me
+to try libraries easily in scripts, and then I discovered scala-cli
+which also allowed me to switch between Scala versions easily.
+
+Since I like to take notes in Org Mode, I thought it would be cool to
+have a REPL and org babel extension for Emacs running on scala-cli.
+Apparently nobody felt the need to make a mode yet, so how could I not
+be the first?
+
+* And there is a solution
+:PROPERTIES:
+:ID:       dfa8d2c3-0383-4e31-9aa8-fe28e272b794
+:END:
+
+So far I had been using [[https://github.com/zwild/ammonite-term-repl][ammonite-term-repl]], a mode for Ammonite and
+that has been archived recently. After a bit of tweaking I found out
+that by changing some variables the mode worked fine also for
+scala-cli. Since it was archived, I cleaned it up a little bit and
+made a new repository that focuses on scala-cli: [[https://github.com/ag91/scala-cli-repl][scala-cli-repl]].
+
+This is how the REPL look:
+
+[[file:scala-cli.gif]]
+
+I added also a function to convert SBT dependencies into the Mill
+format that scala-cli accepts (=scala-cli-conver-and-kill-deps=). That
+should make it easier to try things out.
+
+The interesting bit has been to support org babel for Scala. This
+relies on the REPL. For my needs I wanted to support setting a Scala
+version and dependencies as header arguments of a source block.
+
+The extension supports blocks like these:
+
+#+begin_src org
+,#+begin_src scala :dep '("com.lihaoyi::os-lib:0.9.0" "com.lihaoyi::utest:0.7.10")
+println("This is:" + os.pwd)
+,#+end_src
+#+end_src
+
+Given I like to try things in Org Mode source blocks, I thought that
+would have been cool to get some code completions that [[https://scalameta.org/metals/][scala-metals]]
+usually provide me.
+
+This is how it looks to setup a scala block with my =ob-scala-cli-lsp-org=:
+
+[[file:ob-scala-cli.gif]]
+
+You can see that I was able to complete =os.pwd= using scala-metals
+from an Org Mode block!
+
+The implementation uses lsp-org (which is part of [[https://github.com/emacs-lsp/lsp-mode][lsp-mode]]) and scala
+scripts (file ending with .sc). All in all, is pretty cool to work on Scala
+examples with full IDE support in your literate programming!
+And now I can more easily follow my books along :)
+
+Happy hacking!
