@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>scala-cli-repl: a Scala REPL based on scala-cli - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="keywords" content="scala, emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>scala-cli-repl: a Scala REPL based on scala-cli</h1>
+
+<div id="outline-container-org39a46b0" class="outline-2">
+<h2 id="org39a46b0">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org39a46b0">
+<p>
+I published <a href="https://github.com/ag91/scala-cli-repl">scala-cli-repl</a> a mode to interact with <a href="https://github.com/VirtusLab/scala-cli">scala-cli</a>, <a href="https://github.com/scala/improvement-proposals/pull/46">the
+future scala command</a> from within Emacs. It comes with an org-babel
+extension that makes it easy to try libraries and scala versions in
+Org Mode src blocks. And it also supports lsp-org goodies!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org215fba4" class="outline-2">
+<h2 id="org215fba4">The problem</h2>
+<div class="outline-text-2" id="text-org215fba4">
+<p>
+I have been reading books about Scala libraries lately and it was fun
+to see how the transition to Scala 3 is in progress. Since code
+examples use both Scala 2 and 3, I have struggled testing things out
+in an easy way. I was following along with <a href="https://ammonite.io/">Ammonite</a>, which allowed me
+to try libraries easily in scripts, and then I discovered scala-cli
+which also allowed me to switch between Scala versions easily.
+</p>
+
+<p>
+Since I like to take notes in Org Mode, I thought it would be cool to
+have a REPL and org babel extension for Emacs running on scala-cli.
+Apparently nobody felt the need to make a mode yet, so how could I not
+be the first?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6d3c8fd" class="outline-2">
+<h2 id="org6d3c8fd">And there is a solution</h2>
+<div class="outline-text-2" id="text-org6d3c8fd">
+<p>
+So far I had been using <a href="https://github.com/zwild/ammonite-term-repl">ammonite-term-repl</a>, a mode for Ammonite and
+that has been archived recently. After a bit of tweaking I found out
+that by changing some variables the mode worked fine also for
+scala-cli. Since it was archived, I cleaned it up a little bit and
+made a new repository that focuses on scala-cli: <a href="https://github.com/ag91/scala-cli-repl">scala-cli-repl</a>.
+</p>
+
+<p>
+This is how the REPL look:
+</p>
+
+
+<div id="orgf30725e" class="figure">
+<p><img src="/assets/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli/scala-cli.gif" alt="/assets/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli/scala-cli.gif" />
+</p>
+</div>
+
+<p>
+I added also a function to convert SBT dependencies into the Mill
+format that scala-cli accepts (<code>scala-cli-conver-and-kill-deps</code>). That
+should make it easier to try things out.
+</p>
+
+<p>
+The interesting bit has been to support org babel for Scala. This
+relies on the REPL. For my needs I wanted to support setting a Scala
+version and dependencies as header arguments of a source block.
+</p>
+
+<p>
+The extension supports blocks like these:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">#+begin_src scala :dep '("com.lihaoyi::os-lib:0.9.0" "com.lihaoyi::utest:0.7.10")
+println("This is:" + os.pwd)
+#+end_src
+</pre>
+</div>
+
+<p>
+Given I like to try things in Org Mode source blocks, I thought that
+would have been cool to get some code completions that <a href="https://scalameta.org/metals/">scala-metals</a>
+usually provide me.
+</p>
+
+<p>
+This is how it looks to setup a scala block with my <code>ob-scala-cli-lsp-org</code>:
+</p>
+
+
+<div id="org1ccb87c" class="figure">
+<p><img src="ob-/assets/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli/scala-cli.gif" alt="ob-/assets/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli/scala-cli.gif" />
+</p>
+</div>
+
+<p>
+You can see that I was able to complete <code>os.pwd</code> using scala-metals
+from an Org Mode block!
+</p>
+
+<p>
+The implementation uses lsp-org (which is part of <a href="https://github.com/emacs-lsp/lsp-mode">lsp-mode</a>) and scala
+scripts (file ending with .sc). All in all, is pretty cool to work on Scala
+examples with full IDE support in your literate programming!
+And now I can more easily follow my books along :)
+</p>
+
+<p>
+Happy hacking!
+</p>
+</div>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2023-07-22</span>
+        <span title="last modification date" class="post-info">2023-07-22</span>
+        <span title="tags" class="post-info"><a href="/tags/scala/">scala</a>, <a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

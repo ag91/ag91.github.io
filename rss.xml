@@ -4,196 +4,137 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 08 Jun 2023 22:46:04 BST</pubDate>
-    <lastBuildDate>Thu, 08 Jun 2023 22:46:04 BST</lastBuildDate>
+    <pubDate>Sat, 22 Jul 2023 00:33:54 BST</pubDate>
+    <lastBuildDate>Sat, 22 Jul 2023 00:33:54 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>A little exploration of Go from a Clojure perspective</title>
-      <link>http://ag91.github.io/blog/2023/06/08/a-little-exploration-of-go-from-a-clojure-perspective</link>
+      <title>scala-cli-repl: a Scala REPL based on scala-cli</title>
+      <link>http://ag91.github.io/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>A little exploration of Go from a Clojure perspective</h1>
+<h1>scala-cli-repl: a Scala REPL based on scala-cli</h1>
+
+<div id="outline-container-org39a46b0" class="outline-2">
+<h2 id="org39a46b0">Too long; didn't read</h2>
+<div class="outline-text-2" id="text-org39a46b0">
 <p>
-I have been looking into Go recently and I decided to find out how to
-do things that I usually do in Clojure. These are (a cleaned up
-version of) my notes.
+I published <a href="https://github.com/ag91/scala-cli-repl">scala-cli-repl</a> a mode to interact with <a href="https://github.com/VirtusLab/scala-cli">scala-cli</a>, <a href="https://github.com/scala/improvement-proposals/pull/46">the
+future scala command</a> from within Emacs. It comes with an org-babel
+extension that makes it easy to try libraries and scala versions in
+Org Mode src blocks. And it also supports lsp-org goodies!
+</p>
+</div>
+</div>
+
+<div id="outline-container-org215fba4" class="outline-2">
+<h2 id="org215fba4">The problem</h2>
+<div class="outline-text-2" id="text-org215fba4">
+<p>
+I have been reading books about Scala libraries lately and it was fun
+to see how the transition to Scala 3 is in progress. Since code
+examples use both Scala 2 and 3, I have struggled testing things out
+in an easy way. I was following along with <a href="https://ammonite.io/">Ammonite</a>, which allowed me
+to try libraries easily in scripts, and then I discovered scala-cli
+which also allowed me to switch between Scala versions easily.
 </p>
 
 <p>
-First let's start from iterations. Clojure (as any good Lisp language)
-focuses on sequences. So changing a sequence into a new one is key (and super easy):
+Since I like to take notes in Org Mode, I thought it would be cool to
+have a REPL and org babel extension for Emacs running on scala-cli.
+Apparently nobody felt the need to make a mode yet, so how could I not
+be the first?
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6d3c8fd" class="outline-2">
+<h2 id="org6d3c8fd">And there is a solution</h2>
+<div class="outline-text-2" id="text-org6d3c8fd">
+<p>
+So far I had been using <a href="https://github.com/zwild/ammonite-term-repl">ammonite-term-repl</a>, a mode for Ammonite and
+that has been archived recently. After a bit of tweaking I found out
+that by changing some variables the mode worked fine also for
+scala-cli. Since it was archived, I cleaned it up a little bit and
+made a new repository that focuses on scala-cli: <a href="https://github.com/ag91/scala-cli-repl">scala-cli-repl</a>.
+</p>
+
+<p>
+This is how the REPL look:
+</p>
+
+
+<div id="orgf30725e" class="figure">
+<p><img src="/assets/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli/scala-cli.gif" alt="/assets/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli/scala-cli.gif" />
+</p>
+</div>
+
+<p>
+I added also a function to convert SBT dependencies into the Mill
+format that scala-cli accepts (<code>scala-cli-conver-and-kill-deps</code>). That
+should make it easier to try things out.
+</p>
+
+<p>
+The interesting bit has been to support org babel for Scala. This
+relies on the REPL. For my needs I wanted to support setting a Scala
+version and dependencies as header arguments of a source block.
+</p>
+
+<p>
+The extension supports blocks like these:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-clojure">(map inc [1 2 3])
+<pre class="src src-org">#+begin_src scala :dep '("com.lihaoyi::os-lib:0.9.0" "com.lihaoyi::utest:0.7.10")
+println("This is:" + os.pwd)
+#+end_src
 </pre>
 </div>
 
 <p>
-(2 3 4)
+Given I like to try things in Org Mode source blocks, I thought that
+would have been cool to get some code completions that <a href="https://scalameta.org/metals/">scala-metals</a>
+usually provide me.
 </p>
 
 <p>
-While Clojure focuses on immutability to keep things simple, Go focuses on performance.
-The easiest way to achieve the same is with a <code>for</code> loop:
+This is how it looks to setup a scala block with my <code>ob-scala-cli-lsp-org</code>:
 </p>
 
-<div class="org-src-container">
-<pre class="src src-gore">list := []int{1,2,3}
-for i, value := range list {
-        list[i] = value + 1
-}
-list
-</pre>
-</div>
 
-<pre class="example" id="orgee331e6">
-[]int{
-  1,
-  2,
-  3,
-
-..... 
- []int{
-  2,
-  3,
-  4,
-</pre>
-
-<p>
-Next Clojure focuses on data transformation and the most used data
-structure is the map. So let's iterate over a map's values:
+<div id="org1ccb87c" class="figure">
+<p><img src="ob-/assets/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli/scala-cli.gif" alt="ob-/assets/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli/scala-cli.gif" />
 </p>
-
-<div class="org-src-container">
-<pre class="src src-clojure">(into {} (for [[k v] {:a 1 :b 2}] [k (inc v)])) 
-; (update-vals {:a 1 :b 2} inc) ; clojure 1.11
-</pre>
 </div>
 
 <p>
-{:a 2, :b 3}
+You can see that I was able to complete <code>os.pwd</code> using scala-metals
+from an Org Mode block!
 </p>
 
 <p>
-In the above we use a Clojure <code>for</code> loop to create a new vector of
-key-value pairs, where they value in the pair was increased by one.
+The implementation uses lsp-org (which is part of <a href="https://github.com/emacs-lsp/lsp-mode">lsp-mode</a>) and scala
+scripts (file ending with .sc). All in all, is pretty cool to work on Scala
+examples with full IDE support in your literate programming!
+And now I can more easily follow my books along :)
 </p>
 
 <p>
-Go also comes with a map data structure which is super easy to write.
-Again the <code>for</code> loop will let us modify things:
+Happy hacking!
 </p>
-
-<div class="org-src-container">
-<pre class="src src-gore">theMap := map[string]int{"a": 1, "b": 2}
-for key, value := range theMap {
-        theMap[key] = value + 1
-}
-theMap
-</pre>
 </div>
-
-<pre class="example">
-map[string]int{
-  "a": 1,
-  "b": 2,
-
-..... 
- map[string]int{
-  "a": 2,
-  "b": 3,
-</pre>
-
-
-
-<p>
-And to complete our little exploration, I would say polymorphism is a
-must. In Clojure we can make interfaces via protocols:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-clojure">(defprotocol StringMyself
-  (who-am-i [x]))
-
-(deftype Duck []
-  StringMyself
-  (who-am-i [x] "I am a duck!"))
-
-(deftype Octopus []
-  StringMyself
-  (who-am-i [x] "I am an octopus!"))
-
-(who-am-i (Octopus.))
-</pre>
 </div>
-
-<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
-
-
-<colgroup>
-<col  class="org-left" />
-</colgroup>
-<tbody>
-<tr>
-<td class="org-left">StringMyself</td>
-</tr>
-
-<tr>
-<td class="org-left">user.Duck</td>
-</tr>
-
-<tr>
-<td class="org-left">user.Octopus</td>
-</tr>
-
-<tr>
-<td class="org-left">"I am an octopus!"</td>
-</tr>
-</tbody>
-</table>
-
-<p>
-In Go is beautifully simple as well:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-gore">type StringMyself interface {
-        WhoAmI() string
-}
-
-type Duck struct {}
-func (d Duck) WhoAmI () string {
-        return "I am a duck!"
-}
-type Octopus struct {}
-func (d Octopus) WhoAmI () string {
-        return "I am an octopus!"
-}
-
-var o StringMyself = Octopus{}
-o.WhoAmI()
-</pre>
-</div>
-
-<pre class="example">
-..... 
-  main.Octopus{
- \"I am an octopus!\""
-</pre>
-
-
-<p>
-Not bad as a first go at go. And it seems to be pretty succinct!
-</p>
-
-<p>
-Happy Going!
-</p>
 
 </div>
 </div>]]></description>
+      <pubDate>2023-07-22</pubDate>
+      <guid>http://ag91.github.io/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli</guid>
+    </item>
+    <item>
+      <title>A little exploration of Go from a Clojure perspective</title>
+      <link>http://ag91.github.io/blog/2023/06/08/a-little-exploration-of-go-from-a-clojure-perspective</link>
+      <description><![CDATA[]]></description>
       <pubDate>2023-06-08</pubDate>
       <guid>http://ag91.github.io/blog/2023/06/08/a-little-exploration-of-go-from-a-clojure-perspective</guid>
     </item>
@@ -252,13 +193,6 @@ Happy Going!
       <description><![CDATA[]]></description>
       <pubDate>2023-02-06</pubDate>
       <guid>http://ag91.github.io/blog/2023/02/06/emacs-as-your-code-compass-what-code-is-this-contributor-familiar-with</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: remove unused React Native styles for a component with tree-sitter</title>
-      <link>http://ag91.github.io/blog/2022/12/13/moldable-emacs-remove-unused-react-native-styles-for-a-component-with-tree-sitter</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2022-12-13</pubDate>
-      <guid>http://ag91.github.io/blog/2022/12/13/moldable-emacs-remove-unused-react-native-styles-for-a-component-with-tree-sitter</guid>
     </item>
   </channel>
 </rss>
