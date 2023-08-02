@@ -1,0 +1,117 @@
+#+TITLE:       An easier way to try out Clojure libraries with ob-clojure and cider
+#+AUTHOR:      Andrea
+#+EMAIL:       agiugliano91@gmail.com
+#+DATE:        2023-08-03
+#+URI:         /blog/%y/%m/%d/an-easier-way-to-try-out-clojure-libraries-with-ob-clojure-and-cider
+#+KEYWORDS:    clojure,emacs
+#+TAGS:        clojure,emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+I keep notes in an [[https://www.orgroam.com/][org-roam]] based knowledge base. When I am learning
+something new I create a new note, give it a tag and write down my
+thoughts and useful references.
+
+Lately I have had some time reviewing and experimenting with
+interesting Clojure libraries. I enjoy to use [[https://github.com/clojure-emacs/cider][CIDER]] for my Clojure
+development, so to test libraries out I have to create a mini project
+with a project.clj (for lein) or deps.edn (for clojure-cli) for CIDER
+to open an useful REPL for me.
+
+This approach has been unsatisfactory: even by having a template for
+creating the project, I would find the whole setup being a
+distraction.
+
+Rather, I decided to enhance [[https://orgmode.org/worg/org-contrib/babel/intro.html][Org Babel]] for my use case.
+
+The way I test Clojure code is by creating a block looking like this
+in an Org Mode file:
+
+#+begin_src org
+,#+begin_src clojure
+(+ 1 1)
+,#+end_src
+#+end_src
+
+Given you have set =(setq org-babel-clojure-backend 'cider)=, running
+this block (=C-c C-c=) will start a CIDER session and eventually
+produce a result.
+
+To test libraries I aimed for this instead:
+
+#+begin_src org
+,#+begin_src clojure :deps '(("org.clojure/test.check" "1.1.1"))
+(require '[clojure.test.check.generators :as tgen])
+(tgen/sample (tgen/fmap #(apply str %) (tgen/vector tgen/char-alpha 10)))
+,#+end_src
+#+end_src
+
+In the above block I want to try out [[https://github.com/clojure/test.check][test.check]], a library for
+property testing. (In the block I am producing a sample of alphabetical
+strings that are minimum 10 characters.)
+
+The problem is: ob-clojure doesn't know about the =:deps= header!
+Furthermore, CIDER doesn't know about the dependencies I want to add.
+
+Luckily there is a hack to make this work.
+
+First, let's redefine ob-clojure's runner function:
+
+#+begin_src elisp :noeval
+(defun ob-clojure-eval-with-cider (expanded params)
+  "Evaluate EXPANDED code block with PARAMS using cider."
+  (condition-case nil (require 'cider)
+    (user-error "cider not available"))
+  (let ((connection (cider-current-connection (cdr (assq :target params))))
+        (result-params (cdr (assq :result-params params)))
+        result0)
+    ;; Andrea: below is where we add dependencies!
+    (unless connection (let ((my/cider-extra-deps (alist-get :deps params))) (sesman-start-session 'CIDER))) 
+    (if (not connection)
+        ;; Display in the result instead of using `user-error'
+        (setq result0 "Please reevaluate when nREPL is connected")
+      (ob-clojure-with-temp-expanded expanded params
+        (let ((response (nrepl-sync-request:eval exp connection)))
+          (push (or (nrepl-dict-get response "root-ex")
+                    (nrepl-dict-get response "ex")
+                    (nrepl-dict-get
+                     response (if (or (member "output" result-params)
+                                      (member "pp" result-params))
+                                  "out"
+                                "value")))
+                result0)))
+      (ob-clojure-string-or-list
+       ;; Filter out s-expressions that return nil (string "nil"
+       ;; from nrepl eval) or comment forms (actual nil from nrepl)
+       (reverse (delete "" (mapcar (lambda (r)
+                                     (replace-regexp-in-string "nil" "" (or r "")))
+                                   result0)))))))
+#+end_src
+
+The line I commented extracts the list of dependencies and sets a
+local binding =my/cider-extra-deps=.
+
+All is left is to make CIDER use those:
+
+#+begin_src elisp :noeval
+;; support a :deps header in ob-clojure blocks (can't work for bb and nbb, because they manage deps natively)
+(defcustom my/cider-extra-deps nil "Extra deps to add to cider startup")
+
+(defun my/cider-add-extra-deps (orig-fun &rest args)
+  (append (apply orig-fun args) my/cider-extra-deps))
+
+(advice-add 'cider--jack-in-required-dependencies :around #'my/cider-add-extra-deps)
+#+end_src
+
+Advicing =cider--jack-in-required-dependencies= is a bit fragile
+because is a non-public function, still for a hack this is enough.
+
+The idea is to inject the dependencies we need into the startup
+dependencies that CIDER injects to work.
+
+Loading these few lines makes the example above work nicely and is
+making my explorations much simpler!
+
+Hope this will help you as well.
+
+Happy exploring!
