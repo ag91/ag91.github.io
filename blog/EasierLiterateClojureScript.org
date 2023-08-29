@@ -1,0 +1,155 @@
+#+TITLE:       An easier way to try Cljs libraries with shadow-cljs ob-clojure and cider
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2023-08-28
+#+URI:         /blog/%y/%m/%d/an-easier-way-to-try-cljs-libraries-with-shadow-cljs-ob-clojure-and-cider
+#+KEYWORDS:    emacs, clojure
+#+TAGS:        emacs, clojure
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+[[https://ag91.github.io/blog/2023/08/03/an-easier-way-to-try-out-clojure-libraries-with-ob-clojure-and-cider/][In my previous blog]], I showed how to inject libraries in a Cider
+session started via ob-clojure. So I thought to provide the same for
+ClojureScript (Cljs). With Cljs we need to do something similar, but
+with the additional step of setting up a REPL for Cider
+to work with.
+
+When working with Cljs you may be targeting different platforms (e.g.,
+Node.js, the browser, or even mobile). I had a great experience using
+[[https://github.com/thheller/shadow-cljs][shadow-cljs]] for compiling Cljs to one of these, so I picked that tool
+for starting the volatile REPL I need. I say volatile because in my
+note-taking/min-exploration session I am aiming to avoiding the
+distraction of setting up a Cljs project from scratch.
+
+The use case looks like this in an Org Mode file:
+
+#+begin_src org
+,#+begin_src clojurescript :deps '(("io.github.ruffnext/cljs-http" "0.1.47")) :shadowcljs-type "browser-repl"
+(ns example.core
+  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require [cljs-http.client :as http]
+     [cljs.core.async :refer [<!]]))
+
+(def result (atom {}))
+(go (let [response (<! (http/get "https://api.github.com/users"
+                                 {:with-credentials? false
+                                  :query-params {"since" 135}}))]
+      (swap! result #(conj %
+                           [:status (:status response)]
+                           [:login (map :login (:body response))]))))
+
+@result
+,#+end_src
+
+,#+RESULTS:
+| #'example.core/result                                                                                                              |
+| #object[cljs.core.async.impl.channels.ManyToManyChannel]                                                                           |
+| {:status 200, :login ("simonjefford" "josh" ...)} |
+
+#+end_src
+
+In the above block you may see that I successfully run some example
+code for the [[https://github.com/ruffnext/cljs-http/tree/fix-clojure-11-warning][cljs-http]] library via an Org Mode source block. (Hurrah!)
+
+May be also useful to see this in action:
+
+[[file:showCljsObClj.mp4]]
+
+If you are an user of Org Babel, you may also recognize that the
+=:deps= and =shadowcljs-type= headers don't come by default. My hack
+uses these to setup the shadow-cljs REPL correctly: in the example, I
+target the browser and I declare the dependency I need.
+
+The code for this to work consists in an Emacs advice which runs
+around =ob-eval:clojure=, which is the function Org Mode calls when
+you try to run a Cljs code block.
+
+The aim is to start a shadow-cljs REPL and then let =ob-clojure= start
+Cider. I put an if statement to avoid starting the REPL multiple
+times: that seemed to work in my case, but is not battle-tested.
+
+All in all this is the hack:
+
+#+begin_src elisp :noeval
+(defun my/cider-run-projectless-cljs-repl (&optional repl-type deps)
+  "Start a projectless cljs REPL running on REPL-TYPE with DEPS.
+DEPS needs to be something like '((\"foo/bar\" \"0.0.1\") (\"foo/baz\" \"0.0.2\"))"
+  (when (and
+         ;; shadow-cljs is available
+         (executable-find "shadow-cljs")
+         ;; check if cider has a shadow session running for this dir
+         (not (--any
+               (and (s-contains-p "cider-repl" (buffer-name it))
+                    (s-contains-p "cljs" (buffer-name it))
+                    (s-contains-p (file-name-base (directory-file-name
+                                                   default-directory))
+                                  (buffer-name it)))
+               (buffer-list)))
+         ;; not in a cljs project
+         (not (--any (or (s-ends-with-p ".edn" it)
+                         (s-ends-with-p ".clj" it))
+                     (directory-files
+                      (or
+                       (ignore-errors (project-root (project-current)))
+                       default-directory)))))
+    (let* ((repl-type (or
+                       repl-type
+                       (completing-read
+                        "Shadow-cljs REPL type:"
+                        '("browser-repl" "node-repl")
+                        nil
+                        t)))
+           (deps-as-vectors
+            (concat "["
+                    (s-join
+                     "\n"
+                     (--map (concat "[" (nth 0 it) " \"" (nth 1 it) "\"]")
+                            deps))
+                    "]")))
+      (with-temp-file "shadow-cljs.edn"
+        (insert (concat
+                 "{:dependencies "
+                 deps-as-vectors
+                 "}")))
+      (async-shell-command
+       (concat "shadow-cljs " repl-type))
+      ;; in a bit get rid of the temporary shadow-cljs.edn
+      (run-with-idle-timer
+       10
+       nil
+       (lambda () (shell-command "rm shadow-cljs.edn")))
+      repl-type)))
+
+(defun my/setup-shadow-cljs-project-if-possible (orig-fun &rest args)
+  (if-let* ((headers (nth 1 args))
+            (_ (equal "cljs" (alist-get :target headers)))
+            (cider-default-cljs-repl 'shadow)
+            (cider-shadow-default-options
+             (my/cider-run-projectless-cljs-repl (alist-get :shadowcljs-type headers)
+                                                 (alist-get :deps headers))))
+      (progn
+        (while (not (car-safe (nrepl-extract-ports (cider--file-path "."))))
+          (message "Waiting for shadow-cljs to connect...")
+          (sleep-for 1))
+        (cider-connect-cljs (list
+                             :host "localhost"
+                             :port (car (nrepl-extract-ports (cider--file-path ".")))
+                             :project-dir (concat "~/" (file-relative-name "." "~"))
+                             :cljs-repl-type 'shadow))
+        (apply orig-fun args))
+    (apply orig-fun args)))
+
+(advice-add 'ob-clojure-eval-with-cider :around #'my/setup-shadow-cljs-project-if-possible)
+#+end_src
+
+Note that this code creates a =shadow-cljs.edn= configuration file to
+declare the dependencies. Starting a REPL comes to =shadow-cljs
+browser-repl= or =shadow-cljs node-repl=, which are default build ids
+that shadow-cljs provides by default. I also added a timer that
+deletes the file after 10 seconds of inactivity, because I am pretty
+sure I would forget to cleanup things after my note taking.
+
+I put these ob-clojure extensions [[https://github.com/ag91/ob-clojure-literate-extras][in this little GitHub project]] to
+make it easier to load for people.
+
+Happy literate hacking!
