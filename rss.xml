@@ -4,192 +4,151 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 29 Aug 2023 23:24:30 BST</pubDate>
-    <lastBuildDate>Tue, 29 Aug 2023 23:24:30 BST</lastBuildDate>
+    <pubDate>Mon, 11 Dec 2023 23:30:50 GMT</pubDate>
+    <lastBuildDate>Mon, 11 Dec 2023 23:30:50 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>An easier way to try Cljs libraries with shadow-cljs ob-clojure and cider</title>
-      <link>http://ag91.github.io/blog/2023/08/28/an-easier-way-to-try-cljs-libraries-with-shadow-cljs-ob-clojure-and-cider</link>
+      <title>Make Emacs help in creating an example of Scala classes</title>
+      <link>http://ag91.github.io/blog/2023/12/11/make-emacs-help-in-creating-an-example-of-scala-classes</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>An easier way to try Cljs libraries with shadow-cljs ob-clojure and cider</h1>
+<h1>Make Emacs help in creating an example of Scala classes</h1>
 <p>
-<a href="https://ag91.github.io/blog/2023/08/03/an-easier-way-to-try-out-clojure-libraries-with-ob-clojure-and-cider/">In my previous blog</a>, I showed how to inject libraries in a Cider
-session started via ob-clojure. So I thought to provide the same for
-ClojureScript (Cljs). With Cljs we need to do something similar, but
-with the additional step of setting up a REPL for Cider
-to work with.
-</p>
-
-<p>
-When working with Cljs you may be targeting different platforms (e.g.,
-Node.js, the browser, or even mobile). I had a great experience using
-<a href="https://github.com/thheller/shadow-cljs">shadow-cljs</a> for compiling Cljs to one of these, so I picked that tool
-for starting the volatile REPL I need. I say volatile because in my
-note-taking/min-exploration session I am aiming to avoiding the
-distraction of setting up a Cljs project from scratch.
-</p>
-
-<p>
-The use case looks like this in an Org Mode file:
+I recently found myself in need of creating test examples for Scala
+case classes. These tend to have quite a lot of nested fields, here an
+example of what I am dealing with:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-org">#+begin_src clojurescript :deps '(("io.github.ruffnext/cljs-http" "0.1.47")) :shadowcljs-type "browser-repl"
-(ns example.core
-  (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs-http.client :as http]
-     [cljs.core.async :refer [&lt;!]]))
+<pre class="src src-scala">case class A(a: Option[Int])
+case class B(a: A, b: Boolean)
+case class C(b: B, d: Int, e: Double)
 
-(def result (atom {}))
-(go (let [response (&lt;! (http/get "https://api.github.com/users"
-                                 {:with-credentials? false
-                                  :query-params {"since" 135}}))]
-      (swap! result #(conj %
-                           [:status (:status response)]
-                           [:login (map :login (:body response))]))))
-
-@result
-#+end_src
-
-#+RESULTS:
-| #'example.core/result                                                                                                              |
-| #object[cljs.core.async.impl.channels.ManyToManyChannel]                                                                           |
-| {:status 200, :login ("simonjefford" "josh" ...)} |
-
+C // edit manually, nooo!!
 </pre>
 </div>
 
 <p>
-In the above block you may see that I successfully run some example
-code for the <a href="https://github.com/ruffnext/cljs-http/tree/fix-clojure-11-warning">cljs-http</a> library via an Org Mode source block. (Hurrah!)
+Now for a test I would need to derive an example of this by hand <sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>.
 </p>
 
 <p>
-May be also useful to see this in action:
-</p>
-
-<p>
-<a href="/assets/blog/2023/08/28/an-easier-way-to-try-cljs-libraries-with-shadow-cljs-ob-clojure-and-cider/showCljsObClj.mp4">/assets/blog/2023/08/28/an-easier-way-to-try-cljs-libraries-with-shadow-cljs-ob-clojure-and-cider/showCljsObClj.mp4</a>
-</p>
-
-<p>
-If you are an user of Org Babel, you may also recognize that the
-<code>:deps</code> and <code>shadowcljs-type</code> headers don't come by default. My hack
-uses these to setup the shadow-cljs REPL correctly: in the example, I
-target the browser and I declare the dependency I need.
-</p>
-
-<p>
-The code for this to work consists in an Emacs advice which runs
-around <code>ob-eval:clojure</code>, which is the function Org Mode calls when
-you try to run a Cljs code block.
-</p>
-
-<p>
-The aim is to start a shadow-cljs REPL and then let <code>ob-clojure</code> start
-Cider. I put an if statement to avoid starting the REPL multiple
-times: that seemed to work in my case, but is not battle-tested.
-</p>
-
-<p>
-All in all this is the hack:
+I did that and it is boring. So Emacs to support me!
+A little Elisp hack saves the day:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-elisp">(defun my/cider-run-projectless-cljs-repl (&amp;optional repl-type deps)
-  "Start a projectless cljs REPL running on REPL-TYPE with DEPS.
-DEPS needs to be something like '((\"foo/bar\" \"0.0.1\") (\"foo/baz\" \"0.0.2\"))"
-  (when (and
-         ;; shadow-cljs is available
-         (executable-find "shadow-cljs")
-         ;; check if cider has a shadow session running for this dir
-         (not (--any
-               (and (s-contains-p "cider-repl" (buffer-name it))
-                    (s-contains-p "cljs" (buffer-name it))
-                    (s-contains-p (file-name-base (directory-file-name
-                                                   default-directory))
-                                  (buffer-name it)))
-               (buffer-list)))
-         ;; not in a cljs project
-         (not (--any (or (s-ends-with-p ".edn" it)
-                         (s-ends-with-p ".clj" it))
-                     (directory-files
-                      (or
-                       (ignore-errors (project-root (project-current)))
-                       default-directory)))))
-    (let* ((repl-type (or
-                       repl-type
-                       (completing-read
-                        "Shadow-cljs REPL type:"
-                        '("browser-repl" "node-repl")
-                        nil
-                        t)))
-           (deps-as-vectors
-            (concat "["
-                    (s-join
-                     "\n"
-                     (--map (concat "[" (nth 0 it) " \"" (nth 1 it) "\"]")
-                            deps))
-                    "]")))
-      (with-temp-file "shadow-cljs.edn"
-        (insert (concat
-                 "{:dependencies "
-                 deps-as-vectors
-                 "}")))
-      (async-shell-command
-       (concat "shadow-cljs " repl-type))
-      ;; in a bit get rid of the temporary shadow-cljs.edn
-      (run-with-idle-timer
-       10
-       nil
-       (lambda () (shell-command "rm shadow-cljs.edn")))
-      repl-type)))
+<pre class="src src-elisp">(defun my/s-replace-regexp-all (replacements s)
+    "REPLACEMENTS is a list of cons-cells. Each `car` is replaced with `cdr` in S."
+    (declare (pure t) (side-effect-free t))
+    (if (equal nil replacements)
+        s
+      (my/s-replace-regexp-all
+       (cdr replacements)
+       (s-replace-regexp (car (car replacements)) (cdr (car replacements)) s 'fixed-case))))
 
-(defun my/setup-shadow-cljs-project-if-possible (orig-fun &amp;rest args)
-  (if-let* ((headers (nth 1 args))
-            (_ (equal "cljs" (alist-get :target headers)))
-            (cider-default-cljs-repl 'shadow)
-            (cider-shadow-default-options
-             (my/cider-run-projectless-cljs-repl (alist-get :shadowcljs-type headers)
-                                                 (alist-get :deps headers))))
-      (progn
-        (while (not (car-safe (nrepl-extract-ports (cider--file-path "."))))
-          (message "Waiting for shadow-cljs to connect...")
-          (sleep-for 1))
-        (cider-connect-cljs (list
-                             :host "localhost"
-                             :port (car (nrepl-extract-ports (cider--file-path ".")))
-                             :project-dir (concat "~/" (file-relative-name "." "~"))
-                             :cljs-repl-type 'shadow))
-        (apply orig-fun args))
-    (apply orig-fun args)))
-
-(advice-add 'ob-clojure-eval-with-cider :around #'my/setup-shadow-cljs-project-if-possible)
+(defun my/stub-scala-class ()
+  (interactive)
+  (let ((replacements ;; supported replacements
+         '(("Option\\[[A-Za-z]*\\]" . "None") ;; TODO can I generalize these higher order datatypes (e.g., Either?
+                        ("List\\[[A-Za-z]*\\]" . "Nil")
+                        ("Set\\[[A-Za-z]*\\]" . "Set()")
+                        ("String" . "\"someString\"")
+                        ("Int" . "123")
+                        ("Long" . "123")
+                        ("Double" . "123.123")
+                        ("Boolean" . "false")
+                        (":" . " =") ;; not types anymore, but values
+                        ))
+        (class
+         (save-excursion
+           (save-window-excursion
+             (let ((s (thing-at-point 'symbol 'no-props)))
+               (or
+                ;; try to work around xref-find-definitions
+                (when-let ((p (save-excursion
+                                (goto-char (point-min))
+                                (search-forward (concat "class " s) nil t)
+                                (- (point) 1))))
+                  (and (goto-char p) t))
+                ;; use xref (lsp-metals provides this)
+                (xref-find-definitions s)))
+             (if (equal major-mode 'scala-mode)
+                 (progn (search-forward "(")
+                        (goto-char (- (point) 1))
+                        (thing-at-point 'sexp 'no-props))
+               (error "No class to stub at point"))
+             ))))
+    (goto-char (cdr (bounds-of-thing-at-point 'symbol)))
+    (insert (my/s-replace-regexp-all replacements class))
+    ))
 </pre>
 </div>
 
 <p>
-Note that this code creates a <code>shadow-cljs.edn</code> configuration file to
-declare the dependencies. Starting a REPL comes to <code>shadow-cljs
-browser-repl</code> or <code>shadow-cljs node-repl</code>, which are default build ids
-that shadow-cljs provides by default. I also added a timer that
-deletes the file after 10 seconds of inactivity, because I am pretty
-sure I would forget to cleanup things after my note taking.
+If you run this with your cursor on the <code>C</code> above, you will get:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">C(b = B, d = 123, e = 123.123)
+</pre>
+</div>
+
+<p>
+You can see that it didn't stub <code>B</code>, but we can do it manually:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">C(b = B(a = A, b = false), d = 123, e = 123.123)
+</pre>
+</div>
+
+<p>
+And one more on the <code>A</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-scala">C(b = B(a = A(a = None), b = false), d = 123, e = 123.123)
+</pre>
+</div>
+
+<p>
+This is just a hack to speed up my work, so I didn't look into adding
+recursion (I must say that it satisfies me to fill manually, maybe
+because it also let me familiarize with the data structure for now?)
+and only few data types are supported (already <code>Either</code> requires some
+manual edits).
 </p>
 
 <p>
-I put these ob-clojure extensions <a href="https://github.com/ag91/ob-clojure-literate-extras">in this little GitHub project</a> to
-make it easier to load for people.
+All in all, it was a useful thought exercise to make Emacs take some
+error-prone work away from me :)
 </p>
 
 <p>
-Happy literate hacking!
+Happy hacking!
 </p>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
 
+<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">Sure
+I could generated the data with ScalaCheck and do some property based
+testing. But here I want to focus on creating a single example.</p></div></div>
+
+
+</div>
+</div>
 </div>
 </div>]]></description>
+      <pubDate>2023-12-11</pubDate>
+      <guid>http://ag91.github.io/blog/2023/12/11/make-emacs-help-in-creating-an-example-of-scala-classes</guid>
+    </item>
+    <item>
+      <title>An easier way to try Cljs libraries with shadow-cljs ob-clojure and cider</title>
+      <link>http://ag91.github.io/blog/2023/08/28/an-easier-way-to-try-cljs-libraries-with-shadow-cljs-ob-clojure-and-cider</link>
+      <description><![CDATA[]]></description>
       <pubDate>2023-08-29</pubDate>
       <guid>http://ag91.github.io/blog/2023/08/28/an-easier-way-to-try-cljs-libraries-with-shadow-cljs-ob-clojure-and-cider</guid>
     </item>
@@ -248,13 +207,6 @@ Happy literate hacking!
       <description><![CDATA[]]></description>
       <pubDate>2023-03-20</pubDate>
       <guid>http://ag91.github.io/blog/2023/03/20/doctestel-or-testing-your-pure-elisp-functions-in-your-docstring</guid>
-    </item>
-    <item>
-      <title>Org Agenda and Your Future, or how to keep score of your long term goals with Org Mode</title>
-      <link>http://ag91.github.io/blog/2020/09/27/org-agenda-and-your-future-or-how-to-keep-score-of-your-long-term-goals-with-org-mode</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-02-12</pubDate>
-      <guid>http://ag91.github.io/blog/2020/09/27/org-agenda-and-your-future-or-how-to-keep-score-of-your-long-term-goals-with-org-mode</guid>
     </item>
   </channel>
 </rss>
