@@ -1,0 +1,104 @@
+#+TITLE:       Make Emacs help in creating an example of Scala classes
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2023-12-11 Mon
+#+URI:         /blog/%y/%m/%d/make-emacs-help-in-creating-an-example-of-scala-classes
+#+KEYWORDS:    scala, emacs
+#+TAGS:        scala, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+I recently found myself in need of creating test examples for Scala
+case classes. These tend to have quite a lot of nested fields, here an
+example of what I am dealing with:
+
+#+begin_src scala
+case class A(a: Option[Int])
+case class B(a: A, b: Boolean)
+case class C(b: B, d: Int, e: Double)
+
+C // edit manually, nooo!!
+#+end_src
+
+Now for a test I would need to derive an example of this by hand [fn::Sure
+I could generated the data with ScalaCheck and do some property based
+testing. But here I want to focus on creating a single example.].
+
+I did that and it is boring. So Emacs to support me!
+A little Elisp hack saves the day:
+
+#+begin_src elisp
+(defun my/s-replace-regexp-all (replacements s)
+    "REPLACEMENTS is a list of cons-cells. Each `car` is replaced with `cdr` in S."
+    (declare (pure t) (side-effect-free t))
+    (if (equal nil replacements)
+        s
+      (my/s-replace-regexp-all
+       (cdr replacements)
+       (s-replace-regexp (car (car replacements)) (cdr (car replacements)) s 'fixed-case))))
+
+(defun my/stub-scala-class ()
+  (interactive)
+  (let ((replacements ;; supported replacements
+         '(("Option\\[[A-Za-z]*\\]" . "None") ;; TODO can I generalize these higher order datatypes (e.g., Either?
+                        ("List\\[[A-Za-z]*\\]" . "Nil")
+                        ("Set\\[[A-Za-z]*\\]" . "Set()")
+                        ("String" . "\"someString\"")
+                        ("Int" . "123")
+                        ("Long" . "123")
+                        ("Double" . "123.123")
+                        ("Boolean" . "false")
+                        (":" . " =") ;; not types anymore, but values
+                        ))
+        (class
+         (save-excursion
+           (save-window-excursion
+             (let ((s (thing-at-point 'symbol 'no-props)))
+               (or
+                ;; try to work around xref-find-definitions
+                (when-let ((p (save-excursion
+                                (goto-char (point-min))
+                                (search-forward (concat "class " s) nil t)
+                                (- (point) 1))))
+                  (and (goto-char p) t))
+                ;; use xref (lsp-metals provides this)
+                (xref-find-definitions s)))
+             (if (equal major-mode 'scala-mode)
+                 (progn (search-forward "(")
+                        (goto-char (- (point) 1))
+                        (thing-at-point 'sexp 'no-props))
+               (error "No class to stub at point"))
+             ))))
+    (goto-char (cdr (bounds-of-thing-at-point 'symbol)))
+    (insert (my/s-replace-regexp-all replacements class))
+    ))
+#+end_src
+
+If you run this with your cursor on the =C= above, you will get:
+
+#+begin_src scala
+C(b = B, d = 123, e = 123.123)
+#+end_src
+
+You can see that it didn't stub =B=, but we can do it manually:
+
+#+begin_src scala
+C(b = B(a = A, b = false), d = 123, e = 123.123)
+#+end_src
+
+And one more on the =A=:
+
+#+begin_src scala
+C(b = B(a = A(a = None), b = false), d = 123, e = 123.123)
+#+end_src
+
+This is just a hack to speed up my work, so I didn't look into adding
+recursion (I must say that it satisfies me to fill manually, maybe
+because it also let me familiarize with the data structure for now?)
+and only few data types are supported (already =Either= requires some
+manual edits).
+
+All in all, it was a useful thought exercise to make Emacs take some
+error-prone work away from me :)
+
+Happy hacking!
