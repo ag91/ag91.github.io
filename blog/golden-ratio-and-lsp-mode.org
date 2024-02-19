@@ -1,0 +1,50 @@
+#+TITLE:       A quick-fix for golden-ratio and lsp-mode
+#+AUTHOR:      andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2024-02-19 Mon
+#+URI:         /blog/%y/%m/%d/a-quick-fix-for-golden-ratio-and-lsp-mode
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+I have been back into Scala development lately and I have been
+enjoying using [[https://github.com/emacs-lsp/lsp-metals][lsp-metals.el]].
+
+Coding is a lot about trial and error and my compiler errors are
+inflating: they became long enough to make my windows jumpy (as you
+can see in the video below)!
+
+[[file:goldenratioslp.mp4]]
+
+I use [[https://github.com/roman/golden-ratio.el][golden-ratio]] to resize my windows automatically in a way
+pleasant to the eye. Unluckily this mode seems to have issues with the
+way lsp-mode logs errors.
+
+I couldn't dig into this as much as I wanted (very short on time these
+days! Actually a year and a half so far of a really demanding joy).
+But! I hacked my config enough to make it work:
+
+#+begin_src elisp
+(use-package golden-ratio
+  :diminish golden-ratio-mode
+  :defer 1
+  :config
+  (golden-ratio-mode 1)
+  ;; this fixes issue with lsp-mode minibuffer logs (which made my windows jump like crazy)
+  (remove-hook 'window-configuration-change-hook 'golden-ratio)
+  (add-to-list 'golden-ratio-extra-commands 'avy-goto-char-timer))
+#+end_src
+
+The idea is that the setting of =window-configuration-change-hook= is
+covering what lsp-mode does when it refreshes the minibuffer, so we
+disable that hook. That has side effects (for example I use
+=avy-goto-char-timer= a lot and without that hook the window is not
+resized). As you can see above, =golden-ratio= is configurable, so I
+added the command explicitly.
+
+Hope that helps somebody!
+
+Happy error-handling,
+
+Andrea
