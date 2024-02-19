@@ -4,8 +4,8 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 19 Feb 2024 23:38:03 GMT</pubDate>
-    <lastBuildDate>Mon, 19 Feb 2024 23:38:03 GMT</lastBuildDate>
+    <pubDate>Mon, 19 Feb 2024 23:43:24 GMT</pubDate>
+    <lastBuildDate>Mon, 19 Feb 2024 23:43:24 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
@@ -23,6 +23,10 @@ enjoying using <a href="https://github.com/emacs-lsp/lsp-metals">lsp-metals.el</
 Coding is a lot about trial and error and my compiler errors are
 inflating: they became long enough to make my windows jumpy (as you
 can see in the video below)!
+</p>
+
+<p>
+<a href="/assets/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode/goldenratioslp.mp4">/assets/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode/goldenratioslp.mp4</a>
 </p>
 
 <p>
