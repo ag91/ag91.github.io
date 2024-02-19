@@ -4,144 +4,81 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 11 Dec 2023 23:30:50 GMT</pubDate>
-    <lastBuildDate>Mon, 11 Dec 2023 23:30:50 GMT</lastBuildDate>
+    <pubDate>Mon, 19 Feb 2024 23:38:03 GMT</pubDate>
+    <lastBuildDate>Mon, 19 Feb 2024 23:38:03 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Make Emacs help in creating an example of Scala classes</title>
-      <link>http://ag91.github.io/blog/2023/12/11/make-emacs-help-in-creating-an-example-of-scala-classes</link>
+      <title>A quick-fix for golden-ratio and lsp-mode</title>
+      <link>http://ag91.github.io/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>Make Emacs help in creating an example of Scala classes</h1>
+<h1>A quick-fix for golden-ratio and lsp-mode</h1>
 <p>
-I recently found myself in need of creating test examples for Scala
-case classes. These tend to have quite a lot of nested fields, here an
-example of what I am dealing with:
+I have been back into Scala development lately and I have been
+enjoying using <a href="https://github.com/emacs-lsp/lsp-metals">lsp-metals.el</a>.
+</p>
+
+<p>
+Coding is a lot about trial and error and my compiler errors are
+inflating: they became long enough to make my windows jumpy (as you
+can see in the video below)!
+</p>
+
+<p>
+I use <a href="https://github.com/roman/golden-ratio.el">golden-ratio</a> to resize my windows automatically in a way
+pleasant to the eye. Unluckily this mode seems to have issues with the
+way lsp-mode logs errors.
+</p>
+
+<p>
+I couldn't dig into this as much as I wanted (very short on time these
+days! Actually a year and a half so far of a really demanding joy).
+But! I hacked my config enough to make it work:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-scala">case class A(a: Option[Int])
-case class B(a: A, b: Boolean)
-case class C(b: B, d: Int, e: Double)
-
-C // edit manually, nooo!!
+<pre class="src src-elisp">(use-package golden-ratio
+  :diminish golden-ratio-mode
+  :defer 1
+  :config
+  (golden-ratio-mode 1)
+  ;; this fixes issue with lsp-mode minibuffer logs (which made my windows jump like crazy)
+  (remove-hook 'window-configuration-change-hook 'golden-ratio)
+  (add-to-list 'golden-ratio-extra-commands 'avy-goto-char-timer))
 </pre>
 </div>
 
 <p>
-Now for a test I would need to derive an example of this by hand <sup><a id="fnr.1" class="footref" href="#fn.1" role="doc-backlink">1</a></sup>.
+The idea is that the setting of <code>window-configuration-change-hook</code> is
+covering what lsp-mode does when it refreshes the minibuffer, so we
+disable that hook. That has side effects (for example I use
+<code>avy-goto-char-timer</code> a lot and without that hook the window is not
+resized). As you can see above, <code>golden-ratio</code> is configurable, so I
+added the command explicitly.
 </p>
 
 <p>
-I did that and it is boring. So Emacs to support me!
-A little Elisp hack saves the day:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-elisp">(defun my/s-replace-regexp-all (replacements s)
-    "REPLACEMENTS is a list of cons-cells. Each `car` is replaced with `cdr` in S."
-    (declare (pure t) (side-effect-free t))
-    (if (equal nil replacements)
-        s
-      (my/s-replace-regexp-all
-       (cdr replacements)
-       (s-replace-regexp (car (car replacements)) (cdr (car replacements)) s 'fixed-case))))
-
-(defun my/stub-scala-class ()
-  (interactive)
-  (let ((replacements ;; supported replacements
-         '(("Option\\[[A-Za-z]*\\]" . "None") ;; TODO can I generalize these higher order datatypes (e.g., Either?
-                        ("List\\[[A-Za-z]*\\]" . "Nil")
-                        ("Set\\[[A-Za-z]*\\]" . "Set()")
-                        ("String" . "\"someString\"")
-                        ("Int" . "123")
-                        ("Long" . "123")
-                        ("Double" . "123.123")
-                        ("Boolean" . "false")
-                        (":" . " =") ;; not types anymore, but values
-                        ))
-        (class
-         (save-excursion
-           (save-window-excursion
-             (let ((s (thing-at-point 'symbol 'no-props)))
-               (or
-                ;; try to work around xref-find-definitions
-                (when-let ((p (save-excursion
-                                (goto-char (point-min))
-                                (search-forward (concat "class " s) nil t)
-                                (- (point) 1))))
-                  (and (goto-char p) t))
-                ;; use xref (lsp-metals provides this)
-                (xref-find-definitions s)))
-             (if (equal major-mode 'scala-mode)
-                 (progn (search-forward "(")
-                        (goto-char (- (point) 1))
-                        (thing-at-point 'sexp 'no-props))
-               (error "No class to stub at point"))
-             ))))
-    (goto-char (cdr (bounds-of-thing-at-point 'symbol)))
-    (insert (my/s-replace-regexp-all replacements class))
-    ))
-</pre>
-</div>
-
-<p>
-If you run this with your cursor on the <code>C</code> above, you will get:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-scala">C(b = B, d = 123, e = 123.123)
-</pre>
-</div>
-
-<p>
-You can see that it didn't stub <code>B</code>, but we can do it manually:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-scala">C(b = B(a = A, b = false), d = 123, e = 123.123)
-</pre>
-</div>
-
-<p>
-And one more on the <code>A</code>:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-scala">C(b = B(a = A(a = None), b = false), d = 123, e = 123.123)
-</pre>
-</div>
-
-<p>
-This is just a hack to speed up my work, so I didn't look into adding
-recursion (I must say that it satisfies me to fill manually, maybe
-because it also let me familiarize with the data structure for now?)
-and only few data types are supported (already <code>Either</code> requires some
-manual edits).
+Hope that helps somebody!
 </p>
 
 <p>
-All in all, it was a useful thought exercise to make Emacs take some
-error-prone work away from me :)
+Happy error-handling,
 </p>
 
 <p>
-Happy hacking!
+Andrea
 </p>
-<div id="footnotes">
-<h2 class="footnotes">Footnotes: </h2>
-<div id="text-footnotes">
 
-<div class="footdef"><sup><a id="fn.1" class="footnum" href="#fnr.1" role="doc-backlink">1</a></sup> <div class="footpara" role="doc-footnote"><p class="footpara">Sure
-I could generated the data with ScalaCheck and do some property based
-testing. But here I want to focus on creating a single example.</p></div></div>
-
-
-</div>
-</div>
 </div>
 </div>]]></description>
+      <pubDate>2024-02-19</pubDate>
+      <guid>http://ag91.github.io/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode</guid>
+    </item>
+    <item>
+      <title>Make Emacs help in creating an example of Scala classes</title>
+      <link>http://ag91.github.io/blog/2023/12/11/make-emacs-help-in-creating-an-example-of-scala-classes</link>
+      <description><![CDATA[]]></description>
       <pubDate>2023-12-11</pubDate>
       <guid>http://ag91.github.io/blog/2023/12/11/make-emacs-help-in-creating-an-example-of-scala-classes</guid>
     </item>
@@ -200,13 +137,6 @@ testing. But here I want to focus on creating a single example.</p></div></div>
       <description><![CDATA[]]></description>
       <pubDate>2023-03-24</pubDate>
       <guid>http://ag91.github.io/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer</guid>
-    </item>
-    <item>
-      <title>Doctest.el or testing your pure Elisp functions in your docstring</title>
-      <link>http://ag91.github.io/blog/2023/03/20/doctestel-or-testing-your-pure-elisp-functions-in-your-docstring</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-03-20</pubDate>
-      <guid>http://ag91.github.io/blog/2023/03/20/doctestel-or-testing-your-pure-elisp-functions-in-your-docstring</guid>
     </item>
   </channel>
 </rss>
