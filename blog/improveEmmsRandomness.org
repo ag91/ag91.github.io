@@ -1,0 +1,103 @@
+#+TITLE:       Improve EMMS randomness
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2024-03-02 Sat
+#+URI:         /blog/%y/%m/%d/improve-emms-randomness
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+I sometimes make Emacs play music for me (using [[https://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles/][emms, org-roam, mpv and
+YouTube]]).
+
+When I need a bit of spice, I tell EMMS to play tracks at random. And
+know what? Sometimes tracks repeat!
+
+I don't like that and since Emacs can change super easily, I opened a
+scratch buffer and modified EMMS like this:
+
+#+begin_src elisp :noeval
+(defvar emms-random-playlist-seen-indeces nil)
+
+(defun emms-playlist-select-random ()
+  "Select a random track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  ;; FIXME: This is rather inefficient.
+  (save-excursion
+    (let ((track-indices nil) next)
+      (goto-char (point-min))
+      (emms-walk-tracks
+	(setq track-indices (cons (point)
+				  track-indices)))
+      (setq track-indices (vconcat
+                           (seq-difference
+                            track-indices
+                            emms-random-playlist-seen-indeces)))
+      (if (equal track-indices [])
+          (progn
+            (emms-stop)
+            (setq emms-random-playlist-seen-indeces nil)
+            (message "Emms; Playlist finished"))
+        (setq next (aref track-indices
+		         (random (length track-indices))))
+        (add-to-list 'emms-random-playlist-seen-indeces next)
+        (emms-playlist-select next)))))
+#+end_src
+
+
+Essentially this just makes EMMS record tracks you have already heard
+on random selection (see =seq-difference= bit). This is good enough
+for me and hopefully the EMMS developers will improve the original
+function over time.
+
+Happy listening!
+
+P.S.: The diff from the original is:
+
+#+begin_src diff
+,*** /tmp/ediffN6IKmX	Sat Mar  2 23:56:04 2024
+--- /tmp/ediffnO7kjS	Sat Mar  2 23:56:04 2024
+,***************
+,*** 1,13 ****
+  (defun emms-playlist-select-random ()
+    "Select a random track in the current buffer."
+    (emms-playlist-ensure-playlist-buffer)
+    ;; FIXME: This is rather inefficient.
+    (save-excursion
+!     (let ((track-indices nil))
+        (goto-char (point-min))
+        (emms-walk-tracks
+       (setq track-indices (cons (point)
+   				 track-indices)))
+!       (setq track-indices (vconcat track-indices))
+!       (emms-playlist-select (aref track-indices
+! 				  (random (length track-indices)))))))
+--- 1,25 ----
++ (defvar emms-random-playlist-seen-indeces nil)
++ 
+  (defun emms-playlist-select-random ()
+    "Select a random track in the current buffer."
+    (emms-playlist-ensure-playlist-buffer)
+    ;; FIXME: This is rather inefficient.
+    (save-excursion
+!     (let ((track-indices nil) next)
+        (goto-char (point-min))
+        (emms-walk-tracks
+       (setq track-indices (cons (point)
+   				 track-indices)))
+!       (setq track-indices (vconcat
+!                            (seq-difference
+!                             track-indices
+!                             emms-random-playlist-seen-indeces)))
+!       (if (equal track-indices [])
+!           (progn
+!             (emms-stop)
+!             (setq emms-random-playlist-seen-indeces nil)
+!             (message "Emms; Playlist finished"))
+!         (setq next (aref track-indices
+! 		         (random (length track-indices))))
+!         (add-to-list 'emms-random-playlist-seen-indeces next)
+!         (emms-playlist-select next)))))
+\ No newline at end of file
+#+end_src
