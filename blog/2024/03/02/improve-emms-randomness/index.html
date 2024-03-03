@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Improve EMMS randomness - Where parallels cross</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Andrea" />
+    <meta name="keywords" content="emacs" />
+    <link rel="stylesheet" href="/media/css/main.css" type="text/css">
+    <link rel="stylesheet" href="/media/css/prettify.css" type="text/css">
+  </head>
+  <body class="container">
+    <div>
+      <header class="masthead">
+        <h1 class="masthead-title"><a href="/">Where parallels cross</a></h1>
+        <p>Interesting bits of life</p>
+        <ul>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/offering/">Offering</a></li>
+          <li><a href="/tags/">Tags</a></li>
+          <li><a href="/about/">About</a></li>
+          <li><a href="https://github.com/ag91">GitHub</a></li>
+          <li><a href="/rss.xml">RSS</a></li>
+        </ul>
+        <form method="get" id="searchform" action="//www.google.com/search">
+          <input type="text" class="field" name="q" id="s" placeholder="Search">
+          <input type="hidden" name="as_sitesearch" value="ag91.github.io">
+        </form>
+      </header>
+    </div>
+
+<div>
+<div class="post">
+<h1>Improve EMMS randomness</h1>
+<p>
+I sometimes make Emacs play music for me (using <a href="https://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles/">emms, org-roam, mpv and
+YouTube</a>).
+</p>
+
+<p>
+When I need a bit of spice, I tell EMMS to play tracks at random. And
+know what? Sometimes tracks repeat!
+</p>
+
+<p>
+I don't like that and since Emacs can change super easily, I opened a
+scratch buffer and modified EMMS like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-elisp">(defvar emms-random-playlist-seen-indeces nil)
+
+(defun emms-playlist-select-random ()
+  "Select a random track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  ;; FIXME: This is rather inefficient.
+  (save-excursion
+    (let ((track-indices nil) next)
+      (goto-char (point-min))
+      (emms-walk-tracks
+        (setq track-indices (cons (point)
+                                  track-indices)))
+      (setq track-indices (vconcat
+                           (seq-difference
+                            track-indices
+                            emms-random-playlist-seen-indeces)))
+      (if (equal track-indices [])
+          (progn
+            (emms-stop)
+            (setq emms-random-playlist-seen-indeces nil)
+            (message "Emms; Playlist finished"))
+        (setq next (aref track-indices
+                         (random (length track-indices))))
+        (add-to-list 'emms-random-playlist-seen-indeces next)
+        (emms-playlist-select next)))))
+</pre>
+</div>
+
+
+<p>
+Essentially this just makes EMMS record tracks you have already heard
+on random selection (see <code>seq-difference</code> bit). This is good enough
+for me and hopefully the EMMS developers will improve the original
+function over time.
+</p>
+
+<p>
+Happy listening!
+</p>
+
+<p>
+P.S.: The diff from the original is:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-diff">*** /tmp/ediffN6IKmX	Sat Mar  2 23:56:04 2024
+--- /tmp/ediffnO7kjS	Sat Mar  2 23:56:04 2024
+***************
+*** 1,13 ****
+  (defun emms-playlist-select-random ()
+    "Select a random track in the current buffer."
+    (emms-playlist-ensure-playlist-buffer)
+    ;; FIXME: This is rather inefficient.
+    (save-excursion
+!     (let ((track-indices nil))
+        (goto-char (point-min))
+        (emms-walk-tracks
+       (setq track-indices (cons (point)
+                                 track-indices)))
+!       (setq track-indices (vconcat track-indices))
+!       (emms-playlist-select (aref track-indices
+! 				  (random (length track-indices)))))))
+--- 1,25 ----
++ (defvar emms-random-playlist-seen-indeces nil)
++ 
+  (defun emms-playlist-select-random ()
+    "Select a random track in the current buffer."
+    (emms-playlist-ensure-playlist-buffer)
+    ;; FIXME: This is rather inefficient.
+    (save-excursion
+!     (let ((track-indices nil) next)
+        (goto-char (point-min))
+        (emms-walk-tracks
+       (setq track-indices (cons (point)
+                                 track-indices)))
+!       (setq track-indices (vconcat
+!                            (seq-difference
+!                             track-indices
+!                             emms-random-playlist-seen-indeces)))
+!       (if (equal track-indices [])
+!           (progn
+!             (emms-stop)
+!             (setq emms-random-playlist-seen-indeces nil)
+!             (message "Emms; Playlist finished"))
+!         (setq next (aref track-indices
+! 		         (random (length track-indices))))
+!         (add-to-list 'emms-random-playlist-seen-indeces next)
+!         (emms-playlist-select next)))))
+\ No newline at end of file
+</pre>
+</div>
+
+</div>
+</div>
+    <div>
+      <div class="post-meta">
+        <span title="post date" class="post-info">2024-03-02</span>
+        <span title="last modification date" class="post-info">2024-03-03</span>
+        <span title="tags" class="post-info"><a href="/tags/emacs/">emacs</a></span>
+        <span title="author" class="post-info">Andrea</span>
+      </div>
+      <script src="//code.jquery.com/jquery-latest.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js"></script>
+      <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script src="/media/js/main.js"></script>
+      <div class="footer">
+        <p>Generated by <a href="http://www.gnu.org/software/emacs/">Emacs</a> 28.x (<a href="http://orgmode.org">Org mode</a> 9.x)</p>
+        <p>
+          Copyright &copy; 2012 - <span id="footerYear"></span> <a href="mailto:andrea-dev &lt;at&gt; hotmail &lt;dot&gt; com">Andrea</a>
+          &nbsp;&nbsp;-&nbsp;&nbsp;
+          Powered by <a href="https://github.com/kelvinh/org-page" target="_blank">org-page</a>
+          <script type="text/javascript">document.getElementById("footerYear").innerHTML = (new Date()).getFullYear();</script>
+        </p>
+      </div>
+    </div>
+
+  </body>
+</html>

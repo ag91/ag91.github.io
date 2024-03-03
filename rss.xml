@@ -4,78 +4,133 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Mon, 19 Feb 2024 23:43:24 GMT</pubDate>
-    <lastBuildDate>Mon, 19 Feb 2024 23:43:24 GMT</lastBuildDate>
+    <pubDate>Sun, 03 Mar 2024 00:01:12 GMT</pubDate>
+    <lastBuildDate>Sun, 03 Mar 2024 00:01:12 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>A quick-fix for golden-ratio and lsp-mode</title>
-      <link>http://ag91.github.io/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode</link>
+      <title>Improve EMMS randomness</title>
+      <link>http://ag91.github.io/blog/2024/03/02/improve-emms-randomness</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>A quick-fix for golden-ratio and lsp-mode</h1>
+<h1>Improve EMMS randomness</h1>
 <p>
-I have been back into Scala development lately and I have been
-enjoying using <a href="https://github.com/emacs-lsp/lsp-metals">lsp-metals.el</a>.
+I sometimes make Emacs play music for me (using <a href="https://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles/">emms, org-roam, mpv and
+YouTube</a>).
 </p>
 
 <p>
-Coding is a lot about trial and error and my compiler errors are
-inflating: they became long enough to make my windows jumpy (as you
-can see in the video below)!
+When I need a bit of spice, I tell EMMS to play tracks at random. And
+know what? Sometimes tracks repeat!
 </p>
 
 <p>
-<a href="/assets/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode/goldenratioslp.mp4">/assets/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode/goldenratioslp.mp4</a>
-</p>
-
-<p>
-I use <a href="https://github.com/roman/golden-ratio.el">golden-ratio</a> to resize my windows automatically in a way
-pleasant to the eye. Unluckily this mode seems to have issues with the
-way lsp-mode logs errors.
-</p>
-
-<p>
-I couldn't dig into this as much as I wanted (very short on time these
-days! Actually a year and a half so far of a really demanding joy).
-But! I hacked my config enough to make it work:
+I don't like that and since Emacs can change super easily, I opened a
+scratch buffer and modified EMMS like this:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-elisp">(use-package golden-ratio
-  :diminish golden-ratio-mode
-  :defer 1
-  :config
-  (golden-ratio-mode 1)
-  ;; this fixes issue with lsp-mode minibuffer logs (which made my windows jump like crazy)
-  (remove-hook 'window-configuration-change-hook 'golden-ratio)
-  (add-to-list 'golden-ratio-extra-commands 'avy-goto-char-timer))
+<pre class="src src-elisp">(defvar emms-random-playlist-seen-indeces nil)
+
+(defun emms-playlist-select-random ()
+  "Select a random track in the current buffer."
+  (emms-playlist-ensure-playlist-buffer)
+  ;; FIXME: This is rather inefficient.
+  (save-excursion
+    (let ((track-indices nil) next)
+      (goto-char (point-min))
+      (emms-walk-tracks
+        (setq track-indices (cons (point)
+                                  track-indices)))
+      (setq track-indices (vconcat
+                           (seq-difference
+                            track-indices
+                            emms-random-playlist-seen-indeces)))
+      (if (equal track-indices [])
+          (progn
+            (emms-stop)
+            (setq emms-random-playlist-seen-indeces nil)
+            (message "Emms; Playlist finished"))
+        (setq next (aref track-indices
+                         (random (length track-indices))))
+        (add-to-list 'emms-random-playlist-seen-indeces next)
+        (emms-playlist-select next)))))
 </pre>
 </div>
 
+
 <p>
-The idea is that the setting of <code>window-configuration-change-hook</code> is
-covering what lsp-mode does when it refreshes the minibuffer, so we
-disable that hook. That has side effects (for example I use
-<code>avy-goto-char-timer</code> a lot and without that hook the window is not
-resized). As you can see above, <code>golden-ratio</code> is configurable, so I
-added the command explicitly.
+Essentially this just makes EMMS record tracks you have already heard
+on random selection (see <code>seq-difference</code> bit). This is good enough
+for me and hopefully the EMMS developers will improve the original
+function over time.
 </p>
 
 <p>
-Hope that helps somebody!
+Happy listening!
 </p>
 
 <p>
-Happy error-handling,
+P.S.: The diff from the original is:
 </p>
 
-<p>
-Andrea
-</p>
+<div class="org-src-container">
+<pre class="src src-diff">*** /tmp/ediffN6IKmX	Sat Mar  2 23:56:04 2024
+--- /tmp/ediffnO7kjS	Sat Mar  2 23:56:04 2024
+***************
+*** 1,13 ****
+  (defun emms-playlist-select-random ()
+    "Select a random track in the current buffer."
+    (emms-playlist-ensure-playlist-buffer)
+    ;; FIXME: This is rather inefficient.
+    (save-excursion
+!     (let ((track-indices nil))
+        (goto-char (point-min))
+        (emms-walk-tracks
+       (setq track-indices (cons (point)
+                                 track-indices)))
+!       (setq track-indices (vconcat track-indices))
+!       (emms-playlist-select (aref track-indices
+! 				  (random (length track-indices)))))))
+--- 1,25 ----
++ (defvar emms-random-playlist-seen-indeces nil)
++ 
+  (defun emms-playlist-select-random ()
+    "Select a random track in the current buffer."
+    (emms-playlist-ensure-playlist-buffer)
+    ;; FIXME: This is rather inefficient.
+    (save-excursion
+!     (let ((track-indices nil) next)
+        (goto-char (point-min))
+        (emms-walk-tracks
+       (setq track-indices (cons (point)
+                                 track-indices)))
+!       (setq track-indices (vconcat
+!                            (seq-difference
+!                             track-indices
+!                             emms-random-playlist-seen-indeces)))
+!       (if (equal track-indices [])
+!           (progn
+!             (emms-stop)
+!             (setq emms-random-playlist-seen-indeces nil)
+!             (message "Emms; Playlist finished"))
+!         (setq next (aref track-indices
+! 		         (random (length track-indices))))
+!         (add-to-list 'emms-random-playlist-seen-indeces next)
+!         (emms-playlist-select next)))))
+\ No newline at end of file
+</pre>
+</div>
 
 </div>
 </div>]]></description>
+      <pubDate>2024-03-03</pubDate>
+      <guid>http://ag91.github.io/blog/2024/03/02/improve-emms-randomness</guid>
+    </item>
+    <item>
+      <title>A quick-fix for golden-ratio and lsp-mode</title>
+      <link>http://ag91.github.io/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode</link>
+      <description><![CDATA[]]></description>
       <pubDate>2024-02-19</pubDate>
       <guid>http://ag91.github.io/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode</guid>
     </item>
@@ -134,13 +189,6 @@ Andrea
       <description><![CDATA[]]></description>
       <pubDate>2023-05-25</pubDate>
       <guid>http://ag91.github.io/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block</guid>
-    </item>
-    <item>
-      <title>Moldable Emacs: what is the public API of this Elisp buffer?</title>
-      <link>http://ag91.github.io/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-03-24</pubDate>
-      <guid>http://ag91.github.io/blog/2023/03/24/moldable-emacs-what-is-the-public-api-of-this-elisp-buffer</guid>
     </item>
   </channel>
 </rss>
