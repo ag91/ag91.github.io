@@ -4,126 +4,80 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 03 Mar 2024 00:01:12 GMT</pubDate>
-    <lastBuildDate>Sun, 03 Mar 2024 00:01:12 GMT</lastBuildDate>
+    <pubDate>Sun, 16 Jun 2024 17:53:54 BST</pubDate>
+    <lastBuildDate>Sun, 16 Jun 2024 17:53:54 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Improve EMMS randomness</title>
-      <link>http://ag91.github.io/blog/2024/03/02/improve-emms-randomness</link>
+      <title>YASnippet list also my html email questions please!</title>
+      <link>http://ag91.github.io/blog/2024/06/16/yasnippet-list-also-my-html-email-questions-please</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>Improve EMMS randomness</h1>
+<h1>YASnippet list also my html email questions please!</h1>
 <p>
-I sometimes make Emacs play music for me (using <a href="https://ag91.github.io/blog/2022/05/02/emms-+-org-roam-youtube-playlists-with-titles/">emms, org-roam, mpv and
-YouTube</a>).
+In <a href="https://ag91.github.io/blog/2020/07/31/yasnippet-list-my-email-questions-please/">an old post</a> I shared a little hack to highlight the questions to
+answer in an email. It is still something I use, so that code was indeed valuable.
 </p>
 
 <p>
-When I need a bit of spice, I tell EMMS to play tracks at random. And
-know what? Sometimes tracks repeat!
+Today I realized that html messages don't have a text body <code>:body-txt</code>
+but a <code>:body-html</code>, which broke my code.
 </p>
 
 <p>
-I don't like that and since Emacs can change super easily, I opened a
-scratch buffer and modified EMMS like this:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-elisp">(defvar emms-random-playlist-seen-indeces nil)
-
-(defun emms-playlist-select-random ()
-  "Select a random track in the current buffer."
-  (emms-playlist-ensure-playlist-buffer)
-  ;; FIXME: This is rather inefficient.
-  (save-excursion
-    (let ((track-indices nil) next)
-      (goto-char (point-min))
-      (emms-walk-tracks
-        (setq track-indices (cons (point)
-                                  track-indices)))
-      (setq track-indices (vconcat
-                           (seq-difference
-                            track-indices
-                            emms-random-playlist-seen-indeces)))
-      (if (equal track-indices [])
-          (progn
-            (emms-stop)
-            (setq emms-random-playlist-seen-indeces nil)
-            (message "Emms; Playlist finished"))
-        (setq next (aref track-indices
-                         (random (length track-indices))))
-        (add-to-list 'emms-random-playlist-seen-indeces next)
-        (emms-playlist-select next)))))
-</pre>
-</div>
-
-
-<p>
-Essentially this just makes EMMS record tracks you have already heard
-on random selection (see <code>seq-difference</code> bit). This is good enough
-for me and hopefully the EMMS developers will improve the original
-function over time.
-</p>
-
-<p>
-Happy listening!
-</p>
-
-<p>
-P.S.: The diff from the original is:
+Below the improvement which relies on the useful <code>html2text</code> function.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-diff">*** /tmp/ediffN6IKmX	Sat Mar  2 23:56:04 2024
---- /tmp/ediffnO7kjS	Sat Mar  2 23:56:04 2024
-***************
-*** 1,13 ****
-  (defun emms-playlist-select-random ()
-    "Select a random track in the current buffer."
-    (emms-playlist-ensure-playlist-buffer)
-    ;; FIXME: This is rather inefficient.
-    (save-excursion
-!     (let ((track-indices nil))
-        (goto-char (point-min))
-        (emms-walk-tracks
-       (setq track-indices (cons (point)
-                                 track-indices)))
-!       (setq track-indices (vconcat track-indices))
-!       (emms-playlist-select (aref track-indices
-! 				  (random (length track-indices)))))))
---- 1,25 ----
-+ (defvar emms-random-playlist-seen-indeces nil)
-+ 
-  (defun emms-playlist-select-random ()
-    "Select a random track in the current buffer."
-    (emms-playlist-ensure-playlist-buffer)
-    ;; FIXME: This is rather inefficient.
-    (save-excursion
-!     (let ((track-indices nil) next)
-        (goto-char (point-min))
-        (emms-walk-tracks
-       (setq track-indices (cons (point)
-                                 track-indices)))
-!       (setq track-indices (vconcat
-!                            (seq-difference
-!                             track-indices
-!                             emms-random-playlist-seen-indeces)))
-!       (if (equal track-indices [])
-!           (progn
-!             (emms-stop)
-!             (setq emms-random-playlist-seen-indeces nil)
-!             (message "Emms; Playlist finished"))
-!         (setq next (aref track-indices
-! 		         (random (length track-indices))))
-!         (add-to-list 'emms-random-playlist-seen-indeces next)
-!         (emms-playlist-select next)))))
-\ No newline at end of file
+<pre class="src src-elisp">(defun my/pick-questions-in-mail ()
+  (interactive)
+  (-some--&gt; mu4e-compose-parent-message
+    (or (mu4e-message-field it :body-txt)
+        (with-temp-buffer
+          (insert (mu4e-message-field it :body-html))
+          (html2text)
+          ;; html2text drops any meaningful separator of the html
+          (--&gt; (buffer-string)
+               (s-replace-all
+                '(("." . ".\n")
+                  ("?" . "?\n")
+                  ("!" . "!\n"))
+                it)
+               (s-truncate
+                (or
+                 ;; trying to skip my referenced message that starts with On 2 Jun 2024 12:35,
+                 (caar (s-matched-positions-all "On [0-9] ... [0-9]\\{4\\} [0-9]\\{2\\}:[0-9]\\{2\\}," it))
+                 (length it))
+                it))))
+    (s-split "\n" it)
+    (--remove (s-prefix-p "&gt; " it) it)
+    (s-join " \n " it)
+    my/pick-questions-in-text))
 </pre>
 </div>
+
+<p>
+Note the hacky adding of newlines and trimming of your own messages,
+because we want to respond only the sender questions not our own.
+</p>
+
+<p>
+Happy emailing,
+</p>
+
+<p>
+Andrea
+</p>
 
 </div>
 </div>]]></description>
+      <pubDate>2024-06-16</pubDate>
+      <guid>http://ag91.github.io/blog/2024/06/16/yasnippet-list-also-my-html-email-questions-please</guid>
+    </item>
+    <item>
+      <title>Improve EMMS randomness</title>
+      <link>http://ag91.github.io/blog/2024/03/02/improve-emms-randomness</link>
+      <description><![CDATA[]]></description>
       <pubDate>2024-03-03</pubDate>
       <guid>http://ag91.github.io/blog/2024/03/02/improve-emms-randomness</guid>
     </item>
@@ -182,13 +136,6 @@ P.S.: The diff from the original is:
       <description><![CDATA[]]></description>
       <pubDate>2023-06-03</pubDate>
       <guid>http://ag91.github.io/blog/2023/06/02/fs2-vs-zio-streams-with-ammonite-a-syntax-comparison</guid>
-    </item>
-    <item>
-      <title>org-blk-uri a little module to insert a file or url as an Org Mode src block</title>
-      <link>http://ag91.github.io/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-05-25</pubDate>
-      <guid>http://ag91.github.io/blog/2023/05/25/org-blk-uri-a-little-module-to-insert-a-file-or-url-as-an-org-mode-src-block</guid>
     </item>
   </channel>
 </rss>
