@@ -4,8 +4,8 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 09 Jul 2024 23:44:26 BST</pubDate>
-    <lastBuildDate>Tue, 09 Jul 2024 23:44:26 BST</lastBuildDate>
+    <pubDate>Tue, 09 Jul 2024 23:45:46 BST</pubDate>
+    <lastBuildDate>Tue, 09 Jul 2024 23:45:46 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
@@ -16,7 +16,7 @@
 <h1>I am keeping an up to date ob-http fork</h1>
 <p>
 Just a FYI: I decided to merge <a href="https://github.com/zweifisch/ob-http/pulls">most of the proposed changes</a> to the
-fantastic <a href="https://github.com/zweifisch/ob-http/pulls">ob-http</a> in the fork I am maintaining for myself.
+fantastic <a href="https://github.com/zweifisch/ob-http/pulls">ob-http</a> in <a href="https://github.com/ag91/ob-http/">the fork I am maintaining for myself</a>.
 </p>
 
 <p>
