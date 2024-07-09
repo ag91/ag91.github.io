@@ -4,73 +4,90 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sun, 16 Jun 2024 17:53:54 BST</pubDate>
-    <lastBuildDate>Sun, 16 Jun 2024 17:53:54 BST</lastBuildDate>
+    <pubDate>Tue, 09 Jul 2024 23:44:26 BST</pubDate>
+    <lastBuildDate>Tue, 09 Jul 2024 23:44:26 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>YASnippet list also my html email questions please!</title>
-      <link>http://ag91.github.io/blog/2024/06/16/yasnippet-list-also-my-html-email-questions-please</link>
+      <title>I am keeping an up to date ob-http fork</title>
+      <link>http://ag91.github.io/blog/2024/07/09/i-am-keeping-an-up-to-date-ob-http-fork</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>YASnippet list also my html email questions please!</h1>
+<h1>I am keeping an up to date ob-http fork</h1>
 <p>
-In <a href="https://ag91.github.io/blog/2020/07/31/yasnippet-list-my-email-questions-please/">an old post</a> I shared a little hack to highlight the questions to
-answer in an email. It is still something I use, so that code was indeed valuable.
+Just a FYI: I decided to merge <a href="https://github.com/zweifisch/ob-http/pulls">most of the proposed changes</a> to the
+fantastic <a href="https://github.com/zweifisch/ob-http/pulls">ob-http</a> in the fork I am maintaining for myself.
 </p>
 
 <p>
-Today I realized that html messages don't have a text body <code>:body-txt</code>
-but a <code>:body-html</code>, which broke my code.
-</p>
-
-<p>
-Below the improvement which relies on the useful <code>html2text</code> function.
+If you want a fresher ob-http, just run:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-elisp">(defun my/pick-questions-in-mail ()
-  (interactive)
-  (-some--&gt; mu4e-compose-parent-message
-    (or (mu4e-message-field it :body-txt)
-        (with-temp-buffer
-          (insert (mu4e-message-field it :body-html))
-          (html2text)
-          ;; html2text drops any meaningful separator of the html
-          (--&gt; (buffer-string)
-               (s-replace-all
-                '(("." . ".\n")
-                  ("?" . "?\n")
-                  ("!" . "!\n"))
-                it)
-               (s-truncate
-                (or
-                 ;; trying to skip my referenced message that starts with On 2 Jun 2024 12:35,
-                 (caar (s-matched-positions-all "On [0-9] ... [0-9]\\{4\\} [0-9]\\{2\\}:[0-9]\\{2\\}," it))
-                 (length it))
-                it))))
-    (s-split "\n" it)
-    (--remove (s-prefix-p "&gt; " it) it)
-    (s-join " \n " it)
-    my/pick-questions-in-text))
+<pre class="src src-elisp">(unless (package-installed-p 'vc-use-package)
+    (package-vc-install "https://github.com/slotThe/vc-use-package"))
+
+(use-package ob-http
+  :vc (:repo ag91/ob-http :fetcher github))
 </pre>
 </div>
 
 <p>
-Note the hacky adding of newlines and trimming of your own messages,
-because we want to respond only the sender questions not our own.
+I recently wanted to customize ob-http and seen that there has been no
+further development from years so far, I thought to update my fork.
 </p>
 
 <p>
-Happy emailing,
+I added also a way to upload a local file with a new <code>:upload-file</code>
+parameter to the source blocks:
 </p>
 
+<div class="org-src-container">
+<pre class="src src-org">#+BEGIN_SRC http :pretty :file :upload-file /tmp/my.txt
+POST https://httpbin.org/anything
+Content-Type: text/plain
+Content-Disposition: attachment; filename="my.txt"
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+{
+  "args": {},
+  "data": "* Etiam vel tortor sodales tellus ultricies commodo.\n",
+  "files": {},
+  "form": {},
+  "headers": {
+    "Accept": "*/*",
+    "Content-Disposition": "attachment; filename=\"my.txt\"",
+    "Content-Length": "53",
+    "Content-Type": "text/plain",
+    "Host": "httpbin.org",
+    "User-Agent": "curl/7.81.0",
+    "X-Amzn-Trace-Id": "Root=1-668db1b3-0e94aefe3fd0945f08d2f2fb"
+  },
+  "json": null,
+  "method": "POST",
+  "origin": "81.132.246.180",
+  "url": "https://httpbin.org/anything"
+}
+#+end_example
+
+</pre>
+</div>
+
 <p>
-Andrea
+Happy HTTP requesting!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2024-07-09</pubDate>
+      <guid>http://ag91.github.io/blog/2024/07/09/i-am-keeping-an-up-to-date-ob-http-fork</guid>
+    </item>
+    <item>
+      <title>YASnippet list also my html email questions please!</title>
+      <link>http://ag91.github.io/blog/2024/06/16/yasnippet-list-also-my-html-email-questions-please</link>
+      <description><![CDATA[]]></description>
       <pubDate>2024-06-16</pubDate>
       <guid>http://ag91.github.io/blog/2024/06/16/yasnippet-list-also-my-html-email-questions-please</guid>
     </item>
@@ -129,13 +146,6 @@ Andrea
       <description><![CDATA[]]></description>
       <pubDate>2023-06-06</pubDate>
       <guid>http://ag91.github.io/blog/2023/06/06/ob-gore-literate-go-run-via-the-gore-repl</guid>
-    </item>
-    <item>
-      <title>FS2 vs ZIO streams with Ammonite: a syntax comparison</title>
-      <link>http://ag91.github.io/blog/2023/06/02/fs2-vs-zio-streams-with-ammonite-a-syntax-comparison</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-06-03</pubDate>
-      <guid>http://ag91.github.io/blog/2023/06/02/fs2-vs-zio-streams-with-ammonite-a-syntax-comparison</guid>
     </item>
   </channel>
 </rss>
