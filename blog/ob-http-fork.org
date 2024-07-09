@@ -1,0 +1,62 @@
+#+TITLE:       I am keeping an up to date ob-http fork
+#+AUTHOR:      Andrea
+#+EMAIL:       agiugliano91@gmail.com
+#+DATE:        2024-07-09 Tue
+#+URI:         /blog/%y/%m/%d/i-am-keeping-an-up-to-date-ob-http-fork
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+Just a FYI: I decided to merge [[https://github.com/zweifisch/ob-http/pulls][most of the proposed changes]] to the
+fantastic [[https://github.com/zweifisch/ob-http/pulls][ob-http]] in [[https://github.com/ag91/ob-http/][the fork I am maintaining for myself]].
+
+If you want a fresher ob-http, just run:
+
+#+begin_src elisp
+(unless (package-installed-p 'vc-use-package)
+    (package-vc-install "https://github.com/slotThe/vc-use-package"))
+
+(use-package ob-http
+  :vc (:repo ag91/ob-http :fetcher github))
+#+end_src
+
+I recently wanted to customize ob-http and seen that there has been no
+further development from years so far, I thought to update my fork.
+
+I added also a way to upload a local file with a new =:upload-file=
+parameter to the source blocks:
+
+#+begin_src org
+,#+BEGIN_SRC http :pretty :file :upload-file /tmp/my.txt
+POST https://httpbin.org/anything
+Content-Type: text/plain
+Content-Disposition: attachment; filename="my.txt"
+,#+END_SRC
+
+,#+RESULTS:
+,#+begin_example
+{
+  "args": {},
+  "data": "* Etiam vel tortor sodales tellus ultricies commodo.\n",
+  "files": {},
+  "form": {},
+  "headers": {
+    "Accept": "*/*",
+    "Content-Disposition": "attachment; filename=\"my.txt\"",
+    "Content-Length": "53",
+    "Content-Type": "text/plain",
+    "Host": "httpbin.org",
+    "User-Agent": "curl/7.81.0",
+    "X-Amzn-Trace-Id": "Root=1-668db1b3-0e94aefe3fd0945f08d2f2fb"
+  },
+  "json": null,
+  "method": "POST",
+  "origin": "81.132.246.180",
+  "url": "https://httpbin.org/anything"
+}
+,#+end_example
+
+#+end_src
+
+Happy HTTP requesting!
