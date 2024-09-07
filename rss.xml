@@ -4,83 +4,69 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Tue, 09 Jul 2024 23:45:46 BST</pubDate>
-    <lastBuildDate>Tue, 09 Jul 2024 23:45:46 BST</lastBuildDate>
+    <pubDate>Sat, 07 Sep 2024 13:46:49 BST</pubDate>
+    <lastBuildDate>Sat, 07 Sep 2024 13:46:49 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>I am keeping an up to date ob-http fork</title>
-      <link>http://ag91.github.io/blog/2024/07/09/i-am-keeping-an-up-to-date-ob-http-fork</link>
+      <title>How to setup python-lsp-server with lsp-mode using pipx</title>
+      <link>http://ag91.github.io/blog/2024/09/07/how-to-setup-python-lsp-server-with-lsp-mode-using-pipx</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>I am keeping an up to date ob-http fork</h1>
+<h1>How to setup python-lsp-server with lsp-mode using pipx</h1>
 <p>
-Just a FYI: I decided to merge <a href="https://github.com/zweifisch/ob-http/pulls">most of the proposed changes</a> to the
-fantastic <a href="https://github.com/zweifisch/ob-http/pulls">ob-http</a> in <a href="https://github.com/ag91/ob-http/">the fork I am maintaining for myself</a>.
+I have been spending a little time setting up my python environment
+with lsp-mode and since I struggled a bit, I thought to share it here.
 </p>
 
 <p>
-If you want a fresher ob-http, just run:
+Pipx allows you to have python executable running in virtual
+environments, which is nice to skip all the mess of pip and system
+installed packages.
+</p>
+
+<p>
+In elisp the installation translates to:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-elisp">(unless (package-installed-p 'vc-use-package)
-    (package-vc-install "https://github.com/slotThe/vc-use-package"))
+<pre class="src src-elisp">(unless (executable-find "pipx")
+  (if (eq 'darwin system-type)
+      (async-shell-command
+       (concat
+        (if (eq 'darwin system-type) "brew" "sudo apt")
+        " install pipx; pipx ensurepath"))
+    ))
+(add-to-list 'exec-path "~/.local/bin/")
 
-(use-package ob-http
-  :vc (:repo ag91/ob-http :fetcher github))
+(unless (executable-find "pylsp")
+    (async-shell-command "pipx install \"python-lsp-server[all]\"; pipx inject python-lsp-server pylsp-rope pylsp-mypy;"))
 </pre>
 </div>
 
 <p>
-I recently wanted to customize ob-http and seen that there has been no
-further development from years so far, I thought to update my fork.
+The last elisp form is to install python-lsp-server with rope and mypy
+support. The concept is that you first install pylsp in a virtual
+environment, and then in the same you want to add more packages.
 </p>
 
 <p>
-I added also a way to upload a local file with a new <code>:upload-file</code>
-parameter to the source blocks:
+If you now enable lsp mode in your python buffer, you can using rope refactorings (not explored mypy capabilities yet).
 </p>
 
-<div class="org-src-container">
-<pre class="src src-org">#+BEGIN_SRC http :pretty :file :upload-file /tmp/my.txt
-POST https://httpbin.org/anything
-Content-Type: text/plain
-Content-Disposition: attachment; filename="my.txt"
-#+END_SRC
-
-#+RESULTS:
-#+begin_example
-{
-  "args": {},
-  "data": "* Etiam vel tortor sodales tellus ultricies commodo.\n",
-  "files": {},
-  "form": {},
-  "headers": {
-    "Accept": "*/*",
-    "Content-Disposition": "attachment; filename=\"my.txt\"",
-    "Content-Length": "53",
-    "Content-Type": "text/plain",
-    "Host": "httpbin.org",
-    "User-Agent": "curl/7.81.0",
-    "X-Amzn-Trace-Id": "Root=1-668db1b3-0e94aefe3fd0945f08d2f2fb"
-  },
-  "json": null,
-  "method": "POST",
-  "origin": "81.132.246.180",
-  "url": "https://httpbin.org/anything"
-}
-#+end_example
-
-</pre>
-</div>
-
 <p>
-Happy HTTP requesting!
+Happy hacking!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2024-09-07</pubDate>
+      <guid>http://ag91.github.io/blog/2024/09/07/how-to-setup-python-lsp-server-with-lsp-mode-using-pipx</guid>
+    </item>
+    <item>
+      <title>I am keeping an up to date ob-http fork</title>
+      <link>http://ag91.github.io/blog/2024/07/09/i-am-keeping-an-up-to-date-ob-http-fork</link>
+      <description><![CDATA[]]></description>
       <pubDate>2024-07-09</pubDate>
       <guid>http://ag91.github.io/blog/2024/07/09/i-am-keeping-an-up-to-date-ob-http-fork</guid>
     </item>
@@ -139,13 +125,6 @@ Happy HTTP requesting!
       <description><![CDATA[]]></description>
       <pubDate>2023-06-08</pubDate>
       <guid>http://ag91.github.io/blog/2023/06/08/a-little-exploration-of-go-from-a-clojure-perspective</guid>
-    </item>
-    <item>
-      <title>ob-gore: literate Go run via the Gore REPL</title>
-      <link>http://ag91.github.io/blog/2023/06/06/ob-gore-literate-go-run-via-the-gore-repl</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-06-06</pubDate>
-      <guid>http://ag91.github.io/blog/2023/06/06/ob-gore-literate-go-run-via-the-gore-repl</guid>
     </item>
   </channel>
 </rss>
