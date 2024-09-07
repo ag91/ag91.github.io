@@ -19,13 +19,13 @@ experience, so my boat is well equipped for this wavy sea. Also I have
 a great tool: in both projects I just had to rely on my Emacs for a
 reliable code-compass.
 
-So armed of [[org-ql-search:][hotspots]], [[org-ql-search:][knowledge]] and [[org-ql-search:][communication]] graphs with a bit of
-[[org-ql-search:][churn]], [[org-ql-search:][fragmentation]] and [[https://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/][complexity]] on the side, I could get up and
+So armed of hotspots, knowledge and communication graphs with a bit of
+churn, fragmentation and [[https://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/][complexity]] on the side, I could get up and
 running faster than ever! Yay!!
 
 One thing I have been missing is to explore graphically who dedicated
 themselves to the lovely art of refactoring. Indeed, the project on
-which I rely, the fantastic [[org-ql-search:][code-maat]], offers a refactoring analysis.
+which I rely, the fantastic code-maat, offers a refactoring analysis.
 This finds who has _deleted_ most lines in a file using Git commits
 information.
 
