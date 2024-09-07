@@ -1,0 +1,40 @@
+#+TITLE:       How to setup python-lsp-server with lsp-mode using pipx
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea@hotmail.com
+#+DATE:        2024-09-07 Sat
+#+URI:         /blog/%y/%m/%d/how-to-setup-python-lsp-server-with-lsp-mode-using-pipx
+#+KEYWORDS:    python, emacs
+#+TAGS:        python, emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+I have been spending a little time setting up my python environment
+with lsp-mode and since I struggled a bit, I thought to share it here.
+
+Pipx allows you to have python executable running in virtual
+environments, which is nice to skip all the mess of pip and system
+installed packages.
+
+In elisp the installation translates to:
+
+#+begin_src elisp :noeval
+(unless (executable-find "pipx")
+  (if (eq 'darwin system-type)
+      (async-shell-command
+       (concat
+        (if (eq 'darwin system-type) "brew" "sudo apt")
+        " install pipx; pipx ensurepath"))
+    ))
+(add-to-list 'exec-path "~/.local/bin/")
+
+(unless (executable-find "pylsp")
+    (async-shell-command "pipx install \"python-lsp-server[all]\"; pipx inject python-lsp-server pylsp-rope pylsp-mypy;"))
+#+end_src
+
+The last elisp form is to install python-lsp-server with rope and mypy
+support. The concept is that you first install pylsp in a virtual
+environment, and then in the same you want to add more packages.
+
+If you now enable lsp mode in your python buffer, you can using rope refactorings (not explored mypy capabilities yet).
+
+Happy hacking!
