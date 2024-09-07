@@ -4,62 +4,81 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 07 Sep 2024 13:46:49 BST</pubDate>
-    <lastBuildDate>Sat, 07 Sep 2024 13:46:49 BST</lastBuildDate>
+    <pubDate>Sat, 07 Sep 2024 16:16:02 BST</pubDate>
+    <lastBuildDate>Sat, 07 Sep 2024 16:16:02 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>How to setup python-lsp-server with lsp-mode using pipx</title>
-      <link>http://ag91.github.io/blog/2024/09/07/how-to-setup-python-lsp-server-with-lsp-mode-using-pipx</link>
+      <title>Emacs as your code-compass: who is the person who refactored most in this project?</title>
+      <link>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>How to setup python-lsp-server with lsp-mode using pipx</h1>
+<h1>Emacs as your code-compass: who is the person who refactored most in this project?</h1>
 <p>
-I have been spending a little time setting up my python environment
-with lsp-mode and since I struggled a bit, I thought to share it here.
+It is a while I don't post about <a href="https://github.com/ag91/code-compass">code-compass</a>. I recently jumped back
+in the consulting world and it is a hectic life! In a couple of months
+I moved from a project to another. Furthermore, I cannot say I got
+somebody introducing me to the software architecture of these projects
+(or even their status).
 </p>
 
 <p>
-Pipx allows you to have python executable running in virtual
-environments, which is nice to skip all the mess of pip and system
-installed packages.
+Lucky me these years (from Ph.D. to industry times) have given me some
+experience, so my boat is well equipped for this wavy sea. Also I have
+a great tool: in both projects I just had to rely on my Emacs for a
+reliable code-compass.
 </p>
 
 <p>
-In elisp the installation translates to:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-elisp">(unless (executable-find "pipx")
-  (if (eq 'darwin system-type)
-      (async-shell-command
-       (concat
-        (if (eq 'darwin system-type) "brew" "sudo apt")
-        " install pipx; pipx ensurepath"))
-    ))
-(add-to-list 'exec-path "~/.local/bin/")
-
-(unless (executable-find "pylsp")
-    (async-shell-command "pipx install \"python-lsp-server[all]\"; pipx inject python-lsp-server pylsp-rope pylsp-mypy;"))
-</pre>
-</div>
-
-<p>
-The last elisp form is to install python-lsp-server with rope and mypy
-support. The concept is that you first install pylsp in a virtual
-environment, and then in the same you want to add more packages.
+So armed of hotspots, knowledge and communication graphs with a bit of
+churn, fragmentation and <a href="https://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/">complexity</a> on the side, I could get up and
+running faster than ever! Yay!!
 </p>
 
 <p>
-If you now enable lsp mode in your python buffer, you can using rope refactorings (not explored mypy capabilities yet).
+One thing I have been missing is to explore graphically who dedicated
+themselves to the lovely art of refactoring. Indeed, the project on
+which I rely, the fantastic code-maat, offers a refactoring analysis.
+This finds who has <span class="underline">deleted</span> most lines in a file using Git commits
+information.
 </p>
 
 <p>
-Happy hacking!
+Naturally deletions are an approximation for refactoring, but good
+enough as less code is always an improvement (at least for our eyes).
+</p>
+
+<p>
+Well there I go: I added it just now. It was pretty easy because is
+super-similar to the knowledge graph implementation. So a tweak here
+and there and it is now available.
+</p>
+
+<p>
+Below a video that gives you a sense of what it is about.
+</p>
+
+<p>
+<a href="/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4">/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4</a>
+</p>
+
+<p>
+If you want to try that yourself it is easy: just try out <a href="https://github.com/ag91/code-compass">code-compass</a> ;)
+</p>
+
+<p>
+Happy refactoring!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2024-09-07</pubDate>
+      <guid>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</guid>
+    </item>
+    <item>
+      <title>How to setup python-lsp-server with lsp-mode using pipx</title>
+      <link>http://ag91.github.io/blog/2024/09/07/how-to-setup-python-lsp-server-with-lsp-mode-using-pipx</link>
+      <description><![CDATA[]]></description>
       <pubDate>2024-09-07</pubDate>
       <guid>http://ag91.github.io/blog/2024/09/07/how-to-setup-python-lsp-server-with-lsp-mode-using-pipx</guid>
     </item>
@@ -118,13 +137,6 @@ Happy hacking!
       <description><![CDATA[]]></description>
       <pubDate>2023-07-22</pubDate>
       <guid>http://ag91.github.io/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli</guid>
-    </item>
-    <item>
-      <title>A little exploration of Go from a Clojure perspective</title>
-      <link>http://ag91.github.io/blog/2023/06/08/a-little-exploration-of-go-from-a-clojure-perspective</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-06-08</pubDate>
-      <guid>http://ag91.github.io/blog/2023/06/08/a-little-exploration-of-go-from-a-clojure-perspective</guid>
     </item>
   </channel>
 </rss>
