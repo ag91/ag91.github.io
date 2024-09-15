@@ -1,0 +1,36 @@
+#+TITLE:       Adding utilities to open urls to emacs-slack
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2024-09-15 Sun
+#+URI:         /blog/%y/%m/%d/adding-utilities-to-open-urls-to-emacs-slack
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+Some years ago I opened a fork of the amazing
+https://github.com/yuya373/emacs-slack because useful PRs would not
+flow into the author's repository. Interestingly, the whole project
+got deprecated recently.
+
+Is emacs-slack dead? Nope, thanks to contributors like [[https://github.com/isamert/emacs-slack][isamert]]!
+
+Some of the issues looked interesting to me, so I spent some of my
+(very little) time to play with my fork.
+
+Mainly I wanted ways to jump [[https://github.com/ag91/emacs-slack/commit/1a539b62d11f496e4f9723a0623885253f8aab67][back]] and [[https://github.com/ag91/emacs-slack/commit/b9facb49a0926ab1f1e6b47f12d7f858c8d9a9d7][forward]] from the slack app
+(which allows me to take calls, called huddles in slack). This way I
+can easily keep using [[https://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda/][emacs-slack to add notifications of messages in
+my Org Agenda]] and pop to the app when needed.
+
+Also managed [[https://github.com/ag91/emacs-slack/commit/472e89ce817977f0d7bca5c4b97f4f4c30438388][to solve a very nasty little error]] that made me lose
+quite some work: sometimes slack thread buffers would close on me.
+This was due to the websocket (with which channel info get updated)
+killing the buffer.
+
+Overall quite happy of the results. There are still many things I
+don't know about this repository (particularly on the websocket side,
+which apparently easily fails if too much data is pulled from slack),
+but curious to repair and improve it as I need it.
+
+Happy chatting!
