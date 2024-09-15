@@ -4,74 +4,66 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Sat, 07 Sep 2024 16:16:02 BST</pubDate>
-    <lastBuildDate>Sat, 07 Sep 2024 16:16:02 BST</lastBuildDate>
+    <pubDate>Sun, 15 Sep 2024 01:46:31 BST</pubDate>
+    <lastBuildDate>Sun, 15 Sep 2024 01:46:31 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
-      <title>Emacs as your code-compass: who is the person who refactored most in this project?</title>
-      <link>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</link>
+      <title>Adding utilities to open urls to emacs-slack</title>
+      <link>http://ag91.github.io/blog/2024/09/15/adding-utilities-to-open-urls-to-emacs-slack</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>Emacs as your code-compass: who is the person who refactored most in this project?</h1>
+<h1>Adding utilities to open urls to emacs-slack</h1>
 <p>
-It is a while I don't post about <a href="https://github.com/ag91/code-compass">code-compass</a>. I recently jumped back
-in the consulting world and it is a hectic life! In a couple of months
-I moved from a project to another. Furthermore, I cannot say I got
-somebody introducing me to the software architecture of these projects
-(or even their status).
+Some years ago I opened a fork of the amazing
+<a href="https://github.com/yuya373/emacs-slack">https://github.com/yuya373/emacs-slack</a> because useful PRs would not
+flow into the author's repository. Interestingly, the whole project
+got deprecated recently.
 </p>
 
 <p>
-Lucky me these years (from Ph.D. to industry times) have given me some
-experience, so my boat is well equipped for this wavy sea. Also I have
-a great tool: in both projects I just had to rely on my Emacs for a
-reliable code-compass.
+Is emacs-slack dead? Nope, thanks to contributors like <a href="https://github.com/isamert/emacs-slack">isamert</a>!
 </p>
 
 <p>
-So armed of hotspots, knowledge and communication graphs with a bit of
-churn, fragmentation and <a href="https://ag91.github.io/blog/2020/12/27/emacs-as-your-code-compass-how-complex-is-this-code/">complexity</a> on the side, I could get up and
-running faster than ever! Yay!!
+Some of the issues looked interesting to me, so I spent some of my
+(very little) time to play with my fork.
 </p>
 
 <p>
-One thing I have been missing is to explore graphically who dedicated
-themselves to the lovely art of refactoring. Indeed, the project on
-which I rely, the fantastic code-maat, offers a refactoring analysis.
-This finds who has <span class="underline">deleted</span> most lines in a file using Git commits
-information.
+Mainly I wanted ways to jump <a href="https://github.com/ag91/emacs-slack/commit/1a539b62d11f496e4f9723a0623885253f8aab67">back</a> and <a href="https://github.com/ag91/emacs-slack/commit/b9facb49a0926ab1f1e6b47f12d7f858c8d9a9d7">forward</a> from the slack app
+(which allows me to take calls, called huddles in slack). This way I
+can easily keep using <a href="https://ag91.github.io/blog/2020/09/24/composition-update-add-slack-links-to-org-agenda/">emacs-slack to add notifications of messages in
+my Org Agenda</a> and pop to the app when needed.
 </p>
 
 <p>
-Naturally deletions are an approximation for refactoring, but good
-enough as less code is always an improvement (at least for our eyes).
+Also managed <a href="https://github.com/ag91/emacs-slack/commit/472e89ce817977f0d7bca5c4b97f4f4c30438388">to solve a very nasty little error</a> that made me lose
+quite some work: sometimes slack thread buffers would close on me.
+This was due to the websocket (with which channel info get updated)
+killing the buffer.
 </p>
 
 <p>
-Well there I go: I added it just now. It was pretty easy because is
-super-similar to the knowledge graph implementation. So a tweak here
-and there and it is now available.
+Overall quite happy of the results. There are still many things I
+don't know about this repository (particularly on the websocket side,
+which apparently easily fails if too much data is pulled from slack),
+but curious to repair and improve it as I need it.
 </p>
 
 <p>
-Below a video that gives you a sense of what it is about.
-</p>
-
-<p>
-<a href="/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4">/assets/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project/refactoringCodeCompass.mp4</a>
-</p>
-
-<p>
-If you want to try that yourself it is easy: just try out <a href="https://github.com/ag91/code-compass">code-compass</a> ;)
-</p>
-
-<p>
-Happy refactoring!
+Happy chatting!
 </p>
 
 </div>
 </div>]]></description>
+      <pubDate>2024-09-15</pubDate>
+      <guid>http://ag91.github.io/blog/2024/09/15/adding-utilities-to-open-urls-to-emacs-slack</guid>
+    </item>
+    <item>
+      <title>Emacs as your code-compass: who is the person who refactored most in this project?</title>
+      <link>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</link>
+      <description><![CDATA[]]></description>
       <pubDate>2024-09-07</pubDate>
       <guid>http://ag91.github.io/blog/2022/11/23/emacs-as-your-code-compass-who-is-the-person-who-refactored-most-in-this-project</guid>
     </item>
@@ -130,13 +122,6 @@ Happy refactoring!
       <description><![CDATA[]]></description>
       <pubDate>2023-08-03</pubDate>
       <guid>http://ag91.github.io/blog/2023/08/03/an-easier-way-to-try-out-clojure-libraries-with-ob-clojure-and-cider</guid>
-    </item>
-    <item>
-      <title>scala-cli-repl: a Scala REPL based on scala-cli</title>
-      <link>http://ag91.github.io/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-07-22</pubDate>
-      <guid>http://ag91.github.io/blog/2023/07/22/scala-cli-repl-a-scala-repl-based-on-scala-cli</guid>
     </item>
   </channel>
 </rss>
