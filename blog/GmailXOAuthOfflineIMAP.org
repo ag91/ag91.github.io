@@ -1,0 +1,118 @@
+#+TITLE:       Enable OAuth for Gmail with Emacs and OfflineIMAP
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2024-09-19 Thu
+#+URI:         /blog/%y/%m/%d/enable-oauth-for-gmail-with-emacs-and-offlineimap
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+I use mu4e with offlineimap to manage my emails.
+Today I was trying to send an email with Gmail and I got:
+
+"Sending failed: 530-5.7.0 Authentication Required gmail offlineimap"
+
+So far I have been using App Passwords to authenticate with a simple
+login. Probably that insecure functionality got finally removed. It
+was technical debt as I knew eventually that would fail.
+
+Recently I enabled Oauth for microsoft accounts by using my fork of
+https://github.com/ag91/M365-IMAP. That uses Thunderbird credentials
+to produce the needed refresh token.
+
+Having that background, dealing with google was easier. I am grateful
+[[https://hobo.house/2017/07/17/using-offlineimap-with-the-gmail-imap-api/][for this article]], which was a great guide to get a refresh token.
+
+The troublesome part is creating an google app with google console. Essentially:
+
+1. new project
+2. distribution needs to be External
+3. domain needs to be "oauth2.dance"
+4. scope needs to be set manually to https://mail.google.com/
+5. add your email as test user
+6. then on create credential
+   1. desktop type
+   2. get client id and secret
+
+Once you have these, just run:
+
+#+begin_src sh
+git clone https://github.com/google/gmail-oauth2-tools.git
+cd python
+python3 oauth2.py --user=<yours> \
+    --client_id=<yours> \
+    --client_secret=<yours> \
+    --generate_oauth2_token
+
+#+end_src
+
+You will need to copy the code from the url after you complete
+authorization and paste it in the terminal.
+
+That will produce your refresh token (and an access token but you
+don't need it).
+
+Store it safely. I use password-store, so my .offlineimaprc changed like this:
+
+#+begin_src text 
+auth_mechanisms = XOAUTH2
+oauth2_client_id_eval = get_pass_bytes("OAUTHClientId")
+oauth2_client_secret_eval = get_pass_bytes("OAUTHClientSecret")
+oauth2_refresh_token_eval = get_pass_bytes("OAUTHRefresh")
+oauth2_request_url = https://accounts.google.com/o/oauth2/token
+#+end_src
+
+Offlineimap knows how to transform (client_id, client_secret, refresh_token) -> access_token.
+With the access token (instead of your plain/insecure password) it will download your email.
+
+To send an email, you need to define the xoauth2 method for smtpmail:
+
+#+begin_src elisp :noeval
+(cl-defmethod smtpmail-try-auth-method
+  (process (_mech (eql xoauth2)) user password)
+  (cond
+   ((or (equal user "my-microsoft-mail"))
+    ;; from https://github.com/UvA-FNWI/M365-IMAP/issues/3
+    (let ((token (gethash "access_token"
+                          (let ((url-request-method "POST")
+	                        (url-request-extra-headers `(("Content-Type" . "application/x-www-form-urlencoded")))
+	                        (url-request-data (concat "client_id=" (password-store-get "...")
+                                                          "&client_secret=" (password-store-get "...")
+                                                          "&refresh_token=" (password-store-get "...")
+                                                          "&grant_type=refresh_token")))
+                            (with-temp-buffer (url-insert-file-contents
+                                               "https://login.microsoftonline.com/common/oauth2/v2.0/token")
+                                              (json-parse-buffer :object-type 'hash-table)))
+                          )))
+      (smtpmail-command-or-throw
+       process
+       (concat "AUTH XOAUTH2 "
+               (base64-encode-string
+                (concat "user=" user "\1auth=Bearer " token "\1\1") t)))))
+   ((equal user "my-gmail-email")
+    (let ((token (gethash "access_token"
+                          (let ((url-request-method "POST")
+	                        (url-request-extra-headers `(("Content-Type" . "application/x-www-form-urlencoded")))
+	                        (url-request-data (concat "client_id=" (password-store-get "...")
+                                                          "&client_secret=" (password-store-get "...")
+                                                          "&refresh_token=" (password-store-get "...")
+                                                          "&grant_type=refresh_token")))
+                            (with-temp-buffer (url-insert-file-contents
+                                               "https://oauth2.googleapis.com/token")
+                                              (json-parse-buffer :object-type 'hash-table)))
+                          )))
+      (smtpmail-command-or-throw
+       process
+       (concat "AUTH XOAUTH2 "
+               (base64-encode-string
+                (concat "user=" user "\1auth=Bearer " token "\1\1") t)))))
+   (t nil)))
+#+end_src
+
+This contains both the behavior for refresh a microsoft and a google
+token. This implements the same behavior offlineimap offers but in
+elisp. It will run when you try to send an email to use that as
+credential, so that your access token is fresh (surely not expired).
+
+Happy emailing!
