@@ -1,0 +1,24 @@
+#+TITLE:       Adding support to start a huddle from emacs-slack (jumping to the app)
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2024-09-19 Thu
+#+URI:         /blog/%y/%m/%d/adding-support-to-start-a-huddle-from-emacs-slack-(jumping-to-the-app)
+#+KEYWORDS:    emacs
+#+TAGS:        emacs
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+After some researching I found out that starting a Slack huddle (a
+call within the Slack app) is super easy: just open a link in the
+browser with room and team id.
+
+So I decided to [[https://github.com/ag91/emacs-slack/commit/1202ba72e7fa76d04741b00f8d69c4e9c58ff1ee][add the functionality]] to my fork of emacs-slack.
+
+Now if you are in a slack buffer (you can test it freely, the app will
+ask you for confirmation before starting/joining a call), you can just
+do =M-x slack-join-huddle=.
+
+This along with fixing the threads suddenly closing while I was typing
+is making emacs-slack a nice experience for me.
+
+Happy slacking!
