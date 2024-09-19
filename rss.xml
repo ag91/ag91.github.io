@@ -4,164 +4,52 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 19 Sep 2024 00:58:39 BST</pubDate>
-    <lastBuildDate>Thu, 19 Sep 2024 00:58:39 BST</lastBuildDate>
+    <pubDate>Thu, 19 Sep 2024 01:15:40 BST</pubDate>
+    <lastBuildDate>Thu, 19 Sep 2024 01:15:40 BST</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
     <item>
       <title>Enable OAuth for Gmail with Emacs and OfflineIMAP</title>
       <link>http://ag91.github.io/blog/2024/09/19/enable-oauth-for-gmail-with-emacs-and-offlineimap</link>
+      <description><![CDATA[]]></description>
+      <pubDate>2024-09-19</pubDate>
+      <guid>http://ag91.github.io/blog/2024/09/19/enable-oauth-for-gmail-with-emacs-and-offlineimap</guid>
+    </item>
+    <item>
+      <title>Adding support to start a huddle from emacs-slack (jumping to the app)</title>
+      <link>http://ag91.github.io/blog/2024/09/19/adding-support-to-start-a-huddle-from-emacs-slack-(jumping-to-the-app)</link>
       <description><![CDATA[<div>
 <div class="post">
-<h1>Enable OAuth for Gmail with Emacs and OfflineIMAP</h1>
+<h1>Adding support to start a huddle from emacs-slack (jumping to the app)</h1>
 <p>
-I use mu4e with offlineimap to manage my emails.
-Today I was trying to send an email with Gmail and I got:
+After some researching I found out that starting a Slack huddle (a
+call within the Slack app) is super easy: just open a link in the
+browser with room and team id.
 </p>
 
 <p>
-"Sending failed: 530-5.7.0 Authentication Required gmail offlineimap"
+So I decided to <a href="https://github.com/ag91/emacs-slack/commit/1202ba72e7fa76d04741b00f8d69c4e9c58ff1ee">add the functionality</a> to my fork of emacs-slack.
 </p>
 
 <p>
-So far I have been using App Passwords to authenticate with a simple
-login. Probably that insecure functionality got finally removed. It
-was technical debt as I knew eventually that would fail.
+Now if you are in a slack buffer (you can test it freely, the app will
+ask you for confirmation before starting/joining a call), you can just
+do <code>M-x slack-join-huddle</code>.
 </p>
 
 <p>
-Recently I enabled Oauth for microsoft accounts by using my fork of
-<a href="https://github.com/ag91/M365-IMAP">https://github.com/ag91/M365-IMAP</a>. That uses Thunderbird credentials
-to produce the needed refresh token.
+This along with fixing the threads suddenly closing while I was typing
+is making emacs-slack a nice experience for me.
 </p>
 
 <p>
-Having that background, dealing with google was easier. I am grateful
-<a href="https://hobo.house/2017/07/17/using-offlineimap-with-the-gmail-imap-api/">for this article</a>, which was a great guide to get a refresh token.
-</p>
-
-<p>
-The troublesome part is creating an google app with google console. Essentially:
-</p>
-
-<ol class="org-ol">
-<li>new project</li>
-<li>distribution needs to be External</li>
-<li>domain needs to be "oauth2.dance"</li>
-<li>scope needs to be set manually to <a href="https://mail.google.com/">https://mail.google.com/</a></li>
-<li>add your email as test user</li>
-<li>then on create credential
-<ol class="org-ol">
-<li>desktop type</li>
-<li>get client id and secret</li>
-</ol></li>
-</ol>
-
-<p>
-Once you have these, just run:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-sh">git clone https://github.com/google/gmail-oauth2-tools.git
-cd python
-python3 oauth2.py --user=&lt;yours&gt; \
-    --client_id=&lt;yours&gt; \
-    --client_secret=&lt;yours&gt; \
-    --generate_oauth2_token
-
-</pre>
-</div>
-
-<p>
-You will need to copy the code from the url after you complete
-authorization and paste it in the terminal.
-</p>
-
-<p>
-That will produce your refresh token (and an access token but you
-don't need it).
-</p>
-
-<p>
-Store it safely. I use password-store, so my .offlineimaprc changed like this:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-text">auth_mechanisms = XOAUTH2
-oauth2_client_id_eval = get_pass_bytes("OAUTHClientId")
-oauth2_client_secret_eval = get_pass_bytes("OAUTHClientSecret")
-oauth2_refresh_token_eval = get_pass_bytes("OAUTHRefresh")
-oauth2_request_url = https://accounts.google.com/o/oauth2/token
-</pre>
-</div>
-
-<p>
-Offlineimap knows how to transform (client_id, client_secret, refresh_token) -&gt; access_token.
-With the access token (instead of your plain/insecure password) it will download your email.
-</p>
-
-<p>
-To send an email, you need to define the xoauth2 method for smtpmail:
-</p>
-
-<div class="org-src-container">
-<pre class="src src-elisp">(cl-defmethod smtpmail-try-auth-method
-  (process (_mech (eql xoauth2)) user password)
-  (cond
-   ((or (equal user "my-microsoft-mail"))
-    ;; from https://github.com/UvA-FNWI/M365-IMAP/issues/3
-    (let ((token (gethash "access_token"
-                          (let ((url-request-method "POST")
-                                (url-request-extra-headers `(("Content-Type" . "application/x-www-form-urlencoded")))
-                                (url-request-data (concat "client_id=" (password-store-get "...")
-                                                          "&amp;client_secret=" (password-store-get "...")
-                                                          "&amp;refresh_token=" (password-store-get "...")
-                                                          "&amp;grant_type=refresh_token")))
-                            (with-temp-buffer (url-insert-file-contents
-                                               "https://login.microsoftonline.com/common/oauth2/v2.0/token")
-                                              (json-parse-buffer :object-type 'hash-table)))
-                          )))
-      (smtpmail-command-or-throw
-       process
-       (concat "AUTH XOAUTH2 "
-               (base64-encode-string
-                (concat "user=" user "\1auth=Bearer " token "\1\1") t)))))
-   ((equal user "my-gmail-email")
-    (let ((token (gethash "access_token"
-                          (let ((url-request-method "POST")
-                                (url-request-extra-headers `(("Content-Type" . "application/x-www-form-urlencoded")))
-                                (url-request-data (concat "client_id=" (password-store-get "...")
-                                                          "&amp;client_secret=" (password-store-get "...")
-                                                          "&amp;refresh_token=" (password-store-get "...")
-                                                          "&amp;grant_type=refresh_token")))
-                            (with-temp-buffer (url-insert-file-contents
-                                               "https://oauth2.googleapis.com/token")
-                                              (json-parse-buffer :object-type 'hash-table)))
-                          )))
-      (smtpmail-command-or-throw
-       process
-       (concat "AUTH XOAUTH2 "
-               (base64-encode-string
-                (concat "user=" user "\1auth=Bearer " token "\1\1") t)))))
-   (t nil)))
-</pre>
-</div>
-
-<p>
-This contains both the behavior for refresh a microsoft and a google
-token. This implements the same behavior offlineimap offers but in
-elisp. It will run when you try to send an email to use that as
-credential, so that your access token is fresh (surely not expired).
-</p>
-
-<p>
-Happy emailing!
+Happy slacking!
 </p>
 
 </div>
 </div>]]></description>
       <pubDate>2024-09-19</pubDate>
-      <guid>http://ag91.github.io/blog/2024/09/19/enable-oauth-for-gmail-with-emacs-and-offlineimap</guid>
+      <guid>http://ag91.github.io/blog/2024/09/19/adding-support-to-start-a-huddle-from-emacs-slack-(jumping-to-the-app)</guid>
     </item>
     <item>
       <title>Adding utilities to open urls to emacs-slack</title>
@@ -218,13 +106,6 @@ Happy emailing!
       <description><![CDATA[]]></description>
       <pubDate>2023-12-11</pubDate>
       <guid>http://ag91.github.io/blog/2023/12/11/make-emacs-help-in-creating-an-example-of-scala-classes</guid>
-    </item>
-    <item>
-      <title>An easier way to try Cljs libraries with shadow-cljs ob-clojure and cider</title>
-      <link>http://ag91.github.io/blog/2023/08/28/an-easier-way-to-try-cljs-libraries-with-shadow-cljs-ob-clojure-and-cider</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-08-29</pubDate>
-      <guid>http://ag91.github.io/blog/2023/08/28/an-easier-way-to-try-cljs-libraries-with-shadow-cljs-ob-clojure-and-cider</guid>
     </item>
   </channel>
 </rss>
