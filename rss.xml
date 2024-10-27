@@ -4,10 +4,94 @@
     <title>Where parallels cross</title>
     <link>http://ag91.github.io</link>
     <description>Interesting bits of life</description>
-    <pubDate>Thu, 19 Sep 2024 01:15:40 BST</pubDate>
-    <lastBuildDate>Thu, 19 Sep 2024 01:15:40 BST</lastBuildDate>
+    <pubDate>Sun, 27 Oct 2024 22:22:44 GMT</pubDate>
+    <lastBuildDate>Sun, 27 Oct 2024 22:22:44 GMT</lastBuildDate>
     <docs>http://www.rssboard.org/rss-specification</docs>
     <generator>Org-page static site generator (https://github.com/kelvinh/org-page)</generator>
+    <item>
+      <title>A useful function to contribute to Scala Metals lsp server with Emacs</title>
+      <link>http://ag91.github.io/blog/2024/10/27/tips-to-contribute-to-scala-metals-lsp-server-with-emacs</link>
+      <description><![CDATA[<div>
+<div class="post">
+<h1>A useful function to contribute to Scala Metals lsp server with Emacs</h1>
+<p>
+<a href="https://github.com/scalameta/metals/pull/6877">I am in the process of contributing a feature to Scala Metals LSP server</a>.
+The change is about adding a code action to stub functions/methods after declaring their usagen.
+</p>
+
+<p>
+Anyway, it was nice I could focus on the change because I could add
+tests and run my code against them to see progress.
+</p>
+
+<p>
+Naturally tests are never exhaustive. As soon as I ran my enhanced
+version of Metals locally, I found out my code action wouldn't work.
+There I go at debugging with println.
+</p>
+
+<p>
+The pain I felt was reinstalling my latest version of Metals each
+time: add a println, reinstall, try again, fix code and repeat. The
+reinstall bit also consisted in multiple steps:
+</p>
+
+<ol class="org-ol">
+<li><code>sbt publishLocal</code></li>
+<li>(first time only) <code>sbt ++2.13.15 mtags/publishLocal</code></li>
+<li>install snapshot via coursier as explained in the <a href="https://scalameta.org/metals/docs/contributors/getting-started/#vimneovim">vim section</a></li>
+<li>restart metals in my Scala buffer</li>
+</ol>
+
+<p>
+I got soon tired and added the following to my Emacs configuration:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(defun my/reinstall-metals-snapshot ()
+    "Reinstall metals from snapshot created with sbt publishLocal. TODO: edit this function with the right version."
+    (interactive)
+    ;; (shell-command "cd your-metals-path; sbt publishLocal")
+    (call-process
+     (lsp-package-path 'coursier)
+     nil
+     (get-buffer-create "*Coursier log*")
+     t
+     "bootstrap"
+     "--java-opt"
+     "-Xss4m"
+     "--java-opt"
+     "-Xms100m"
+     (concat "org.scalameta:metals_" lsp-metals-install-scala-version ":" "1.4.1-SNAPSHOT")
+     "-o"
+     lsp-metals-metals-store-path
+     "-f")
+    (with-demoted-errors "%S"
+      (funcall-interactively 'lsp-workspace-restart (lsp--read-workspace)))
+    )
+</pre>
+</div>
+
+<p>
+I left out the <code>publishLocal</code> step because it is quicker running sbt
+and interactively publish the snapshot.
+Also I quickly hacked this, so I just hardcoded the snapshot version I needed.
+</p>
+
+<p>
+Anyway that saved a lot of time in fixing the issues I found interactively.
+I may end up writing about tips to contribute to Metals later, if anybody is curious.
+</p>
+
+<p>
+Happy contributing!
+</p>
+
+</div>
+</div>]]></description>
+      <pubDate>2024-10-27</pubDate>
+      <guid>http://ag91.github.io/blog/2024/10/27/tips-to-contribute-to-scala-metals-lsp-server-with-emacs</guid>
+    </item>
     <item>
       <title>Enable OAuth for Gmail with Emacs and OfflineIMAP</title>
       <link>http://ag91.github.io/blog/2024/09/19/enable-oauth-for-gmail-with-emacs-and-offlineimap</link>
@@ -18,36 +102,7 @@
     <item>
       <title>Adding support to start a huddle from emacs-slack (jumping to the app)</title>
       <link>http://ag91.github.io/blog/2024/09/19/adding-support-to-start-a-huddle-from-emacs-slack-(jumping-to-the-app)</link>
-      <description><![CDATA[<div>
-<div class="post">
-<h1>Adding support to start a huddle from emacs-slack (jumping to the app)</h1>
-<p>
-After some researching I found out that starting a Slack huddle (a
-call within the Slack app) is super easy: just open a link in the
-browser with room and team id.
-</p>
-
-<p>
-So I decided to <a href="https://github.com/ag91/emacs-slack/commit/1202ba72e7fa76d04741b00f8d69c4e9c58ff1ee">add the functionality</a> to my fork of emacs-slack.
-</p>
-
-<p>
-Now if you are in a slack buffer (you can test it freely, the app will
-ask you for confirmation before starting/joining a call), you can just
-do <code>M-x slack-join-huddle</code>.
-</p>
-
-<p>
-This along with fixing the threads suddenly closing while I was typing
-is making emacs-slack a nice experience for me.
-</p>
-
-<p>
-Happy slacking!
-</p>
-
-</div>
-</div>]]></description>
+      <description><![CDATA[]]></description>
       <pubDate>2024-09-19</pubDate>
       <guid>http://ag91.github.io/blog/2024/09/19/adding-support-to-start-a-huddle-from-emacs-slack-(jumping-to-the-app)</guid>
     </item>
@@ -99,13 +154,6 @@ Happy slacking!
       <description><![CDATA[]]></description>
       <pubDate>2024-02-19</pubDate>
       <guid>http://ag91.github.io/blog/2024/02/19/a-quick-fix-for-golden-ratio-and-lsp-mode</guid>
-    </item>
-    <item>
-      <title>Make Emacs help in creating an example of Scala classes</title>
-      <link>http://ag91.github.io/blog/2023/12/11/make-emacs-help-in-creating-an-example-of-scala-classes</link>
-      <description><![CDATA[]]></description>
-      <pubDate>2023-12-11</pubDate>
-      <guid>http://ag91.github.io/blog/2023/12/11/make-emacs-help-in-creating-an-example-of-scala-classes</guid>
     </item>
   </channel>
 </rss>
