@@ -1,0 +1,64 @@
+#+TITLE:       A useful function to contribute to Scala Metals lsp server with Emacs
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2024-10-27 Sun
+#+URI:         /blog/%y/%m/%d/tips-to-contribute-to-scala-metals-lsp-server-with-emacs
+#+KEYWORDS:    emacs, scala
+#+TAGS:        emacs, scala
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+[[https://github.com/scalameta/metals/pull/6877][I am in the process of contributing a feature to Scala Metals LSP server]].
+The change is about adding a code action to stub functions/methods after declaring their usagen.
+
+Anyway, it was nice I could focus on the change because I could add
+tests and run my code against them to see progress.
+
+Naturally tests are never exhaustive. As soon as I ran my enhanced
+version of Metals locally, I found out my code action wouldn't work.
+There I go at debugging with println.
+
+The pain I felt was reinstalling my latest version of Metals each
+time: add a println, reinstall, try again, fix code and repeat. The
+reinstall bit also consisted in multiple steps:
+
+1. =sbt publishLocal=
+2. (first time only) =sbt ++2.13.15 mtags/publishLocal=
+3. install snapshot via coursier as explained in the [[https://scalameta.org/metals/docs/contributors/getting-started/#vimneovim][vim section]]
+4. restart metals in my Scala buffer
+
+I got soon tired and added the following to my Emacs configuration:
+
+#+begin_src emacs-lisp :noeval
+(defun my/reinstall-metals-snapshot ()
+    "Reinstall metals from snapshot created with sbt publishLocal. TODO: edit this function with the right version."
+    (interactive)
+    ;; (shell-command "cd your-metals-path; sbt publishLocal")
+    (call-process
+     (lsp-package-path 'coursier)
+     nil
+     (get-buffer-create "*Coursier log*")
+     t
+     "bootstrap"
+     "--java-opt"
+     "-Xss4m"
+     "--java-opt"
+     "-Xms100m"
+     (concat "org.scalameta:metals_" lsp-metals-install-scala-version ":" "1.4.1-SNAPSHOT")
+     "-o"
+     lsp-metals-metals-store-path
+     "-f")
+    (with-demoted-errors "%S"
+      (funcall-interactively 'lsp-workspace-restart (lsp--read-workspace)))
+    )
+#+end_src
+
+I left out the =publishLocal= step because it is quicker running sbt
+and interactively publish the snapshot.
+Also I quickly hacked this, so I just hardcoded the snapshot version I needed.
+
+Anyway that saved a lot of time in fixing the issues I found interactively.
+I may end up writing about tips to contribute to Metals later, if anybody is curious.
+
+Happy contributing!
+
