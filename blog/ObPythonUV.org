@@ -1,0 +1,188 @@
+#+TITLE:       How to make ob-python and UV work together
+#+AUTHOR:      Andrea
+#+EMAIL:       andrea-dev@hotmail.com
+#+DATE:        2025-09-27 Sat
+#+URI:         /blog/%y/%m/%d/how-to-make-ob-python-and-uv-work-together
+#+KEYWORDS:    <TODO: insert your keywords here>
+#+TAGS:        <TODO: insert your tags here>
+#+LANGUAGE:    en
+#+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
+
+It is been a while! I have been very busy between work and family, but
+I never stopped using Emacs.
+
+So for work I ended up moving from Clojure to Scala to now Python.
+Since [[https://docs.astral.sh/uv/][uv]] is now the winning project manager for Python, I have been
+using in my side projects.
+
+As always I like to experiment via org babel and one of the things
+that make me satisfied is to try a new library on the fly in an Org
+Mode block.
+
+I didn't seem to find that feature in ob-python.el ([[https://ag91.github.io/blog/2023/08/03/an-easier-way-to-try-out-clojure-libraries-with-ob-clojure-and-cider/][nor did I find in
+ob-clojure to be honest]]) so I just built it on the fly.
+
+So =uv= comes with scripts that can load dependencies, and this is the org block I wanted to run:
+
+#+begin_src org
+,#+begin_src python :uv nil :results output
+# /// script
+# dependencies = [
+#   "pydantic",
+#   "hypothesis-jsonschema",
+# ]
+# ///
+
+from hypothesis import given
+from hypothesis_jsonschema import from_schema
+from pydantic import BaseModel
+
+class Item(BaseModel):
+    name: str
+    qty: int = 1
+
+schema = Item.model_json_schema()
+strategy = from_schema(schema)
+
+@given(strategy)
+def test_item(data):
+    item = Item.model_validate(data)
+    assert item.qty >= 0
+
+# B. Manual strategy for fields (more control)
+
+from hypothesis import given, strategies as st
+from pydantic import BaseModel
+
+class Item(BaseModel):
+    name: str
+    qty: int
+
+name_s = st.text(min_size=1, max_size=50)
+qty_s = st.integers(min_value=0, max_value=1000)
+
+@given(st.builds(Item, name=name_s, qty=qty_s))
+def test_item_manual(item):
+    print(f"---- {item.qty}")
+    assert item.qty >= 0
+
+print(qty_s.example())
+
+test_item_manual()
+,#+end_src
+
+#+end_src
+
+
+As you can see here I am learning about pydantic and
+hypothesis-jsonschema, which together allow you to do property based testing in Python.
+
+Below the code to make ob-python.el digest that block:
+
+#+begin_src elisp
+(add-to-list 'org-babel-header-args:python
+             '(uv . :any)
+             )
+
+(defcustom org-babel-python-uv-default-dependencies '()
+  "Default packages to add when running Python via uv.
+   These are appended to dependencies detected from the block body
+   (uv script header) and any provided explicitly to :uv."
+  :package-version '(Org . "9.7")
+  :group 'org-babel
+  :type '(repeat string))
+(defun org-babel-python--uv-deps-from-body (body)
+  "Parse uv script header in BODY and return a list of dependencies.
+   Looks for a header starting with =# /// script= and ending at a
+   line =# ///=, and collects all quoted strings within."
+  (let ((deps nil))
+    (save-match-data
+      (when (string-match "^#\\s-*///\\s-*script" body)
+        (let* ((start (match-end 0))
+               (end (or (string-match "^#\\s-*///\\s-*$" body start)
+                        (string-match "^#\\s-*///" body start)
+                        (length body)))
+               (header (substring body start end))
+               (pos 0))
+          (while (string-match "\\(['\"]\\)\\([^\"']+\\)\\1" header pos)
+            (push (match-string 2 header) deps)
+            (setq pos (match-end 0))))))
+    (nreverse (delete-dups deps))))
+
+(defun org-babel-python--uv-collect-deps (uv-param body)
+  "Return list of dependencies for :uv header UV-PARAM and BODY."
+  (let* ((explicit
+          (cond
+           ((listp uv-param) uv-param)
+           (t nil)))
+         (deps (append explicit
+                       (org-babel-python--uv-deps-from-body body)
+                       org-babel-python-uv-default-dependencies)))
+    (message "hey-- %s " deps)
+    (delete-dups deps)))
+(defun org-babel-python--build-uv-command (deps)
+  "Return an =uv run= command string using DEPS."
+  (message "hey123-- %s " (concat
+                           "uv run "
+                           (mapconcat (lambda (d)
+                                        (concat "--with " (shell-quote-argument d)))
+                                      deps " ")
+                           (when deps " ")
+                           "python"))
+  (concat
+   "uv run "
+   (mapconcat (lambda (d)
+                (concat "--with " (shell-quote-argument d)))
+              deps " ")
+   (when deps " ")
+   "python"))
+
+(defun org-babel-execute:python (body params)
+  "Execute Python BODY according to PARAMS.
+   This function is called by =org-babel-execute-src-block'."
+  (let* ((uv-param (cdr (assq :uv params)))
+         (uv-cmd (when uv-param
+                   (org-babel-python--build-uv-command
+                    (org-babel-python--uv-collect-deps uv-param body))))
+         (org-babel-python-command
+          (or uv-cmd
+              (cdr (assq :python params))
+              org-babel-python-command))
+         (session (org-babel-python-initiate-session
+                   (cdr (assq :session params))))
+         (graphics-file (and (member "graphics" (assq :result-params params))
+                             (org-babel-graphical-output-file params)))
+         (result-params (cdr (assq :result-params params)))
+         (result-type (cdr (assq :result-type params)))
+         (return-val (when (eq result-type 'value)
+                       (cdr (assq :return params))))
+         (preamble (cdr (assq :preamble params)))
+         (async (org-babel-comint-use-async params))
+         (full-body
+          (concat
+           (org-babel-expand-body:generic
+            body params
+            (org-babel-variable-assignments:python params))
+           (when return-val
+             (format (if session "\n%s" "\nreturn %s") return-val))))
+         (result (org-babel-python-evaluate
+                  session full-body result-type
+                  result-params preamble async graphics-file)))
+    (org-babel-reassemble-table
+     result
+     (org-babel-pick-name (cdr (assq :colname-names params))
+                          (cdr (assq :colnames params)))
+     (org-babel-pick-name (cdr (assq :rowname-names params))
+                          (cdr (assq :rownames params))))))
+#+end_src
+
+The idea is to extract the dependencies from the body of the block
+with a regex and run =uv run --with <dep> --with <dep1> ... python=,
+and reuse ob-python functionality for the rest.
+
+I didn't test it much but it works.
+
+Hopefully makes it easier and inspires others to try things out in
+Python.
+
+Happy hacking!
