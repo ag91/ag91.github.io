@@ -32,6 +32,20 @@
 <div class="post">
 <h1>How to make ob-python and UV work together</h1>
 <p>
+<b>EDIT:</b> I discovered there is a better way (<a href="https://alexguerard.com/blog/org-and-uv">here the description</a>):
+just do
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org">#+begin_src python :results output :python uv run --env-file .env -
+</pre>
+</div>
+
+
+
+
+
+<p>
 It is been a while! I have been very busy between work and family, but
 I never stopped using Emacs.
 </p>
