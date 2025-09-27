@@ -8,6 +8,17 @@
 #+LANGUAGE:    en
 #+OPTIONS:     H:3 num:nil toc:nil \n:nil ::t |:t ^:nil -:nil f:t *:t <:t
 
+*EDIT:* I discovered there is a better way ([[https://alexguerard.com/blog/org-and-uv][here the description]]):
+just do
+
+#+begin_src org
+#+begin_src python :results output :python uv run --env-file .env -
+#+end_src
+
+
+
+
+
 It is been a while! I have been very busy between work and family, but
 I never stopped using Emacs.
 
